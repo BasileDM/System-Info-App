@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
+using SystemInfoAPI.Models;
 
-namespace SystemInfoAPI.Controllers {
+namespace SystemInfoAPI.Controllers
+{
     [ApiController]
     [Route("[controller]")]
     public class WeatherForecastController : ControllerBase {

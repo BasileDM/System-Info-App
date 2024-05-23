@@ -1,5 +1,7 @@
-namespace SystemInfoAPI {
-    public class WeatherForecast {
+namespace SystemInfoAPI.Models
+{
+    public class WeatherForecast
+    {
         public DateOnly Date { get; set; }
 
         public int TemperatureC { get; set; }
