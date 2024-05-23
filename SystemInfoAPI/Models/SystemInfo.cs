@@ -1,13 +1,15 @@
 ﻿namespace SystemInfoAPI.Models {
     public class SystemInfo {
 
+        public string? MachineName { get; set; }
+
         public string? OsDrive {  get; set; }
 
         public string? SystemDirectory { get; set; }
 
-        public string? OsVersion { get; set; }
-
         public string? OsArchitecture { get; set; }
+
+        public string? OsVersion { get; set; }
 
         public string? ProductName { get; set; }
 
