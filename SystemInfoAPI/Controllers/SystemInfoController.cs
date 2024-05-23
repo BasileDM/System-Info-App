@@ -22,7 +22,16 @@ namespace SystemInfoAPI.Controllers {
                 ProductName = RegistryService.GetRegistryValue(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion", "ProductName"),
                 ReleaseId = RegistryService.GetRegistryValue(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion", "ReleaseId"),
                 CurrentBuild = RegistryService.GetRegistryValue(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion", "CurrentBuild"),
-                Ubr = RegistryService.GetRegistryValue(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion", "UBR")
+                Ubr = RegistryService.GetRegistryValue(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion", "UBR"),
+                AllDrives = DriveInfo.GetDrives().Select(disk => new DriveInfoModel
+                {
+                    Name = disk.Name,
+                    DriveType = disk.DriveType.ToString(),
+                    DriveFormat = disk.IsReady ? disk.DriveFormat : "Unknown",
+                    AvailableFreeSpace = disk.IsReady ? disk.AvailableFreeSpace : 0,
+                    TotalFreeSpace = disk.IsReady ? disk.TotalFreeSpace : 0,
+                    TotalSize = disk.IsReady ? disk.TotalSize : 0
+                }).ToList(),
             };
 
             return Ok(systemInfo);

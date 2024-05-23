@@ -1,6 +1,10 @@
-@SystemInfoAPI_HostAddress = http://localhost:5267
+@SystemInfoAPI_HostAddress = https://localhost:7056
 
 GET {{SystemInfoAPI_HostAddress}}/weatherforecast/
 Accept: application/json
+
+###
+
+GET {{SystemInfoAPI_HostAddress}}/api/systeminfo
 
 ###

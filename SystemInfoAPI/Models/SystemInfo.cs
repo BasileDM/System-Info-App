@@ -18,5 +18,7 @@
         public string? CurrentBuild { get; set; }
 
         public string? Ubr { get; set; }
+
+        public List<DriveInfoModel>? AllDrives { get; set; }
     }
 }
