@@ -1,6 +1,7 @@
 ﻿namespace SystemInfoAPI.Models {
     public class DriveInfoModel {
         public string? Name { get; set; }
+        public string? Label { get; set; }
         public string? DriveType { get; set; }
         public string? DriveFormat { get; set; }
         public long AvailableFreeSpace { get; set; }

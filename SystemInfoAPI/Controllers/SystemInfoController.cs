@@ -26,6 +26,7 @@ namespace SystemInfoAPI.Controllers {
                 AllDrives = DriveInfo.GetDrives().Select(disk => new DriveInfoModel
                 {
                     Name = disk.Name,
+                    Label = disk.VolumeLabel == string.Empty ? "n.c." : disk.VolumeLabel,
                     DriveType = disk.DriveType.ToString(),
                     DriveFormat = disk.IsReady ? disk.DriveFormat : "Unknown",
                     AvailableFreeSpace = disk.IsReady ? disk.AvailableFreeSpace : 0,
