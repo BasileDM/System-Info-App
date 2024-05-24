@@ -37,7 +37,6 @@ namespace SystemInfoAPI.Controllers {
                     "Unknown UBR"),
                 AllDrives = DriveService.GetDrives()
             };
-
             return Ok(systemInfo);
         }
 
@@ -51,9 +50,8 @@ namespace SystemInfoAPI.Controllers {
         public ActionResult<DriveInfoModel> GetDriveById(string driveLetter) {
             DriveInfoModel? drive = DriveService.GetDriveByLetter(driveLetter);
             if (drive == null) {
-                return Ok("Drive not found");
-            }
-            else { return Ok(drive); }
+                return UnprocessableEntity("Drive not found");
+            } else { return Ok(drive); }
         }
     }
 }
