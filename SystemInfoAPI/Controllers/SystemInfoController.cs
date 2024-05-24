@@ -6,7 +6,7 @@ using System.Runtime.Versioning;
 namespace SystemInfoAPI.Controllers {
 
     [SupportedOSPlatform("windows")]
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     [ApiController]
     public class SystemInfoController : ControllerBase {
 
@@ -35,16 +35,25 @@ namespace SystemInfoAPI.Controllers {
                     @"SOFTWARE\Microsoft\Windows NT\CurrentVersion",
                     "UBR",
                     "Unknown UBR"),
-                AllDrives = DriveService.GetDrivesInfo()
+                AllDrives = DriveService.GetDrives()
             };
 
             return Ok(systemInfo);
         }
 
         [HttpGet("drives")]
-        public ActionResult<List<DriveInfoModel>> GetDriveById() { return Ok(DriveService.GetDrivesInfo()); }
+        public ActionResult<List<DriveInfoModel>> GetAllDrives() { return Ok(DriveService.GetDrives()); }
 
         [HttpGet("osdrive")]
         public ActionResult<DriveInfoModel> GetOsDriveInfo() { return Ok(DriveService.GetOsDrive()); }
+
+        [HttpGet("{driveLetter}")]
+        public ActionResult<DriveInfoModel> GetDriveById(string driveLetter) {
+            DriveInfoModel? drive = DriveService.GetDriveByLetter(driveLetter);
+            if (drive == null) {
+                return Ok("Drive not found");
+            }
+            else { return Ok(drive); }
+        }
     }
 }
