@@ -23,6 +23,8 @@ namespace SystemInfoAPI.Controllers {
                 ReleaseId = RegistryService.GetRegistryValue(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion", "ReleaseId"),
                 CurrentBuild = RegistryService.GetRegistryValue(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion", "CurrentBuild"),
                 Ubr = RegistryService.GetRegistryValue(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion", "UBR"),
+                
+                // Set drives info
                 AllDrives = DriveInfo.GetDrives().Select(disk => new DriveInfoModel
                 {
                     Name = disk.Name,

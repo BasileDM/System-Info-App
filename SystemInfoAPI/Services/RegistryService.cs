@@ -2,7 +2,6 @@
 
 namespace SystemInfoAPI.Services {
     public class RegistryService {
-
         public static string? GetRegistryValue(string keyPath, string valueName) {
             try {
                 RegistryKey? key = Registry.LocalMachine.OpenSubKey(keyPath);
