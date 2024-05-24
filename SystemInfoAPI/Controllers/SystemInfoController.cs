@@ -10,8 +10,8 @@ namespace SystemInfoAPI.Controllers {
     [ApiController]
     public class SystemInfoController : ControllerBase {
 
-        [HttpGet]
-        public ActionResult<SystemInfo> Get() {
+        [HttpGet("all")]
+        public ActionResult<SystemInfo> GetAll() {
             var systemInfo = new SystemInfo
             {
                 OsDrive = Path.GetPathRoot(Environment.SystemDirectory),
@@ -27,6 +27,22 @@ namespace SystemInfoAPI.Controllers {
             };
 
             return Ok(systemInfo);
+        }
+
+        [HttpGet("drives")]
+        public ActionResult<List<DriveInfoModel>> GetDriveById() { return Ok(GetDrivesInfo()); }
+
+        [HttpGet("osdrive")]
+        public ActionResult<DriveInfoModel> GetOsDriveInfo() { return Ok(GetOsDrive()); }
+
+        public static DriveInfoModel? GetOsDrive() {
+            List<DriveInfoModel> drivesList = GetDrivesInfo();
+            foreach (DriveInfoModel drive in drivesList) {
+                if (Path.GetPathRoot(Environment.SystemDirectory) == drive.Name) { 
+                    return drive;
+                }
+            }
+            return null;
         }
 
         private static string GetRegistryValueOrDefault(string path, string key, string defaultValue) {
