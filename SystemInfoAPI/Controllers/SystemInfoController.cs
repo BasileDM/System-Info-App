@@ -19,48 +19,32 @@ namespace SystemInfoAPI.Controllers {
                 MachineName = Environment.MachineName,
                 OsVersion = Environment.OSVersion.ToString(),
                 OsArchitecture = Environment.Is64BitOperatingSystem ? "x64 - 64bits" : "x86 - 32bits",
-                ProductName = GetRegistryValueOrDefault(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion", "ProductName", "Unknown Product"),
-                ReleaseId = GetRegistryValueOrDefault(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion", "ReleaseId", "Unknown Release"),
-                CurrentBuild = GetRegistryValueOrDefault(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion", "CurrentBuild", "Unknown Build"),
-                Ubr = GetRegistryValueOrDefault(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion", "UBR", "Unknown UBR"),
-                AllDrives = GetDrivesInfo()
+                ProductName = RegistryService.RegistryRequest(
+                    @"SOFTWARE\Microsoft\Windows NT\CurrentVersion",
+                    "ProductName",
+                    "Unknown Product"),
+                ReleaseId = RegistryService.RegistryRequest(
+                    @"SOFTWARE\Microsoft\Windows NT\CurrentVersion",
+                    "ReleaseId",
+                    "Unknown Release"),
+                CurrentBuild = RegistryService.RegistryRequest(
+                    @"SOFTWARE\Microsoft\Windows NT\CurrentVersion",
+                    "CurrentBuild",
+                    "Unknown Build"),
+                Ubr = RegistryService.RegistryRequest(
+                    @"SOFTWARE\Microsoft\Windows NT\CurrentVersion",
+                    "UBR",
+                    "Unknown UBR"),
+                AllDrives = DriveService.GetDrivesInfo()
             };
 
             return Ok(systemInfo);
         }
 
         [HttpGet("drives")]
-        public ActionResult<List<DriveInfoModel>> GetDriveById() { return Ok(GetDrivesInfo()); }
+        public ActionResult<List<DriveInfoModel>> GetDriveById() { return Ok(DriveService.GetDrivesInfo()); }
 
         [HttpGet("osdrive")]
-        public ActionResult<DriveInfoModel> GetOsDriveInfo() { return Ok(GetOsDrive()); }
-
-        public static DriveInfoModel? GetOsDrive() {
-            List<DriveInfoModel> drivesList = GetDrivesInfo();
-            foreach (DriveInfoModel drive in drivesList) {
-                if (Path.GetPathRoot(Environment.SystemDirectory) == drive.Name) { 
-                    return drive;
-                }
-            }
-            return null;
-        }
-
-        private static string GetRegistryValueOrDefault(string path, string key, string defaultValue) {
-            var value = RegistryService.GetRegistryValue(path, key);
-            return string.IsNullOrEmpty(value) ? defaultValue : value;
-        }
-
-        private static List<DriveInfoModel> GetDrivesInfo() {
-            return DriveInfo.GetDrives().Select(disk => new DriveInfoModel
-            {
-                Name = disk.Name,
-                Label = string.IsNullOrEmpty(disk.VolumeLabel) ? "n.c." : disk.VolumeLabel,
-                DriveType = disk.DriveType.ToString(),
-                DriveFormat = disk.IsReady ? disk.DriveFormat : "Unknown",
-                AvailableFreeSpace = disk.IsReady ? disk.AvailableFreeSpace : 0,
-                TotalFreeSpace = disk.IsReady ? disk.TotalFreeSpace : 0,
-                TotalSize = disk.IsReady ? disk.TotalSize : 0
-            }).ToList();
-        }
+        public ActionResult<DriveInfoModel> GetOsDriveInfo() { return Ok(DriveService.GetOsDrive()); }
     }
 }
