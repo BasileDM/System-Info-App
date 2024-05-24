@@ -4,6 +4,7 @@ using SystemInfoAPI.Services;
 using System.Runtime.Versioning;
 
 namespace SystemInfoAPI.Controllers {
+
     [SupportedOSPlatform("windows")]
     [Route("api/[controller]")]
     [ApiController]
@@ -22,7 +23,7 @@ namespace SystemInfoAPI.Controllers {
                 ReleaseId = GetRegistryValueOrDefault(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion", "ReleaseId", "Unknown Release"),
                 CurrentBuild = GetRegistryValueOrDefault(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion", "CurrentBuild", "Unknown Build"),
                 Ubr = GetRegistryValueOrDefault(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion", "UBR", "Unknown UBR"),
-                AllDrives = GetDriveInfo()
+                AllDrives = GetDrivesInfo()
             };
 
             return Ok(systemInfo);
@@ -33,7 +34,7 @@ namespace SystemInfoAPI.Controllers {
             return string.IsNullOrEmpty(value) ? defaultValue : value;
         }
 
-        private static List<DriveInfoModel> GetDriveInfo() {
+        private static List<DriveInfoModel> GetDrivesInfo() {
             return DriveInfo.GetDrives().Select(disk => new DriveInfoModel
             {
                 Name = disk.Name,
