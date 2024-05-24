@@ -47,7 +47,7 @@ namespace SystemInfoAPI.Controllers {
         [HttpGet("osdrive")]
         public ActionResult<DriveInfoModel> GetOsDriveInfo() { return Ok(DriveService.GetOsDrive()); }
 
-        [HttpGet("{driveLetter}")]
+        [HttpGet("drive/{driveLetter}")]
         public ActionResult<DriveInfoModel> GetDriveById(string driveLetter) {
             DriveInfoModel? drive = DriveService.GetDriveByLetter(driveLetter);
             if (drive == null) {
