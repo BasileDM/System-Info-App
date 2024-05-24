@@ -11,33 +11,39 @@ namespace SystemInfoAPI.Controllers {
 
         [HttpGet]
         public ActionResult<SystemInfo> Get() {
-            var systemInfo = new SystemInfo()
+            var systemInfo = new SystemInfo
             {
-                // Set general OS details
                 OsDrive = Path.GetPathRoot(Environment.SystemDirectory),
                 SystemDirectory = Environment.SystemDirectory,
                 MachineName = Environment.MachineName,
                 OsVersion = Environment.OSVersion.ToString(),
                 OsArchitecture = Environment.Is64BitOperatingSystem ? "x64 - 64bits" : "x86 - 32bits",
-                ProductName = RegistryService.GetRegistryValue(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion", "ProductName"),
-                ReleaseId = RegistryService.GetRegistryValue(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion", "ReleaseId"),
-                CurrentBuild = RegistryService.GetRegistryValue(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion", "CurrentBuild"),
-                Ubr = RegistryService.GetRegistryValue(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion", "UBR"),
-                
-                // Set drives info
-                AllDrives = DriveInfo.GetDrives().Select(disk => new DriveInfoModel
-                {
-                    Name = disk.Name,
-                    Label = disk.VolumeLabel == string.Empty ? "n.c." : disk.VolumeLabel,
-                    DriveType = disk.DriveType.ToString(),
-                    DriveFormat = disk.IsReady ? disk.DriveFormat : "Unknown",
-                    AvailableFreeSpace = disk.IsReady ? disk.AvailableFreeSpace : 0,
-                    TotalFreeSpace = disk.IsReady ? disk.TotalFreeSpace : 0,
-                    TotalSize = disk.IsReady ? disk.TotalSize : 0
-                }).ToList(),
+                ProductName = GetRegistryValueOrDefault(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion", "ProductName", "Unknown Product"),
+                ReleaseId = GetRegistryValueOrDefault(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion", "ReleaseId", "Unknown Release"),
+                CurrentBuild = GetRegistryValueOrDefault(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion", "CurrentBuild", "Unknown Build"),
+                Ubr = GetRegistryValueOrDefault(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion", "UBR", "Unknown UBR"),
+                AllDrives = GetDriveInfo()
             };
 
             return Ok(systemInfo);
+        }
+
+        private static string GetRegistryValueOrDefault(string path, string key, string defaultValue) {
+            var value = RegistryService.GetRegistryValue(path, key);
+            return string.IsNullOrEmpty(value) ? defaultValue : value;
+        }
+
+        private static List<DriveInfoModel> GetDriveInfo() {
+            return DriveInfo.GetDrives().Select(disk => new DriveInfoModel
+            {
+                Name = disk.Name,
+                Label = string.IsNullOrEmpty(disk.VolumeLabel) ? "n.c." : disk.VolumeLabel,
+                DriveType = disk.DriveType.ToString(),
+                DriveFormat = disk.IsReady ? disk.DriveFormat : "Unknown",
+                AvailableFreeSpace = disk.IsReady ? disk.AvailableFreeSpace : 0,
+                TotalFreeSpace = disk.IsReady ? disk.TotalFreeSpace : 0,
+                TotalSize = disk.IsReady ? disk.TotalSize : 0
+            }).ToList();
         }
     }
 }
