@@ -30,7 +30,8 @@ namespace SystemInfoAPI.Services {
                 DriveFormat = drive.IsReady ? drive.DriveFormat : "Unknown",
                 AvailableFreeSpace = drive.IsReady ? drive.AvailableFreeSpace : 0,
                 TotalFreeSpace = drive.IsReady ? drive.TotalFreeSpace : 0,
-                TotalSize = drive.IsReady ? drive.TotalSize : 0
+                TotalSize = drive.IsReady ? drive.TotalSize : 0,
+                FreeSpacePercentage = (drive.AvailableFreeSpace * 100 / drive.TotalSize).ToString() + "%"
             }).ToList();
         }
 
@@ -58,10 +59,9 @@ namespace SystemInfoAPI.Services {
                 DriveFormat = drive.IsReady ? drive.DriveFormat : "Unknown",
                 AvailableFreeSpace = drive.IsReady ? drive.AvailableFreeSpace : 0,
                 TotalFreeSpace = drive.IsReady ? drive.TotalFreeSpace : 0,
-                TotalSize = drive.IsReady ? drive.TotalSize : 0
+                TotalSize = drive.IsReady ? drive.TotalSize : 0,
+                FreeSpacePercentage = (drive.AvailableFreeSpace * 100 / drive.TotalSize).ToString() + "%"
             };
-
         }
-
     }
 }
