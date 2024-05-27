@@ -1,12 +1,24 @@
 ﻿using System.Net.Http.Headers;
 using System.Text.Json;
-using SystemInfoClient;
+using SystemInfoClient.Models;
 
 using HttpClient client = new();
 client.DefaultRequestHeaders.Accept.Clear();
 client.DefaultRequestHeaders.Accept.Add(
-    new MediaTypeWithQualityHeaderValue("application/vnd.github.v3+json"));
-client.DefaultRequestHeaders.Add("User-Agent", ".NET Foundation Repository Reporter");
+    new MediaTypeWithQualityHeaderValue("application/json")); // TODO: modify
+client.DefaultRequestHeaders.Add("User-Agent", ".NET Foundation Repository Reporter"); // TODO: modify
+
+string host = "https://localhost";
+Console.Write("Port ? ");
+string? port = Console.ReadLine();
+string apiRoute = "/Systeminfo/all";
+var fullAddress = host + ":" + port + apiRoute;
+Console.WriteLine(fullAddress);
+
+var systemInfo = client.GetAsync(fullAddress).Result;
+Console.WriteLine(systemInfo);
+
+Console.ReadLine();
 
 var repositories = await ProcessRepositoriesAsync(client);
 foreach (var repository in repositories) {

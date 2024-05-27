@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace SystemInfoClient {
+namespace SystemInfoClient.Models {
 
     public record class Repository(
         [property: JsonPropertyName("name")] string Name,
@@ -8,7 +8,7 @@ namespace SystemInfoClient {
         [property: JsonPropertyName("html_url")] Uri GitHubHomeUrl,
         [property: JsonPropertyName("homepage")] Uri Homepage,
         [property: JsonPropertyName("watchers")] int Watchers,
-        [property: JsonPropertyName("pushed_at")] DateTime LastPushUtc){
+        [property: JsonPropertyName("pushed_at")] DateTime LastPushUtc) {
 
         public DateTime LastPush => LastPushUtc.ToLocalTime();
     }
