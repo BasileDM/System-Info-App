@@ -5,19 +5,21 @@ namespace SystemInfoAPI.Services {
 
     [SupportedOSPlatform("windows")]
     public class RegistryService {
-        public static string RegistryRequest(string path, string key, string defaultValue) {
-            var value = GetRegistryValue(path, key);
-            return string.IsNullOrEmpty(value) ? defaultValue : value;
-        }
 
-        public static string? GetRegistryValue(string keyPath, string valueName) {
+        /// <summary>Gets the registry value with a path and name.</summary>
+        /// <param name="keyPath">The key path.</param>
+        /// <param name="valueName">Name of the value.</param>
+        /// <returns>
+        ///   A <see cref="string"/> of the registry value or the default value if an error occured.
+        /// </returns>
+        public static string? GetRegistryValue(string keyPath, string valueName, string defaultValue) {
             try {
                 RegistryKey? key = Registry.LocalMachine.OpenSubKey(keyPath);
                 return key?.GetValue(valueName)?.ToString();
             }
             catch (Exception ex) {
                 Console.WriteLine($"Error reading registry: {ex.Message}");
-                return null;
+                return defaultValue;
             }
         }
 

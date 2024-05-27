@@ -2,6 +2,11 @@
 
 namespace SystemInfoAPI.Services {
     public class DriveService {
+
+        /// <summary>Gets the drive on which the OS is present.</summary>
+        /// <returns>
+        ///   A <see cref="DriveInfoModel"/> type of drive. Or null if the OS is not found.
+        /// </returns>
         public static DriveInfoModel? GetOsDrive() {
             List<DriveInfoModel> drivesList = GetDrives();
             foreach (DriveInfoModel drive in drivesList) {
@@ -11,6 +16,11 @@ namespace SystemInfoAPI.Services {
             }
             return null;
         }
+
+        /// <summary>Gets a list of the drives.</summary>
+        /// <returns>
+        ///   A <see cref="List{DriveInfoModel}"/> of all the drives.
+        /// </returns>
         public static List<DriveInfoModel> GetDrives() {
             return DriveInfo.GetDrives().Select(drive => new DriveInfoModel
             {
@@ -24,6 +34,12 @@ namespace SystemInfoAPI.Services {
             }).ToList();
         }
 
+        /// <summary>Gets the drive by letter.</summary>
+        /// <param name="letter">The letter.</param>
+        /// <returns>
+        /// A <see cref="DriveInfoModel"/> object representing the drive with the specified letter. 
+        /// If no drive with the given letter is found, returns null.
+        /// </returns>
         public static DriveInfoModel? GetDriveByLetter(string letter) {
             string fullName = letter.ToUpper() + ":\\";
             var drive = DriveInfo.GetDrives().FirstOrDefault(

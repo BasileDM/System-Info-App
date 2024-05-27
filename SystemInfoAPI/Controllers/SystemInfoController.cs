@@ -19,19 +19,19 @@ namespace SystemInfoAPI.Controllers {
                 MachineName = Environment.MachineName,
                 OsVersion = Environment.OSVersion.ToString(),
                 OsArchitecture = Environment.Is64BitOperatingSystem ? "x64 - 64bits" : "x86 - 32bits",
-                ProductName = RegistryService.RegistryRequest(
+                ProductName = RegistryService.GetRegistryValue(
                     @"SOFTWARE\Microsoft\Windows NT\CurrentVersion",
                     "ProductName",
                     "Unknown Product"),
-                ReleaseId = RegistryService.RegistryRequest(
+                ReleaseId = RegistryService.GetRegistryValue(
                     @"SOFTWARE\Microsoft\Windows NT\CurrentVersion",
                     "ReleaseId",
                     "Unknown Release"),
-                CurrentBuild = RegistryService.RegistryRequest(
+                CurrentBuild = RegistryService.GetRegistryValue(
                     @"SOFTWARE\Microsoft\Windows NT\CurrentVersion",
                     "CurrentBuild",
                     "Unknown Build"),
-                Ubr = RegistryService.RegistryRequest(
+                Ubr = RegistryService.GetRegistryValue(
                     @"SOFTWARE\Microsoft\Windows NT\CurrentVersion",
                     "UBR",
                     "Unknown UBR"),
