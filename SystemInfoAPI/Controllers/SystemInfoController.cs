@@ -6,12 +6,12 @@ using System.Runtime.Versioning;
 namespace SystemInfoAPI.Controllers {
 
     [SupportedOSPlatform("windows")]
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     [ApiController]
     public class SystemInfoController : ControllerBase {
 
-        [HttpGet]
-        public ActionResult<SystemInfo> Get() {
+        [HttpGet("all")]
+        public ActionResult<SystemInfo> GetAll() {
             var systemInfo = new SystemInfo
             {
                 OsDrive = Path.GetPathRoot(Environment.SystemDirectory),
@@ -19,32 +19,39 @@ namespace SystemInfoAPI.Controllers {
                 MachineName = Environment.MachineName,
                 OsVersion = Environment.OSVersion.ToString(),
                 OsArchitecture = Environment.Is64BitOperatingSystem ? "x64 - 64bits" : "x86 - 32bits",
-                ProductName = GetRegistryValueOrDefault(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion", "ProductName", "Unknown Product"),
-                ReleaseId = GetRegistryValueOrDefault(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion", "ReleaseId", "Unknown Release"),
-                CurrentBuild = GetRegistryValueOrDefault(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion", "CurrentBuild", "Unknown Build"),
-                Ubr = GetRegistryValueOrDefault(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion", "UBR", "Unknown UBR"),
-                AllDrives = GetDrivesInfo()
+                ProductName = RegistryService.GetRegistryValue(
+                    @"SOFTWARE\Microsoft\Windows NT\CurrentVersion",
+                    "ProductName",
+                    "Unknown Product"),
+                ReleaseId = RegistryService.GetRegistryValue(
+                    @"SOFTWARE\Microsoft\Windows NT\CurrentVersion",
+                    "ReleaseId",
+                    "Unknown Release"),
+                CurrentBuild = RegistryService.GetRegistryValue(
+                    @"SOFTWARE\Microsoft\Windows NT\CurrentVersion",
+                    "CurrentBuild",
+                    "Unknown Build"),
+                Ubr = RegistryService.GetRegistryValue(
+                    @"SOFTWARE\Microsoft\Windows NT\CurrentVersion",
+                    "UBR",
+                    "Unknown UBR"),
+                AllDrives = DriveService.GetDrives()
             };
-
             return Ok(systemInfo);
         }
 
-        private static string GetRegistryValueOrDefault(string path, string key, string defaultValue) {
-            var value = RegistryService.GetRegistryValue(path, key);
-            return string.IsNullOrEmpty(value) ? defaultValue : value;
-        }
+        [HttpGet("drives")]
+        public ActionResult<List<DriveInfoModel>> GetAllDrives() { return Ok(DriveService.GetDrives()); }
 
-        private static List<DriveInfoModel> GetDrivesInfo() {
-            return DriveInfo.GetDrives().Select(disk => new DriveInfoModel
-            {
-                Name = disk.Name,
-                Label = string.IsNullOrEmpty(disk.VolumeLabel) ? "n.c." : disk.VolumeLabel,
-                DriveType = disk.DriveType.ToString(),
-                DriveFormat = disk.IsReady ? disk.DriveFormat : "Unknown",
-                AvailableFreeSpace = disk.IsReady ? disk.AvailableFreeSpace : 0,
-                TotalFreeSpace = disk.IsReady ? disk.TotalFreeSpace : 0,
-                TotalSize = disk.IsReady ? disk.TotalSize : 0
-            }).ToList();
+        [HttpGet("osdrive")]
+        public ActionResult<DriveInfoModel> GetOsDriveInfo() { return Ok(DriveService.GetOsDrive()); }
+
+        [HttpGet("drive/{driveLetter}")]
+        public ActionResult<DriveInfoModel> GetDriveById(string driveLetter) {
+            DriveInfoModel? drive = DriveService.GetDriveByLetter(driveLetter);
+            if (drive == null) {
+                return UnprocessableEntity("Drive not found");
+            } else { return Ok(drive); }
         }
     }
 }
