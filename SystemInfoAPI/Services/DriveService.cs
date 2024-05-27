@@ -31,7 +31,7 @@ namespace SystemInfoAPI.Services {
                 AvailableFreeSpace = drive.IsReady ? drive.AvailableFreeSpace : 0,
                 TotalFreeSpace = drive.IsReady ? drive.TotalFreeSpace : 0,
                 TotalSize = drive.IsReady ? drive.TotalSize : 0,
-                FreeSpacePercentage = (drive.AvailableFreeSpace * 100 / drive.TotalSize).ToString() + "%"
+                FreeSpacePercentage = GetSpacePercentage(drive.AvailableFreeSpace, drive.TotalSize)
             }).ToList();
         }
 
@@ -60,8 +60,25 @@ namespace SystemInfoAPI.Services {
                 AvailableFreeSpace = drive.IsReady ? drive.AvailableFreeSpace : 0,
                 TotalFreeSpace = drive.IsReady ? drive.TotalFreeSpace : 0,
                 TotalSize = drive.IsReady ? drive.TotalSize : 0,
-                FreeSpacePercentage = (drive.AvailableFreeSpace * 100 / drive.TotalSize).ToString() + "%"
+                FreeSpacePercentage = GetSpacePercentage(drive.AvailableFreeSpace, drive.TotalSize)
             };
+        }
+
+        /// <summary>Gets the percentage of available space.</summary>
+        /// <param name="freeSpace">The free space on the drive.</param>
+        /// <param name="totalSize">The total size of the drive.</param>
+        /// <returns>
+        ///   The percentage as a <see cref="string"/> with % added at the end.
+        /// </returns>
+        public static string GetSpacePercentage(long freeSpace, long totalSize) {
+            if (freeSpace <= 0) {
+                return "0%";
+            }
+            if (totalSize <= 0) {
+                return "Error: Total drive size was 0";
+            }
+            var percentage = freeSpace * 100 / totalSize; 
+            return percentage.ToString() + "%";
         }
     }
 }
