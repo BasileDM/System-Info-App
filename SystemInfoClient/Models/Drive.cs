@@ -11,5 +11,6 @@ namespace SystemInfoClient.Models {
         [property: JsonPropertyName("totalFreeSpace")] long TotalFreeSpace,
         [property: JsonPropertyName("freeSpacePercentage")] string? FreeSpacePercentage) {
 
+        public string? SpacePercentageStr = FreeSpacePercentage?.ToString() + "%";
     }
 }

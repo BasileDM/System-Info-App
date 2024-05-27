@@ -70,15 +70,15 @@ namespace SystemInfoAPI.Services {
         /// <returns>
         ///   The percentage as a <see cref="string"/> with % added at the end.
         /// </returns>
-        public static string GetSpacePercentage(long freeSpace, long totalSize) {
-            if (freeSpace <= 0) {
-                return "0%";
+        public static int GetSpacePercentage(long freeSpace, long totalSize) {
+            if (freeSpace < 0) {
+                return -1; // Error code for negative free space
             }
             if (totalSize <= 0) {
-                return "Error: Total drive size was 0";
+                return -2; // Error code for potential division by zero
             }
-            var percentage = freeSpace * 100 / totalSize; 
-            return percentage.ToString() + "%";
+            int percentage = (int) ((freeSpace * 100) / totalSize); 
+            return percentage;
         }
     }
 }

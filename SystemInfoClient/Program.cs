@@ -3,45 +3,41 @@ using System.Net.Http.Headers;
 using System.Text.Json;
 using SystemInfoClient.Models;
 
-using HttpClient client = new();
-client.DefaultRequestHeaders.Accept.Clear();
-client.DefaultRequestHeaders.Accept.Add(
-    new MediaTypeWithQualityHeaderValue("application/json")); // TODO: modify
-client.DefaultRequestHeaders.Add("User-Agent", ".NET Foundation Repository Reporter"); // TODO: modify
+namespace SystemInfoClient;
 
+internal class Program {
+    private static async Task Main(string[] args) {
 
-string host = "https://localhost";
-Console.Write("Port ? ");
-string? port = Console.ReadLine();
-string apiRoute = "/Systeminfo/all";
-var fullAddress = host + ":" + port + apiRoute;
+        using HttpClient client = new();
+        client.DefaultRequestHeaders.Accept.Clear();
+        client.DefaultRequestHeaders.Accept.Add(
+            new MediaTypeWithQualityHeaderValue("application/json")); // TODO: modify
+        client.DefaultRequestHeaders.Add("User-Agent", ".NET Foundation Repository Reporter"); // TODO: modify
 
-Console.WriteLine($"Fetching at: {fullAddress}");
+        string host = "https://localhost";
+        Console.Write("Port ? ");
+        string? port = Console.ReadLine();
+        var fullAddress = host + ":" + port + "/Systeminfo/drives";
 
-await ProcessSystemInfoAsync(client, fullAddress);
-Console.ReadLine();
+        Console.WriteLine($"Fetching at: {fullAddress}");
+        Console.WriteLine();
 
-static async Task ProcessSystemInfoAsync(HttpClient client, string address) {
-    var systemInfo = await client.GetStringAsync(address);
-    Console.WriteLine(systemInfo);
+        var drives = await ProcessDrivesAsync(client, fullAddress);
+        foreach (var drive in drives) {
+            Console.WriteLine($"Name: {drive.Name}");
+            Console.WriteLine($"Label: {drive.Label}");
+            Console.WriteLine($"Available space: {drive.AvailableFreeSpace:#,0} bits");
+            Console.WriteLine();
+        }
+        Console.ReadLine();
+
+        static async Task<List<Drive>> ProcessDrivesAsync(HttpClient client, string address) {
+            await using Stream stream =
+                await client.GetStreamAsync(address);
+            var drives =
+                await JsonSerializer.DeserializeAsync<List<Drive>>(stream);
+
+            return drives ?? [];
+        }
+    }
 }
-
-//var repositories = await ProcessRepositoriesAsync(client);
-//foreach (var repository in repositories) {
-//    Console.WriteLine($"Name: {repository.Name}");
-//    Console.WriteLine($"Homepage: {repository.Homepage}");
-//    Console.WriteLine($"GitHub: {repository.GitHubHomeUrl}");
-//    Console.WriteLine($"Description: {repository.Description}");
-//    Console.WriteLine($"Watchers: {repository.Watchers:#,0}");
-//    Console.WriteLine($"Last push: {repository.LastPush}");
-//    Console.WriteLine();
-//}
-
-//static async Task<List<Repository>> ProcessRepositoriesAsync(HttpClient client) {
-//    await using Stream stream =
-//        await client.GetStreamAsync("https://api.github.com/orgs/dotnet/repos");
-//    var repositories =
-//        await JsonSerializer.DeserializeAsync<List<Repository>>(stream);
-
-//    return repositories ?? [];
-//}

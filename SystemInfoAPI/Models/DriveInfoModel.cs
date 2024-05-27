@@ -7,6 +7,6 @@
         public long TotalSize { get; set; }
         public long AvailableFreeSpace { get; set; }
         public long TotalFreeSpace { get; set; }
-        public string? FreeSpacePercentage { get; set; }
+        public int FreeSpacePercentage { get; set; }
     }
 }
