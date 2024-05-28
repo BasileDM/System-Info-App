@@ -1,9 +1,9 @@
-﻿namespace SystemInfoAPI.Models {
-    public class SystemInfo {
+﻿namespace SystemInfoClient.Models {
+    public class SystemModel {
 
         // Machine and OS info
         public string? MachineName { get; set; }
-        public string? OsDrive {  get; set; }
+        public string? OsDrive { get; set; }
         public string? SystemDirectory { get; set; }
         public string? OsArchitecture { get; set; }
         public string? OsVersion { get; set; }
@@ -15,6 +15,6 @@
         public string? Ubr { get; set; }
 
         // Drives info
-        public List<DriveInfoModel>? AllDrives { get; set; }
+        public List<DriveModel>? AllDrives { get; set; }
     }
 }

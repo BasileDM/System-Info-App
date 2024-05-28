@@ -5,11 +5,11 @@ namespace SystemInfoAPI.Services {
 
         /// <summary>Gets the drive on which the OS is present.</summary>
         /// <returns>
-        ///   A <see cref="DriveInfoModel"/> type of drive. Or null if the OS is not found.
+        ///   A <see cref="DriveModel"/> type of drive. Or null if the OS is not found.
         /// </returns>
-        public static DriveInfoModel? GetOsDrive() {
-            List<DriveInfoModel> drivesList = GetDrives();
-            foreach (DriveInfoModel drive in drivesList) {
+        public static DriveModel? GetOsDrive() {
+            List<DriveModel> drivesList = GetDrives();
+            foreach (DriveModel drive in drivesList) {
                 if (Path.GetPathRoot(Environment.SystemDirectory) == drive.Name) {
                     return drive;
                 }
@@ -21,8 +21,8 @@ namespace SystemInfoAPI.Services {
         /// <returns>
         ///   A <see cref="List{DriveInfoModel}"/> of all the drives.
         /// </returns>
-        public static List<DriveInfoModel> GetDrives() {
-            return DriveInfo.GetDrives().Select(drive => new DriveInfoModel
+        public static List<DriveModel> GetDrives() {
+            return DriveInfo.GetDrives().Select(drive => new DriveModel
             {
                 Name = drive.Name,
                 Label = string.IsNullOrEmpty(drive.VolumeLabel) ? "n.c." : drive.VolumeLabel,
@@ -38,10 +38,10 @@ namespace SystemInfoAPI.Services {
         /// <summary>Gets the drive by letter.</summary>
         /// <param name="letter">The letter.</param>
         /// <returns>
-        /// A <see cref="DriveInfoModel"/> object representing the drive with the specified letter. 
+        /// A <see cref="DriveModel"/> object representing the drive with the specified letter. 
         /// If no drive with the given letter is found, returns null.
         /// </returns>
-        public static DriveInfoModel? GetDriveByLetter(string letter) {
+        public static DriveModel? GetDriveByLetter(string letter) {
             string fullName = letter.ToUpper() + ":\\";
             var drive = DriveInfo.GetDrives().FirstOrDefault(
                 drive => drive.Name.Equals(fullName, StringComparison.OrdinalIgnoreCase)
@@ -51,7 +51,7 @@ namespace SystemInfoAPI.Services {
                 return null;
             }
 
-            return new DriveInfoModel
+            return new DriveModel
             {
                 Name = drive.Name,
                 Label = string.IsNullOrEmpty(drive.VolumeLabel) ? "n.c." : drive.VolumeLabel,
@@ -71,12 +71,14 @@ namespace SystemInfoAPI.Services {
         ///   The percentage as a <see cref="string"/> with % added at the end.
         /// </returns>
         public static int GetSpacePercentage(long freeSpace, long totalSize) {
-            if (freeSpace < 0) {
-                return -1; // Error code for negative free space
-            }
+
             if (totalSize <= 0) {
-                return -2; // Error code for potential division by zero
+                return -1; // Error code for potential division by zero
             }
+            if (freeSpace < 0) {
+                return -2; // Error code for negative free space
+            }
+
             int percentage = (int) ((freeSpace * 100) / totalSize); 
             return percentage;
         }

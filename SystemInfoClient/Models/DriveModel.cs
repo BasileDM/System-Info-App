@@ -1,5 +1,5 @@
-﻿namespace SystemInfoAPI.Models {
-    public class DriveInfoModel {
+﻿namespace SystemInfoClient.Models {
+    public class DriveModel {
         public string? Name { get; set; }
         public string? Label { get; set; }
         public string? DriveType { get; set; }

@@ -1,7 +1,7 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace SystemInfoClient.Models {
-    public record class System(
+namespace SystemInfoAPI.Models {
+    public record class SystemModel(
         [property: JsonPropertyName("machineName")] string? MachineName,
         [property: JsonPropertyName("osDrive")] string? OsDrive,
         [property: JsonPropertyName("systemDirectory")] string? SystemDirectory,
