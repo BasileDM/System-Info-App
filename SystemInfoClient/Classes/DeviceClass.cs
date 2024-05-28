@@ -1,5 +1,4 @@
 ﻿using System.Runtime.Versioning;
-using SystemInfoClient.Services;
 
 namespace SystemInfoClient.Classes {
 
@@ -28,9 +27,9 @@ namespace SystemInfoClient.Classes {
                 Console.WriteLine($"Drive Label: {drive.Label}");
                 Console.WriteLine($"Drive Type: {drive.DriveType}");
                 Console.WriteLine($"Drive Format: {drive.DriveFormat}");
-                Console.WriteLine($"Total Size: {drive.TotalSize}");
-                Console.WriteLine($"Available Free Space: {drive.AvailableFreeSpace}");
-                Console.WriteLine($"Total Free Space: {drive.TotalFreeSpace}");
+                Console.WriteLine($"Total Size: {drive.TotalSize:#,0}");
+                Console.WriteLine($"Available Free Space: {drive.AvailableFreeSpace:#,0}");
+                Console.WriteLine($"Total Free Space: {drive.TotalFreeSpace:#,0}");
                 Console.WriteLine($"Free Space Percentage: {drive.FreeSpacePercentage}%");
                 Console.WriteLine($"Is system drive: {drive.IsSystemDrive}");
 

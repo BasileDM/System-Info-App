@@ -1,6 +1,4 @@
-﻿using System.IO;
-using System.Runtime.Versioning;
-using SystemInfoClient.Services;
+﻿using System.Runtime.Versioning;
 
 namespace SystemInfoClient.Classes {
 

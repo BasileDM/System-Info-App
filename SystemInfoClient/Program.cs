@@ -1,7 +1,7 @@
 ﻿using System.Net;
 using System.Net.Http.Headers;
-using System.Runtime.Versioning;
 using System.Text.Json;
+using System.Runtime.Versioning;
 using SystemInfoClient.Classes;
 
 namespace SystemInfoClient;
@@ -10,8 +10,10 @@ internal class Program {
 
     [SupportedOSPlatform("windows")]
     public static void Main(string[] args) {
+
         DeviceClass device = new();
         device.LogInfo();
+
     }
     //private static async Task Main(string[] args) {
 
