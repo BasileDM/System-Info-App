@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using SystemInfoAPI.Models;
-using SystemInfoAPI.Services;
 using System.Runtime.Versioning;
 
 namespace SystemInfoAPI.Controllers {

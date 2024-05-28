@@ -3,6 +3,7 @@ using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Runtime.Versioning;
 using SystemInfoClient.Classes;
+using System.Diagnostics;
 
 namespace SystemInfoClient;
 
@@ -14,7 +15,16 @@ internal class Program {
         DeviceClass device = new();
         device.LogInfo();
 
+        string exePath = "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\Common7\\IDE\\devenv.exe";
+        Console.WriteLine(FindVersion(exePath));
+
     }
+
+    public static string? FindVersion(string path) {
+        string? version = FileVersionInfo.GetVersionInfo(path).FileVersion;
+        return version;
+    }
+
     //private static async Task Main(string[] args) {
 
     //    using HttpClient client = new();
