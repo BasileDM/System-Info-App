@@ -14,9 +14,7 @@ namespace SystemInfoClient.Classes {
 
             foreach (var drive in DriveInfo.GetDrives()) {
                 if (drive.IsReady) {
-                    Console.WriteLine(systemDrive);
-                    Console.WriteLine(drive.Name);
-                    bool isSystemDrive = drive.Name.Equals(systemDrive, StringComparison.OrdinalIgnoreCase);
+                    bool isSystemDrive = drive.Name == systemDrive;
                     Drives.Add(new DriveClass(drive, isSystemDrive));
                 }
             }
@@ -37,13 +35,13 @@ namespace SystemInfoClient.Classes {
                 Console.WriteLine($"Is system drive: {drive.IsSystemDrive}");
 
                 if (drive.IsSystemDrive) {
-                    Console.WriteLine($"OS System Directory: {drive.Os?.SystemDirectory}");
-                    Console.WriteLine($"OS Architecture: {drive.Os?.OsArchitecture}");
-                    Console.WriteLine($"OS Version: {drive.Os?.OsVersion}");
-                    Console.WriteLine($"Product Name: {drive.Os?.ProductName}");
-                    Console.WriteLine($"Release ID: {drive.Os?.ReleaseId}");
-                    Console.WriteLine($"Current Build: {drive.Os?.CurrentBuild}");
-                    Console.WriteLine($"UBR: {drive.Os?.Ubr}");
+                    Console.WriteLine($"  OS System Directory: {drive.Os?.SystemDirectory}");
+                    Console.WriteLine($"  OS Architecture: {drive.Os?.OsArchitecture}");
+                    Console.WriteLine($"  OS Version: {drive.Os?.OsVersion}");
+                    Console.WriteLine($"  Product Name: {drive.Os?.ProductName}");
+                    Console.WriteLine($"  Release ID: {drive.Os?.ReleaseId}");
+                    Console.WriteLine($"  Current Build: {drive.Os?.CurrentBuild}");
+                    Console.WriteLine($"  UBR: {drive.Os?.Ubr}");
                 }
                 Console.WriteLine();
             }

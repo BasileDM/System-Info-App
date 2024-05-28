@@ -15,7 +15,7 @@ namespace SystemInfoClient.Classes {
         public long TotalFreeSpace { get; set; } = drive.TotalFreeSpace;
         public int FreeSpacePercentage { get; set; } 
             = (int)((double)drive.AvailableFreeSpace / drive.TotalSize * 100);
-        public bool IsSystemDrive { get; set; }
+        public bool IsSystemDrive { get; set; } = isSystemDrive;
         public OsClass? Os { get; set; } = isSystemDrive ? new OsClass() : null;
     }
 }
