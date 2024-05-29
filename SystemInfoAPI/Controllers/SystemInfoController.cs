@@ -1,13 +1,31 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using SystemInfoApi.Models;
 using System.Runtime.Versioning;
+using SystemInfoApi.Data;
 
 namespace SystemInfoApi.Controllers {
 
     [SupportedOSPlatform("windows")]
     [Route("[controller]")]
     [ApiController]
-    public class SystemInfoController : ControllerBase {
+    public class SystemInfoController(SystemInfoContext context) : ControllerBase {
+
+        private readonly SystemInfoContext _context = context;
+
+        [HttpPost("machine/create")]
+        public async Task<ActionResult<MachineModel>> PostMachineModel(MachineModel machineModel) {
+
+            try {
+                _context.Machines.Add(machineModel);
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception ex) {
+                return UnprocessableEntity(ex);
+            }
+
+            return Ok(machineModel);
+            //return CreatedAtAction(nameof(GetMachineModelById), new { id = machineModel.Id, machineModel});
+        }
         
         //[HttpGet("all")]
         //public ActionResult<MachineModel> GetAll() {
