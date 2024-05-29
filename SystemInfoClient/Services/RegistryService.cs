@@ -1,7 +1,7 @@
 ﻿using Microsoft.Win32;
 using System.Runtime.Versioning;
 
-namespace SystemInfoAPI.Services {
+namespace SystemInfoClient.Services {
 
     [SupportedOSPlatform("windows")]
     public class RegistryService {

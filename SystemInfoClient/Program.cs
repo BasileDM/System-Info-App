@@ -1,41 +1,72 @@
-﻿using System.Net.Http.Headers;
+﻿using System.Net;
+using System.Net.Http.Headers;
 using System.Text.Json;
-using SystemInfoClient.Models;
+using System.Runtime.Versioning;
+using SystemInfoClient.Classes;
+using System.Diagnostics;
 
-using HttpClient client = new();
-client.DefaultRequestHeaders.Accept.Clear();
-client.DefaultRequestHeaders.Accept.Add(
-    new MediaTypeWithQualityHeaderValue("application/json")); // TODO: modify
-client.DefaultRequestHeaders.Add("User-Agent", ".NET Foundation Repository Reporter"); // TODO: modify
+namespace SystemInfoClient;
 
-string host = "https://localhost";
-Console.Write("Port ? ");
-string? port = Console.ReadLine();
-string apiRoute = "/Systeminfo/all";
-var fullAddress = host + ":" + port + apiRoute;
-Console.WriteLine(fullAddress);
+internal class Program {
 
-var systemInfo = client.GetAsync(fullAddress).Result;
-Console.WriteLine(systemInfo);
+    [SupportedOSPlatform("windows")]
+    public static void Main(string[] args) {
 
-Console.ReadLine();
+        MachineClass device = new();
+        device.LogInfo();
 
-var repositories = await ProcessRepositoriesAsync(client);
-foreach (var repository in repositories) {
-    Console.WriteLine($"Name: {repository.Name}");
-    Console.WriteLine($"Homepage: {repository.Homepage}");
-    Console.WriteLine($"GitHub: {repository.GitHubHomeUrl}");
-    Console.WriteLine($"Description: {repository.Description}");
-    Console.WriteLine($"Watchers: {repository.Watchers:#,0}");
-    Console.WriteLine($"Last push: {repository.LastPush}");
-    Console.WriteLine();
-}
+        string exePath = "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\Common7\\IDE\\devenv.exe";
+        Console.WriteLine(FindVersion(exePath));
 
-static async Task<List<Repository>> ProcessRepositoriesAsync(HttpClient client) {
-    await using Stream stream =
-        await client.GetStreamAsync("https://api.github.com/orgs/dotnet/repos");
-    var repositories =
-        await JsonSerializer.DeserializeAsync<List<Repository>>(stream);
+    }
 
-    return repositories ?? [];
+    public static string? FindVersion(string path) {
+        string? version = FileVersionInfo.GetVersionInfo(path).FileVersion;
+        return version;
+    }
+
+    //private static async Task Main(string[] args) {
+
+    //    using HttpClient client = new();
+    //    client.DefaultRequestHeaders.Accept.Clear();
+    //    client.DefaultRequestHeaders.Accept.Add(
+    //        new MediaTypeWithQualityHeaderValue("application/json")); // TODO: modify
+    //    client.DefaultRequestHeaders.Add("User-Agent", ".NET Foundation Repository Reporter"); // TODO: modify
+
+    //    string protocol = "https";
+    //    string host = "localhost";
+    //    string port = "7056";
+    //    string route = "/Systeminfo/drives";
+
+    //    var fullAddress = protocol + "://" + host + ":" + port + route;
+
+    //    Console.WriteLine($"Fetching at: {fullAddress}");
+    //    Console.WriteLine();
+
+    //    var drives = await ProcessDrivesAsync(client, fullAddress);
+
+    //    foreach (var drive in drives) {
+    //        Console.WriteLine($"Name: {drive.Name}");
+    //        Console.WriteLine($"Label: {drive.Label}");
+    //        Console.WriteLine($"Drive type: {drive.DriveType}");
+    //        Console.WriteLine($"Drive format: {drive.DriveFormat}");
+    //        Console.WriteLine($"Total size: {drive.TotalSize:#,0} bits");
+    //        Console.WriteLine($"Available space: {drive.AvailableFreeSpace:#,0} bits");
+    //        Console.WriteLine($"Total free space: {drive.TotalFreeSpace:#,0} bits");
+    //        Console.WriteLine($"Free space percentage: {drive.SpacePercentageStr}");
+    //        Console.WriteLine();
+    //    }
+    //    Console.ReadLine();
+
+    //    // Async methods
+
+    //    static async Task<List<DriveModel>> ProcessDrivesAsync(HttpClient client, string address) {
+    //        await using Stream stream =
+    //            await client.GetStreamAsync(address);
+    //        var drives =
+    //            await JsonSerializer.DeserializeAsync<List<DriveModel>>(stream);
+
+    //        return drives ?? [];
+    //    }
+    //}
 }

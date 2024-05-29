@@ -1,7 +1,8 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace SystemInfoClient.Models {
-    public record class Drive(
+namespace SystemInfoAPI.Models {
+    
+    public record class DriveModel(
         [property: JsonPropertyName("name")] string Name,
         [property: JsonPropertyName("label")] string Label,
         [property: JsonPropertyName("driveType")] string DriveType,
@@ -9,7 +10,9 @@ namespace SystemInfoClient.Models {
         [property: JsonPropertyName("totalSize")] long TotalSize,
         [property: JsonPropertyName("availableFreeSpace")] long AvailableFreeSpace,
         [property: JsonPropertyName("totalFreeSpace")] long TotalFreeSpace,
-        [property: JsonPropertyName("freeSpacePercentage")] string? FreeSpacePercentage) {
+        [property: JsonPropertyName("freeSpacePercentage")] int FreeSpacePercentage
+        ) {
 
+        public string? SpacePercentageStr = $"{FreeSpacePercentage}%";
     }
 }

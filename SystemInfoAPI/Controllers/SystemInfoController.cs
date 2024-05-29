@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using SystemInfoAPI.Models;
-using SystemInfoAPI.Services;
 using System.Runtime.Versioning;
 
 namespace SystemInfoAPI.Controllers {
@@ -11,8 +10,8 @@ namespace SystemInfoAPI.Controllers {
     public class SystemInfoController : ControllerBase {
 
         [HttpGet("all")]
-        public ActionResult<SystemInfo> GetAll() {
-            var systemInfo = new SystemInfo
+        public ActionResult<SystemModel> GetAll() {
+            var systemInfo = new SystemModel
             {
                 OsDrive = Path.GetPathRoot(Environment.SystemDirectory),
                 SystemDirectory = Environment.SystemDirectory,
@@ -41,14 +40,14 @@ namespace SystemInfoAPI.Controllers {
         }
 
         [HttpGet("drives")]
-        public ActionResult<List<DriveInfoModel>> GetAllDrives() { return Ok(DriveService.GetDrives()); }
+        public ActionResult<List<DriveModel>> GetAllDrives() { return Ok(DriveService.GetDrives()); }
 
         [HttpGet("osdrive")]
-        public ActionResult<DriveInfoModel> GetOsDriveInfo() { return Ok(DriveService.GetOsDrive()); }
+        public ActionResult<DriveModel> GetOsDriveInfo() { return Ok(DriveService.GetOsDrive()); }
 
         [HttpGet("drive/{driveLetter}")]
-        public ActionResult<DriveInfoModel> GetDriveById(string driveLetter) {
-            DriveInfoModel? drive = DriveService.GetDriveByLetter(driveLetter);
+        public ActionResult<DriveModel> GetDriveById(string driveLetter) {
+            DriveModel? drive = DriveService.GetDriveByLetter(driveLetter);
             if (drive == null) {
                 return UnprocessableEntity("Drive not found");
             } else { return Ok(drive); }
