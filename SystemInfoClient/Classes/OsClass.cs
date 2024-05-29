@@ -4,9 +4,9 @@ using SystemInfoClient.Services;
 namespace SystemInfoClient.Classes {
 
     public class OsClass {
-        public string? SystemDirectory { get; set; }
-        public string? OsArchitecture { get; set; }
-        public string? OsVersion { get; set; }
+        public string Directory { get; set; }
+        public string Architecture { get; set; }
+        public string Version { get; set; }
 
         // Friendly OS info
         public string? ProductName { get; set; }
@@ -17,9 +17,9 @@ namespace SystemInfoClient.Classes {
         [SupportedOSPlatform("windows")]
         public OsClass() {
 
-            SystemDirectory = Environment.SystemDirectory;
-            OsArchitecture = Environment.Is64BitOperatingSystem ? "x64 - 64bits" : "x86 - 32bits";
-            OsVersion = Environment.OSVersion.ToString();
+            Directory = Environment.SystemDirectory;
+            Architecture = Environment.Is64BitOperatingSystem ? "x64 - 64bits" : "x86 - 32bits";
+            Version = Environment.OSVersion.ToString();
 
             ProductName = RegistryService.GetRegistryValue(
                 @"SOFTWARE\Microsoft\Windows NT\CurrentVersion",

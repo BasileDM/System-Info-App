@@ -12,7 +12,7 @@ internal class Program {
     [SupportedOSPlatform("windows")]
     public static void Main(string[] args) {
 
-        DeviceClass device = new();
+        MachineClass device = new();
         device.LogInfo();
 
         string exePath = "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\Common7\\IDE\\devenv.exe";
