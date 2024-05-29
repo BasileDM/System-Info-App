@@ -7,7 +7,7 @@ using System.Diagnostics;
 
 namespace SystemInfoClient;
 
-internal class Program {
+internal class SystemInfoClient {
 
     [SupportedOSPlatform("windows")]
     public static void Main(string[] args) {

@@ -10,7 +10,7 @@ namespace SystemInfoAPI.Controllers {
     public class SystemInfoController : ControllerBase {
 
         [HttpGet("all")]
-        public ActionResult<SystemModel> GetAll() {
+        public ActionResult<MachineModel> GetAll() {
             var systemInfo = new SystemModel
             {
                 OsDrive = Path.GetPathRoot(Environment.SystemDirectory),
