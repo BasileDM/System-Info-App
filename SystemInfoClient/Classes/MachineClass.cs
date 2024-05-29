@@ -4,7 +4,7 @@ namespace SystemInfoClient.Classes {
 
     [SupportedOSPlatform("windows")]
     internal class MachineClass {
-        public string? Name { get; set; }
+        public string Name { get; set; }
         public List<DriveClass> Drives { get; set; } = [];
 
         public MachineClass() {

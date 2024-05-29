@@ -1,4 +1,4 @@
-
+﻿
 CREATE TABLE Client
 (
   id_client int          NOT NULL IDENTITY(1,1),

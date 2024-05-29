@@ -1,7 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace SystemInfoAPI.Models {
+namespace SystemInfoApi.Models {
     public record class MachineModel(
-        [property: JsonPropertyName("name")] string? Name) {
-    }
+        [property: JsonPropertyName("name")] string Name);
 }

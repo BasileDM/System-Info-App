@@ -1,6 +1,13 @@
+using Microsoft.EntityFrameworkCore;
+using SystemInfoApi.Data;
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
+
+builder.Services.AddDbContext<SystemInfoContext>( opt =>
+    opt.UseSqlServer(builder.Configuration.GetConnectionString("SystemInfoDbLocal")));
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
