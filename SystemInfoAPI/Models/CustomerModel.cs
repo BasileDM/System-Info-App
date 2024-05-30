@@ -10,6 +10,6 @@ namespace SystemInfoApi.Models {
 
         public string Name { get; set; }
 
-        public ICollection<MachineModel> Machines { get; set; } = new List<MachineModel>();
+        public ICollection<MachineModel> Machines { get; set; }
     }
 }

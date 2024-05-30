@@ -11,6 +11,6 @@ namespace SystemInfoApi.Models {
 
         [Column("id_client")]
         public int CustomerId { get; set; }  // Foreign key property
-        public ICollection<DriveModel> Drives { get; set; } = new List<DriveModel>();
+        public ICollection<DriveModel> Drives { get; set; }
     }
 }
