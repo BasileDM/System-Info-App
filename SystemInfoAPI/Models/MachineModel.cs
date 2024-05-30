@@ -1,9 +1,16 @@
-﻿using System.Text.Json.Serialization;
+﻿using System.ComponentModel.DataAnnotations.Schema;
 
 namespace SystemInfoApi.Models {
-    public record class MachineModel {
+
+    [Table("Client_Machine")]
+    public class MachineModel {
+
+        [Column("id_client_machine")]
         public int? Id { get; set; }
         public string Name { get; set; }
-        public List<DriveModel> Drives { get; set; }
+
+        [Column("id_client")]
+        public int CustomerId { get; set; }  // Foreign key property
+        public ICollection<DriveModel> Drives { get; set; } = new List<DriveModel>();
     }
 }

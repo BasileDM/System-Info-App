@@ -24,7 +24,7 @@ namespace SystemInfoApi.Controllers {
             }
 
             try {
-                _context.Client_Machine.Add(machineModel);
+                _context.Machines.Add(machineModel);
                 await _context.SaveChangesAsync();
             }
             catch (Exception ex) {
