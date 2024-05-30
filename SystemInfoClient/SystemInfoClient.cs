@@ -12,8 +12,8 @@ internal class SystemInfoClient {
     [SupportedOSPlatform("windows")]
     public static void Main(string[] args) {
 
-        MachineClass device = new();
-        device.LogInfo();
+        var customer = new CustomerClass();
+        customer.LogInfo();
 
         string exePath = "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\Common7\\IDE\\devenv.exe";
         Console.WriteLine(FindVersion(exePath));

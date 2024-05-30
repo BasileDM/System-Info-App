@@ -5,26 +5,33 @@ using SystemInfoApi.Data;
 
 namespace SystemInfoApi.Controllers {
 
-    [SupportedOSPlatform("windows")]
-    [Route("[controller]")]
     [ApiController]
-    public class SystemInfoController(SystemInfoContext context) : ControllerBase {
+    [Route("[controller]")]
+    [SupportedOSPlatform("windows")]
+    public class MachinesController : ControllerBase {
 
-        private readonly SystemInfoContext _context = context;
+        private readonly SystemInfoContext _context;
 
-        [HttpPost("machine/create")]
-        public async Task<ActionResult<MachineModel>> PostMachineModel(MachineModel machineModel) {
+        public MachinesController(SystemInfoContext context) {
+            _context = context;
+        }
+
+        [HttpPost("create")]
+        public async Task<ActionResult<MachineModel>> CreateMachine(MachineModel machineModel) {
+
+            if (machineModel == null) {
+                return BadRequest("Machine object is null.");
+            }
 
             try {
-                _context.Machines.Add(machineModel);
+                _context.Client_Machine.Add(machineModel);
                 await _context.SaveChangesAsync();
             }
             catch (Exception ex) {
-                return UnprocessableEntity(ex);
+                return UnprocessableEntity(ex.Message);
             }
 
-            return Ok(machineModel);
-            //return CreatedAtAction(nameof(GetMachineModelById), new { id = machineModel.Id, machineModel});
+            return CreatedAtAction(nameof(CreateMachine), new { id = machineModel }, machineModel);
         }
         
         //[HttpGet("all")]

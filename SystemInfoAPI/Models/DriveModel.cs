@@ -2,17 +2,17 @@
 
 namespace SystemInfoApi.Models {
 
-    public record class DriveModel(
-        [property: JsonPropertyName("name")] string Name,
-        [property: JsonPropertyName("label")] string? Label,
-        [property: JsonPropertyName("type")] string Type,
-        [property: JsonPropertyName("format")] string Format,
-        [property: JsonPropertyName("size")] long Size,
-        [property: JsonPropertyName("availableFreeSpace")] long FreeSpace,
-        [property: JsonPropertyName("totalSpace")] long TotalSpace,
-        [property: JsonPropertyName("freeSpacePercentage")] int FreeSpacePercentage,
-        [property: JsonPropertyName("isSystemDrive")] int IsSystemDrive
-        ) {
-        public string SpacePercentageStr = $"{FreeSpacePercentage}%";
+    public record class DriveModel { 
+        public int? Id { get; set; }
+        public string Name { get; set; }
+        public string? Label { get; set; }
+        public string Type { get; set; }
+        public string Format { get; set; }
+        public long Size { get; set; }
+        public long FreeSpace { get; set; }
+        public long TotalSpace { get; set; }
+        public int FreeSpacePercentage { get; set; }
+        public int IsSystemDrive { get; set; }
+        public OsModel? Os { get; set; }
     }
 }

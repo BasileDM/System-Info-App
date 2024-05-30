@@ -1,12 +1,14 @@
 ﻿using System.Text.Json.Serialization;
 
 namespace SystemInfoApi.Models {
-    public record class OsModel(
-        [property: JsonPropertyName("directory")] string Directory,
-        [property: JsonPropertyName("architecture")] string Architecture,
-        [property: JsonPropertyName("version")] string Version,
-        [property: JsonPropertyName("productName")] string? ProductName,
-        [property: JsonPropertyName("releaseId")] string? ReleaseId,
-        [property: JsonPropertyName("currentBuild")] string? CurrentBuild,
-        [property: JsonPropertyName("ubr")] string? Ubr);
+    public class OsModel {
+        public int? Id { get; set; }
+        public string Directory { get; set; }
+        public string Architecture { get; set; }
+        public string Version { get; set; }
+        public string? ProductName { get; set; }
+        public string? ReleaseId { get; set; }
+        public string? CurrentBuild { get; set; }
+        public string? Ubr {  get; set; }
+    }
 }
