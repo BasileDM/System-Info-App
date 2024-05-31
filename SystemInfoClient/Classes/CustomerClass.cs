@@ -9,12 +9,12 @@ namespace SystemInfoClient.Classes {
 
         public CustomerClass() {
             while (true) {
-                Console.Write("Entrer le nom du client : ");
+                Console.Write("Enter a customer name : ");
                 Name = Console.ReadLine();
                 if (Name != null) {
                     break;
                 }
-                Console.WriteLine("Veuillez entrer une valeur");
+                Console.WriteLine("Please enter a proper value.");
             }
             Machine = new MachineClass();
         }

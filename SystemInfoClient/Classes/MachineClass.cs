@@ -11,11 +11,18 @@ namespace SystemInfoClient.Classes {
         public List<DriveClass> Drives { get; set; } = [];
 
         public MachineClass() {
-            Name = Environment.MachineName;
+            //Name = Environment.MachineName;
+            Name = "Machine3Test";
 
-            Console.Write("Customer ID: ");
-            string CustomerIdStr = Console.ReadLine();
-            CustomerId = int.Parse(CustomerIdStr);
+            while (true) {
+                Console.Write("Customer ID: ");
+                string? CustomerIdStr = Console.ReadLine();
+                if (CustomerIdStr != String.Empty && int.TryParse(CustomerIdStr, out int CustomerIdInt)) {
+                    CustomerId = CustomerIdInt;
+                    break;
+                }
+                Console.WriteLine("Invalid customer ID number.");
+            }
 
             string? systemDrive = Path.GetPathRoot(Environment.SystemDirectory);
 

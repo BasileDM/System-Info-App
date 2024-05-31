@@ -1,13 +1,12 @@
-﻿using System.Net;
+﻿using System.Net.Http.Headers;
 using System.Runtime.Versioning;
-using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using SystemInfoClient.Classes;
-using System.Diagnostics;
 
 
 namespace SystemInfoClient {
+    [SupportedOSPlatform("windows")]
     internal class SystemInfoClient {
         public static async Task Main(string[] args) {
 
@@ -28,13 +27,13 @@ namespace SystemInfoClient {
 
             Console.WriteLine(json);
 
-            var response = await client.PostAsync(route, content);
+            //var response = await client.PostAsync(route, content);
 
-            if (response.IsSuccessStatusCode) {
-                Console.WriteLine($"Customer data sent successfully. {response.StatusCode}");
-            } else {
-                Console.WriteLine($"Post request failed: {response.StatusCode}");
-            }
+            //if (response.IsSuccessStatusCode) {
+            //    Console.WriteLine($"Customer data sent successfully. {response.StatusCode}");
+            //} else {
+            //    Console.WriteLine($"Post request failed: {response.StatusCode}");
+            //}
 
         }
     }
