@@ -1,15 +1,22 @@
 ﻿using System.Runtime.Versioning;
-using System.Text.Json;
 
 namespace SystemInfoClient.Classes {
 
     [SupportedOSPlatform("windows")]
     internal class MachineClass {
         public string Name { get; set; }
+
+        public int CustomerId { get; set; }
+
         public List<DriveClass> Drives { get; set; } = [];
 
         public MachineClass() {
             Name = Environment.MachineName;
+
+            Console.Write("Customer ID: ");
+            string CustomerIdStr = Console.ReadLine();
+            CustomerId = int.Parse(CustomerIdStr);
+
             string? systemDrive = Path.GetPathRoot(Environment.SystemDirectory);
 
             foreach (var drive in DriveInfo.GetDrives()) {
@@ -27,15 +34,6 @@ namespace SystemInfoClient.Classes {
             foreach (var drive in Drives) {
                 drive.LogInfo();
             }
-        }
-
-        public string GetJson() {
-            string json = JsonSerializer.Serialize(this, new JsonSerializerOptions
-            {
-                WriteIndented = true,
-                DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
-            });
-            return json;
         }
     }
 }

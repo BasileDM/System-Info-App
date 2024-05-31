@@ -1,5 +1,4 @@
 ﻿using System.Runtime.Versioning;
-using System.Text.Json;
 
 namespace SystemInfoClient.Classes {
 
@@ -23,14 +22,6 @@ namespace SystemInfoClient.Classes {
         public void LogInfo() {
             Console.WriteLine($"Client name: {Name}");
             Machine.LogInfo();
-        }
-        public string GetJson() {
-            string json = JsonSerializer.Serialize(this, new JsonSerializerOptions
-            {
-                WriteIndented = true,
-                DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
-            });
-            return json;
         }
     }
 }
