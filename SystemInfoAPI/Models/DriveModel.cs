@@ -23,7 +23,7 @@ namespace SystemInfoApi.Models {
         public int FreeSpacePercentage { get; set; }
 
         [Column("Is_System_Drive")]
-        public int IsSystemDrive { get; set; }
+        public bool IsSystemDrive { get; set; }
 
         [Column("id_client_machine")]
         public int MachineId { get; set; }  // Foreign key property

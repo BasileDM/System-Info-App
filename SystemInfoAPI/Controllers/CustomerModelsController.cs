@@ -43,10 +43,13 @@ namespace SystemInfoApi.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<CustomerModel>> GetCustomerModel(int? id)
         {
-            var customerModel = await _context.Customers.FindAsync(id);
+            var customerModel = await _context.Customers
+                                      .Include(c => c.Machines)
+                                      .ThenInclude(m => m.Drives)
+                                      .ThenInclude(d => d.Os)
+                                      .FirstOrDefaultAsync(c => c.Id == id);
 
-            if (customerModel == null)
-            {
+            if (customerModel == null) {
                 return NotFound();
             }
 

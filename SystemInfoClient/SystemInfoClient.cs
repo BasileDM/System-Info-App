@@ -27,13 +27,13 @@ namespace SystemInfoClient {
 
             Console.WriteLine(json);
 
-            //var response = await client.PostAsync(route, content);
+            var response = await client.PostAsync(route, content);
 
-            //if (response.IsSuccessStatusCode) {
-            //    Console.WriteLine($"Customer data sent successfully. {response.StatusCode}");
-            //} else {
-            //    Console.WriteLine($"Post request failed: {response.StatusCode}");
-            //}
+            if (response.IsSuccessStatusCode) {
+                Console.WriteLine($"Customer data sent successfully. Code: {response.StatusCode}");
+            } else {
+                Console.WriteLine($"Post request failed: {response.StatusCode}");
+            }
 
         }
     }

@@ -42,10 +42,13 @@ namespace SystemInfoApi.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<MachineModel>> GetMachineModel(int? id)
         {
-            var machineModel = await _context.Machines.FindAsync(id);
 
-            if (machineModel == null)
-            {
+            var machineModel = await _context.Machines
+                                             .Include(m => m.Drives)
+                                             .ThenInclude(d => d.Os)
+                                             .FirstOrDefaultAsync(m => m.Id == id);
+
+            if (machineModel == null) {
                 return NotFound();
             }
 

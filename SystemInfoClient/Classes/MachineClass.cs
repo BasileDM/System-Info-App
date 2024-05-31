@@ -12,7 +12,7 @@ namespace SystemInfoClient.Classes {
 
         public MachineClass() {
             //Name = Environment.MachineName;
-            Name = "Machine3Test";
+            Name = "Machine1Test";
 
             while (true) {
                 Console.Write("Customer ID: ");
@@ -30,7 +30,7 @@ namespace SystemInfoClient.Classes {
                 if (drive.IsReady) {
                     bool isSystemDriveBool = drive.Name == systemDrive;
                     int isSystemDrive = isSystemDriveBool ? 1 : 0;
-                    Drives.Add(new DriveClass(drive, isSystemDrive));
+                    Drives.Add(new DriveClass(drive, isSystemDriveBool));
                 }
             }
         }

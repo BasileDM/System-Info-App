@@ -21,17 +21,20 @@ namespace SystemInfoApi.Data {
             modelBuilder.Entity<CustomerModel>()
                 .HasMany(c => c.Machines)
                 .WithOne()
-                .HasForeignKey(m => m.CustomerId);
+                .HasForeignKey(m => m.CustomerId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<MachineModel>()
                 .HasMany(m => m.Drives)
                 .WithOne()
-                .HasForeignKey(d => d.MachineId);
+                .HasForeignKey(d => d.MachineId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<DriveModel>()
                 .HasOne(d => d.Os)
                 .WithOne()
-                .HasForeignKey<OsModel>(o => o.DriveId);
+                .HasForeignKey<OsModel>(o => o.DriveId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

@@ -3,7 +3,7 @@
 namespace SystemInfoClient.Classes {
 
     [SupportedOSPlatform("windows")]
-    public class DriveClass(DriveInfo drive, int isSystemDrive) {
+    public class DriveClass(DriveInfo drive, bool isSystemDrive) {
         public string Name { get; set; } = drive.Name;
         public string? Label { get; set; } = drive.VolumeLabel;
         public string Type { get; set; } = drive.DriveType.ToString();
@@ -13,8 +13,8 @@ namespace SystemInfoClient.Classes {
         public long TotalSpace { get; set; } = drive.TotalFreeSpace;
         public int FreeSpacePercentage { get; set; }
             = (int)((double)drive.AvailableFreeSpace / drive.TotalSize * 100);
-        public int IsSystemDrive { get; set; } = isSystemDrive;
-        public OsClass? Os { get; set; } = isSystemDrive == 1 ? new OsClass() : null;
+        public bool IsSystemDrive { get; set; } = isSystemDrive;
+        public OsClass? Os { get; set; } = isSystemDrive ? new OsClass() : null;
 
         public void LogInfo() {
             Console.WriteLine($"Drive Name: {Name}");
@@ -27,7 +27,7 @@ namespace SystemInfoClient.Classes {
             Console.WriteLine($"Free Space Percentage: {FreeSpacePercentage}%");
             Console.WriteLine($"Is system drive: {IsSystemDrive}");
 
-            if (IsSystemDrive == 1) {
+            if (IsSystemDrive) {
                 Os?.LogInfo();
             }
             Console.WriteLine();
