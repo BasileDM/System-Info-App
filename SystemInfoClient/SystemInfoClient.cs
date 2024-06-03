@@ -5,15 +5,15 @@ using System.Text.Json;
 using SystemInfoClient.Classes;
 using SystemInfoClient.Services;
 
-namespace SystemInfoClient {
+namespace SystemInfoClient
+{
     [SupportedOSPlatform("windows")]
-    public class SystemInfoClient {
-
+    public class SystemInfoClient
+    {
         public static async Task Main(string[] args) {
-            //await PostMachineInfo();
-
-            string appPath = "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\Common7\\IDE\\devenv.exe";
-            ApplicationsService.LogExeInfo(appPath);
+            await PostMachineInfo();
+            //string appPath = "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\Common7\\IDE\\devenv.exe";
+            //ApplicationsService.LogExeInfo(appPath);
         }
 
         public static async Task PostMachineInfo() {

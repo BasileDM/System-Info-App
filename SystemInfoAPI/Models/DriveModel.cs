@@ -1,16 +1,25 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 
-namespace SystemInfoApi.Models {
+namespace SystemInfoApi.Models
+{
 
     [Table("Client_Machine_Disque")]
-    public class DriveModel {
-
+    public class DriveModel
+    {
         [Column("id_client_machine_disque")]
         public int? Id { get; set; }
+
         public string Name { get; set; }
+
+        [Column("Root_Directory")]
+        public string RootDirectory { get; set; }
+
         public string? Label { get; set; }
+
         public string Type { get; set; }
+
         public string Format { get; set; }
+
         public long Size { get; set; }
 
         [Column("Free_Space")]
