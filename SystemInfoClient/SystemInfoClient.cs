@@ -16,7 +16,7 @@ namespace SystemInfoClient {
                 new MediaTypeWithQualityHeaderValue("application/json"));
             client.DefaultRequestHeaders.Add("User-Agent", "Systeminfo App Client");
 
-            var route = "https://localhost:7056/api/MachineModels";
+            var route = "https://localhost:7056/api/Machines";
             var customer = new MachineClass();
             //customer.LogInfo();
 
