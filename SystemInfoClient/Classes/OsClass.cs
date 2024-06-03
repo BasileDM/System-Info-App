@@ -16,7 +16,6 @@ namespace SystemInfoClient.Classes {
 
         [SupportedOSPlatform("windows")]
         public OsClass() {
-
             Directory = Environment.SystemDirectory;
             Architecture = Environment.Is64BitOperatingSystem ? "x64 - 64bits" : "x86 - 32bits";
             Version = Environment.OSVersion.ToString();

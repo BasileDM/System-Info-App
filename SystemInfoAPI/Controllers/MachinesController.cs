@@ -12,11 +12,11 @@ namespace SystemInfoApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class MachineModelsController : ControllerBase
+    public class MachinesController : ControllerBase
     {
         private readonly SystemInfoContext _context;
 
-        public MachineModelsController(SystemInfoContext context)
+        public MachinesController(SystemInfoContext context)
         {
             _context = context;
         }
