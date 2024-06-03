@@ -12,7 +12,7 @@ namespace SystemInfoClient.Classes {
 
         public MachineClass() {
             //Name = Environment.MachineName;
-            Name = "0306241012Machine";
+            Name = "030624-1100Machine";
 
             while (true) {
                 Console.Write("Customer ID: ");

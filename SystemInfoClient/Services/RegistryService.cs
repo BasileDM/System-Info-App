@@ -4,7 +4,7 @@ using System.Runtime.Versioning;
 namespace SystemInfoClient.Services {
 
     [SupportedOSPlatform("windows")]
-    public class RegistryService {
+    internal class RegistryService {
 
         /// <summary>Gets the registry value with a path and name.</summary>
         /// <param name="keyPath">The key path.</param>
