@@ -11,12 +11,21 @@ namespace SystemInfoClient
     public class SystemInfoClient
     {
         public static async Task Main(string[] args) {
-            await PostMachineInfo();
-            //string appPath = "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\Common7\\IDE\\devenv.exe";
-            //ApplicationsService.LogExeInfo(appPath);
+
+            //Read config file to get customer_id
+            int customerId = 1;
+
+            // Get machine information instanciated
+            MachineClass machine = new();
+
+            //POST API
+            //await PostMachineInfo(machine, customerId);
+
+            string appPath = "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\Common7\\IDE\\devenv.exe";
+            ApplicationsService.LogExeInfo(appPath);
         }
 
-        public static async Task PostMachineInfo() {
+        public static async Task PostMachineInfo(MachineClass machine, int customerId) {
             HttpClient client = new();
             client.DefaultRequestHeaders.Accept.Clear();
             client.DefaultRequestHeaders.Accept.Add(
@@ -24,7 +33,6 @@ namespace SystemInfoClient
             client.DefaultRequestHeaders.Add("User-Agent", "Systeminfo App Client");
 
             var route = "https://localhost:7056/api/Machines";
-            MachineClass machine = new();
 
             JsonSerializerOptions jsonOptions = new() { WriteIndented = true };
             var json = JsonSerializer.Serialize(machine, jsonOptions);

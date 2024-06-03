@@ -3,7 +3,7 @@
 namespace SystemInfoClient.Classes
 {
     [SupportedOSPlatform("windows")]
-    internal class MachineClass
+    public class MachineClass
     {
         public string Name { get; set; }
 
@@ -13,7 +13,7 @@ namespace SystemInfoClient.Classes
 
         public MachineClass() {
             //Name = Environment.MachineName;
-            Name = "030624-1100Machine";
+            Name = "030624-1457Machine";
 
             while (true) {
                 Console.Write("Customer ID: ");

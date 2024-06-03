@@ -1,8 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using System.Text.Json.Serialization;
-using System.Text.Json;
 using SystemInfoApi.Data;
-using SystemInfoApi.Models;
 
 internal class Program {
     private static void Main(string[] args) {
