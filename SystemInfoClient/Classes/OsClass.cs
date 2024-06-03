@@ -16,7 +16,6 @@ namespace SystemInfoClient.Classes {
 
         [SupportedOSPlatform("windows")]
         public OsClass() {
-
             Directory = Environment.SystemDirectory;
             Architecture = Environment.Is64BitOperatingSystem ? "x64 - 64bits" : "x86 - 32bits";
             Version = Environment.OSVersion.ToString();
@@ -37,6 +36,16 @@ namespace SystemInfoClient.Classes {
                 @"SOFTWARE\Microsoft\Windows NT\CurrentVersion",
                 "UBR",
                 "Unknown UBR");
+        }
+
+        public void LogInfo() {
+            Console.WriteLine($"  OS System Directory: {Directory}");
+            Console.WriteLine($"  OS Architecture: {Architecture}");
+            Console.WriteLine($"  OS Version: {Version}");
+            Console.WriteLine($"  Product Name: {ProductName}");
+            Console.WriteLine($"  Release ID: {ReleaseId}");
+            Console.WriteLine($"  Current Build: {CurrentBuild}");
+            Console.WriteLine($"  UBR: {Ubr}");
         }
     }
 }

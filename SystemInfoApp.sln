@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.10.34916.146
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SystemInfoAPI", "SystemInfoAPI\SystemInfoAPI.csproj", "{9EAB3AF1-D539-43B1-9004-6B8032C5E783}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SystemInfoApi", "SystemInfoAPI\SystemInfoApi.csproj", "{9EAB3AF1-D539-43B1-9004-6B8032C5E783}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SystemInfoClient", "SystemInfoClient\SystemInfoClient.csproj", "{639E88EA-913F-4A5A-B296-55298BCE9AF5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SystemInfoClient", "SystemInfoClient\SystemInfoClient.csproj", "{639E88EA-913F-4A5A-B296-55298BCE9AF5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
