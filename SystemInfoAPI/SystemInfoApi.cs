@@ -1,8 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using System.Text.Json.Serialization;
-using System.Text.Json;
 using SystemInfoApi.Data;
-using SystemInfoApi.Models;
 
 internal class Program {
     private static void Main(string[] args) {
@@ -11,7 +8,7 @@ internal class Program {
         builder.Services.AddControllers();
 
         builder.Services.AddDbContext<SystemInfoContext>(opt =>
-            opt.UseSqlServer(builder.Configuration.GetConnectionString("SystemInfoDbLocal")));
+            opt.UseSqlServer(builder.Configuration.GetConnectionString("SystemInfoDbSSMS")));
 
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();

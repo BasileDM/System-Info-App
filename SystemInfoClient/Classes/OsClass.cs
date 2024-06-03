@@ -1,9 +1,10 @@
 ﻿using System.Runtime.Versioning;
 using SystemInfoClient.Services;
 
-namespace SystemInfoClient.Classes {
-
-    public class OsClass {
+namespace SystemInfoClient.Classes
+{
+    public class OsClass
+    {
         public string Directory { get; set; }
         public string Architecture { get; set; }
         public string Version { get; set; }
