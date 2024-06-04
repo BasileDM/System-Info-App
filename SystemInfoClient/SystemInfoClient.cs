@@ -19,10 +19,10 @@ namespace SystemInfoClient
             MachineClass machine = new();
 
             //POST API
-            //await PostMachineInfo(machine, customerId);
+            await PostMachineInfo(machine, customerId);
 
-            string appPath = "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\Common7\\IDE\\devenv.exe";
-            ApplicationsService.LogExeInfo(appPath);
+            //string appPath = "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\Common7\\IDE\\devenv.exe";
+            //ApplicationsService.LogExeInfo(appPath);
         }
 
         public static async Task PostMachineInfo(MachineClass machine, int customerId) {

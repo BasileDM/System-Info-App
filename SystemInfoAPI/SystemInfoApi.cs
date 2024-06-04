@@ -1,31 +1,36 @@
-using Microsoft.EntityFrameworkCore;
-using SystemInfoApi.Data;
+namespace SystemInfoApi
+{
+    internal class Program
+    {
+        private static void Main(string[] args) {
 
-internal class Program {
-    private static void Main(string[] args) {
-        var builder = WebApplication.CreateBuilder(args);
+            var builder = WebApplication.CreateBuilder(args);
 
-        builder.Services.AddControllers();
+            // Add services to the container.
+            builder.Services.AddControllers();
 
-        builder.Services.AddDbContext<SystemInfoContext>(opt =>
-            opt.UseSqlServer(builder.Configuration.GetConnectionString("SystemInfoDbSSMS")));
+            // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+            builder.Services.AddEndpointsApiExplorer();
+            builder.Services.AddSwaggerGen();
 
-        builder.Services.AddEndpointsApiExplorer();
-        builder.Services.AddSwaggerGen();
+            var app = builder.Build();
 
-        var app = builder.Build();
+            // Configure the HTTP request pipeline.
+            if (app.Environment.IsDevelopment()) {
+                app.UseExceptionHandler("/Home/Error");  //experimental
+                app.UseHsts();  //experimental
+                app.UseSwagger();
+                app.UseSwaggerUI();
+            }
 
-        if (app.Environment.IsDevelopment()) {
-            app.UseSwagger();
-            app.UseSwaggerUI();
+            app.UseHttpsRedirection();
+
+            app.UseAuthorization();
+
+            app.UseRouting();  //experimental
+            app.MapControllers(); //experimental
+
+            app.Run();
         }
-
-        app.UseHttpsRedirection();
-
-        app.UseAuthorization();
-
-        app.MapControllers();
-
-        app.Run();
-    }
+    } 
 }

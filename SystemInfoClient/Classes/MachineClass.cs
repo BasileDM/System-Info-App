@@ -12,8 +12,7 @@ namespace SystemInfoClient.Classes
         public List<DriveClass> Drives { get; set; } = [];
 
         public MachineClass() {
-            //Name = Environment.MachineName;
-            Name = "030624-1457Machine";
+            Name = Environment.MachineName;
 
             while (true) {
                 Console.Write("Customer ID: ");
