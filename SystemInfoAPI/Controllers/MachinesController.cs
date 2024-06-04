@@ -3,34 +3,47 @@ using SystemInfoApi.Models;
 
 namespace SystemInfoApi.Controllers
 {
-    [Route("[controller]/[action]")]
+    [Route("api/[controller]/[action]")]
     [ApiController]
     public class MachinesController : ControllerBase
     {
 
-        // POST: <MachinesController>/Create
+        // POST: <Machines>/Create
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         public void Create(MachineModel machineModel) {
         }
 
-        // GET: <MachinesController>/Get
-        [HttpGet(Name = "GetMachineTestName")]
-        public void GetAll()
-        {
-            Console.WriteLine("Machines/Get route called");
+        // GET: <Machines>/GetAll
+        [HttpGet]
+        public ActionResult<MachineModel> GetAll() {
+            Console.WriteLine("Machines/GetAll route called");
+            var machinesList = new List<MachineModel>()
+            {
+                new() { Name = "Machine1"},
+                new() { Name = "Machine2"}
+            };
+
+            if (machinesList.Count > 0) {
+                return Ok(machinesList);
+            } else {
+                return NotFound();
+            }
         }
 
-        [Route("{id}")]
-        [HttpGet]
-        public string GetById(int id) {
-            return $"Id is : {id}";
+        [HttpGet("{machineId:int:min(0)}")]
+        public string GetById(int machineId) {
+            return $"Id is : {machineId}";
         }
 
-        [Route("{clientId}")]
-        [HttpGet]
+        [HttpGet("{machineName}")]
+        public string GetByName(string machineName) {
+            return $"Name is : {machineName}";
+        }
+
+        [HttpGet("{clientId:int:min(0)}")]
         public string GetByClientId(int clientId) {
-            return $"Id is : {clientId}";
+            return $"Client Id is : {clientId}";
         }
     }
 }
