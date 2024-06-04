@@ -1,3 +1,5 @@
+using SystemInfoApi.Middleware;
+
 namespace SystemInfoApi
 {
     internal class Program
@@ -29,6 +31,8 @@ namespace SystemInfoApi
 
             app.UseRouting();  //experimental
             app.MapControllers(); //experimental
+
+            app.UseMiddleware<NotAcceptableMiddleware>();
 
             app.Run();
         }

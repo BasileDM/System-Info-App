@@ -16,8 +16,7 @@ namespace SystemInfoApi.Controllers
 
         // GET: <Machines>/GetAll
         [HttpGet]
-        public ActionResult<MachineModel> GetAll() {
-            Console.WriteLine("Machines/GetAll route called");
+        public ActionResult<List<MachineModel>> GetAll() {
             var machinesList = new List<MachineModel>()
             {
                 new() { Name = "Machine1"},
@@ -26,14 +25,22 @@ namespace SystemInfoApi.Controllers
 
             if (machinesList.Count > 0) {
                 return Ok(machinesList);
-            } else {
-                return NotFound();
-            }
+
+            } else { return NotFound(); }
         }
 
         [HttpGet("{machineId:int:min(0)}")]
-        public string GetById(int machineId) {
-            return $"Id is : {machineId}";
+        public ActionResult<MachineModel> GetById(int machineId) {
+            var machine = new MachineModel()
+            {
+                Id = machineId,
+                Name = "Machine1"
+            };
+
+            if (machine.Id == 0) {
+                return Ok(machine);
+
+            } else { return NotFound(); }
         }
 
         [HttpGet("{machineName}")]
