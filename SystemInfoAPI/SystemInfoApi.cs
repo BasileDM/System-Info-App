@@ -1,4 +1,6 @@
+using System.Runtime.CompilerServices;
 using SystemInfoApi.Middleware;
+using SystemInfoApi.Models;
 
 namespace SystemInfoApi
 {

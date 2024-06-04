@@ -7,6 +7,13 @@ namespace SystemInfoApi.Controllers
     [ApiController]
     public class MachinesController : ControllerBase
     {
+        public IConfiguration Configuration { get; }
+        public Database Db { get; set; }
+
+        public MachinesController(IConfiguration config) {
+            Configuration = config;
+            Db = new(config);
+        }
 
         // POST: <Machines>/Create
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
