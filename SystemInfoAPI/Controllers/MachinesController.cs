@@ -6,27 +6,23 @@ namespace SystemInfoApi.Controllers
 {
     [Route("api/[controller]/[action]")]
     [ApiController]
-    public class MachinesController : ControllerBase
+    public class MachinesController(MachinesRepository machinesRepository) : ControllerBase
     {
-        private readonly IConfiguration _Configuration;
-        private readonly MachinesRepository _MachinesRepository;
-
-        public MachinesController(IConfiguration config) {
-            _Configuration = config;
-            _MachinesRepository = new MachinesRepository(_Configuration);
-        }
+        private readonly MachinesRepository _MachinesRepository = machinesRepository;
 
         // POST: api/<Machines>/Create
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public void Create(MachineModel machineModel) {
+        public async Task<ActionResult<MachineModel>> Create(MachineModel machineModel) {
+            //MachineModel newMachine = await _MachinesRepository.PostAsync();
+            return machineModel;
+
         }
 
         // GET: api/<Machines>/GetAll
         [HttpGet]
-        public ActionResult<List<MachineModel>> GetAll() {
-
-            List<MachineModel> machinesList = _MachinesRepository.GetAll();
+        public async Task<ActionResult<List<MachineModel>>> GetAll() {
+            List<MachineModel> machinesList = await _MachinesRepository.GetAllAsync();
 
             if (machinesList.Count > 0) {
                 return Ok(machinesList);
@@ -36,9 +32,8 @@ namespace SystemInfoApi.Controllers
 
         // GET: api/<Machines>/GetById/{id}
         [HttpGet("{machineId:int:min(0)}")]
-        public ActionResult<MachineModel> GetById(int machineId) {
-
-            MachineModel machine = _MachinesRepository.GetMachineById(machineId);
+        public async Task<ActionResult<MachineModel>> GetById(int machineId) {
+            MachineModel machine = await _MachinesRepository.GetByIdAsync(machineId);
 
             if (machine.Id != null) {
                 return Ok(machine);
@@ -52,8 +47,8 @@ namespace SystemInfoApi.Controllers
         }
 
         [HttpGet("{customerId:int:min(0)}")]
-        public string GetByCustomerId(int clientId) {
-            return $"Customer Id is : {clientId}";
+        public string GetByCustomerId(int customerId) {
+            return $"Customer Id is : {customerId}";
         }
     }
 }

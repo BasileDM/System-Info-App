@@ -1,36 +1,38 @@
 ﻿using System.Data.SqlClient;
+using System.Text.Json;
 using SystemInfoApi.Classes;
 using SystemInfoApi.Models;
 
 namespace SystemInfoApi.Repositories
 {
-    public class MachinesRepository(IConfiguration configuration) : Database(configuration)
+    public class MachinesRepository(IConfiguration config) : Database(config)
     {
 
         /// <summary>Gets all the machines without details (embedded models).</summary>
         /// <returns>
         ///   A <see cref="List{MachineModel}"/> of instantiated <see cref="MachineModel"/>.
         /// </returns>
-        public List<MachineModel> GetAll() {
-
-            string sqlRequest = "SELECT * FROM Client_Machine";
-            SqlCommand cmd = new(sqlRequest, _SqlConnection);
+        public async Task<List<MachineModel>> GetAllAsync() {
 
             List<MachineModel> machinesList = [];
 
-            _SqlConnection.Open();
-            using (SqlDataReader reader = cmd.ExecuteReader()) {
-                while (reader.Read()) {
+            const string sqlRequest = 
+                "SELECT * FROM Client_Machine";
 
-                    MachineModel newMachine = new() {
-                        Id = Convert.ToInt32(reader["id_client_machine"]),
+            await _SqlConnection.OpenAsync();
+            SqlCommand cmd = new(sqlRequest, _SqlConnection);
+
+            using (SqlDataReader reader = await cmd.ExecuteReaderAsync()) {
+                while (await reader.ReadAsync()) {
+                    machinesList.Add(new MachineModel {
+                        Id = Convert.ToInt32(reader["id_client_machine"]), // (reader.GetOrdinal("id_client_machine") ?
                         Name = Convert.ToString((string)reader["Name"]),
                         CustomerId = Convert.ToInt32(reader["id_client"]),
-                    };
-                    machinesList.Add(newMachine);
+                    });
                 }
             }
-            _SqlConnection.Close();
+            await _SqlConnection.CloseAsync();
+
             return machinesList;
         }
 
@@ -39,22 +41,33 @@ namespace SystemInfoApi.Repositories
         /// <returns>
         ///   A <see cref="MachineModel"/> instanciated from the data from the DB.
         /// </returns>
-        public MachineModel GetMachineById(int id) {
+        public async Task<MachineModel> GetByIdAsync(int id) {
 
-            string sqlRequest = $"SELECT * FROM Client_Machine WHERE id_client_machine = {id}";
-            SqlCommand cmd = new(sqlRequest, _SqlConnection);
             MachineModel machine = new();
 
-            _SqlConnection.Open();
-            using (SqlDataReader reader = cmd.ExecuteReader()) {
-                while (reader.Read()) {
+            const string sqlRequest = 
+                "SELECT * FROM Client_Machine WHERE id_client_machine = @id";
+
+            await _SqlConnection.OpenAsync();
+            SqlCommand cmd = new(sqlRequest, _SqlConnection);
+            cmd.Parameters.AddWithValue("Id", id);
+
+            using (SqlDataReader reader = await cmd.ExecuteReaderAsync()) {
+                if (await reader.ReadAsync()) {
                     machine.Id = Convert.ToInt32(reader["id_client_machine"]);
                     machine.Name = Convert.ToString((string)reader["Name"]);
                     machine.CustomerId = Convert.ToInt32(reader["id_client"]);
                 }
             }
-            _SqlConnection.Close();
+            await _SqlConnection.CloseAsync();
+
             return machine;
         }
+
+        //public async Task<MachineModel> PostAsync(MachineModel newMachine) {
+        //    string json = await JsonSerializer.DeserializeAsync<MachineModel>(newMachine);
+        //    var machine = newMachine;
+
+        //}
     }
 }

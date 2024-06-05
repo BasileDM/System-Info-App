@@ -22,7 +22,7 @@ namespace SystemInfoApi.Controllers
         // GET api/<ValuesController>/5
         [HttpGet("{id}")]
         public string Get(int id) {
-            return "value";
+            return $"id is : {id}";
         }
 
         // POST api/<ValuesController>
