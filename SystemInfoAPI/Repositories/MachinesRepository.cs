@@ -20,6 +20,7 @@ namespace SystemInfoApi.Repositories
                 "SELECT * FROM Client_Machine";
 
             await _SqlConnection.OpenAsync();
+
             SqlCommand cmd = new(sqlRequest, _SqlConnection);
 
             using (SqlDataReader reader = await cmd.ExecuteReaderAsync()) {
@@ -45,10 +46,16 @@ namespace SystemInfoApi.Repositories
 
             MachineModel machine = new();
 
-            const string sqlRequest = 
-                "SELECT * FROM Client_Machine WHERE id_client_machine = @id";
+            const string sqlRequest =
+                "SELECT * FROM Client_Machine AS Machine " +
+                "LEFT OUTER JOIN Client_Machine_Disque AS Drive " +
+                "ON Machine.id_client_machine = Drive.id_client_machine " +
+                "LEFT OUTER JOIN Client_Machine_Disque_Os AS Os " +
+                "ON Os.id_client_machine_disque = Drive.id_client_machine_disque " +
+                "WHERE Machine.id_client_machine = @id";
 
             await _SqlConnection.OpenAsync();
+
             SqlCommand cmd = new(sqlRequest, _SqlConnection);
             cmd.Parameters.AddWithValue("Id", id);
 

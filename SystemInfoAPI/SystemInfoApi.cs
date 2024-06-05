@@ -34,7 +34,7 @@ namespace SystemInfoApi
             app.UseRouting();  //experimental
             app.MapControllers(); //experimental
 
-            // Add error code to ensure exclusive JSON communication
+            // Add error code to ensure application/json accept header is present
             app.UseMiddleware<NotAcceptableMiddleware>();
 
             app.Run();
