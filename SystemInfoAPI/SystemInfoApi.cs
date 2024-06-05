@@ -1,6 +1,4 @@
-using System.Runtime.CompilerServices;
 using SystemInfoApi.Middleware;
-using SystemInfoApi.Models;
 
 namespace SystemInfoApi
 {
@@ -34,6 +32,7 @@ namespace SystemInfoApi
             app.UseRouting();  //experimental
             app.MapControllers(); //experimental
 
+            // Add error code to ensure exclusive JSON communication
             app.UseMiddleware<NotAcceptableMiddleware>();
 
             app.Run();

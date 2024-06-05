@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -16,7 +15,7 @@ namespace SystemInfoApi.Controllers
 
         // GET: api/<ValuesController>
         [HttpGet]
-        public IEnumerable<KeyValuePair<string, string>> Get() {
+        public IEnumerable<KeyValuePair<string, string?>> Get() {
             return _configuration.GetSection("ConnectionStrings").AsEnumerable();
         }
 

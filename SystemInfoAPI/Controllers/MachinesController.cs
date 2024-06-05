@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using SystemInfoApi.Models;
+using SystemInfoApi.Repositories;
 
 namespace SystemInfoApi.Controllers
 {
@@ -8,11 +9,11 @@ namespace SystemInfoApi.Controllers
     public class MachinesController : ControllerBase
     {
         public IConfiguration Configuration { get; }
-        public Database Db { get; set; }
+        private MachinesRepository Repository {  get; }
 
         public MachinesController(IConfiguration config) {
             Configuration = config;
-            Db = new(config);
+            Repository = new MachinesRepository(Configuration);
         }
 
         // POST: <Machines>/Create
@@ -24,6 +25,9 @@ namespace SystemInfoApi.Controllers
         // GET: <Machines>/GetAll
         [HttpGet]
         public ActionResult<List<MachineModel>> GetAll() {
+
+            Repository.LogConnectionStrings();
+
             var machinesList = new List<MachineModel>()
             {
                 new() { Name = "Machine1"},
