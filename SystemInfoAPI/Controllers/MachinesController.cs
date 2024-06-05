@@ -28,16 +28,22 @@ namespace SystemInfoApi.Controllers
 
             _Repository.LogConnectionStrings();
 
-            var machinesList = new List<MachineModel>()
-            {
-                new() { Name = "Machine1"},
-                new() { Name = "Machine2"}
-            };
+            List<string?> machinesList = _Repository.GetAll();
+            foreach (var machine in machinesList) {
+                Console.WriteLine(machine);
+            }
+            return Ok(machinesList);
 
-            if (machinesList.Count > 0) {
-                return Ok(machinesList);
+            //var machinesList = new List<MachineModel>()
+            //{
+            //    new() { Name = "Machine1"},
+            //    new() { Name = "Machine2"}
+            //};
 
-            } else { return NotFound(); }
+            //if (machinesList.Count > 0) {
+            //    return Ok(machinesList);
+
+            //} else { return NotFound(); }
         }
 
         [HttpGet("{machineId:int:min(0)}")]
