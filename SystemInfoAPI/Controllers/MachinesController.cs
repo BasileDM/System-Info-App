@@ -9,11 +9,11 @@ namespace SystemInfoApi.Controllers
     public class MachinesController : ControllerBase
     {
         private readonly IConfiguration _Configuration;
-        private readonly MachinesRepository _Repository;
+        private readonly MachinesRepository _MachinesRepository;
 
         public MachinesController(IConfiguration config) {
             _Configuration = config;
-            _Repository = new MachinesRepository(_Configuration);
+            _MachinesRepository = new MachinesRepository(_Configuration);
         }
 
         // POST: <Machines>/Create
@@ -26,26 +26,15 @@ namespace SystemInfoApi.Controllers
         [HttpGet]
         public ActionResult<List<MachineModel>> GetAll() {
 
-            _Repository.LogConnectionStrings();
+            List<MachineModel> machinesList = _MachinesRepository.GetAll();
 
-            List<string?> machinesList = _Repository.GetAll();
-            foreach (var machine in machinesList) {
-                Console.WriteLine(machine);
-            }
-            return Ok(machinesList);
+            if (machinesList.Count > 0) {
+                return Ok(machinesList);
 
-            //var machinesList = new List<MachineModel>()
-            //{
-            //    new() { Name = "Machine1"},
-            //    new() { Name = "Machine2"}
-            //};
-
-            //if (machinesList.Count > 0) {
-            //    return Ok(machinesList);
-
-            //} else { return NotFound(); }
+            } else { return NotFound(); }
         }
 
+        // GET: <Machines>/GetById/{id}
         [HttpGet("{machineId:int:min(0)}")]
         public ActionResult<MachineModel> GetById(int machineId) {
             var machine = new MachineModel()
