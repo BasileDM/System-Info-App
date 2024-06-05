@@ -19,13 +19,12 @@ namespace SystemInfoApi.Repositories
             List<MachineModel> machinesList = [];
 
             _SqlConnection.Open();
-            
             using (SqlDataReader reader = cmd.ExecuteReader()) {
                 while (reader.Read()) {
 
                     MachineModel newMachine = new() {
                         Id = Convert.ToInt32(reader["id_client_machine"]),
-                        Name = Convert.ToString(reader["Name"]),
+                        Name = Convert.ToString((string)reader["Name"]),
                         CustomerId = Convert.ToInt32(reader["id_client"]),
                     };
                     machinesList.Add(newMachine);
@@ -42,7 +41,20 @@ namespace SystemInfoApi.Repositories
         /// </returns>
         public MachineModel GetMachineById(int id) {
 
-            string sqlRequest = $"SELECT * FROM Client_Machines WHERE id_client_machine = {id}";
+            string sqlRequest = $"SELECT * FROM Client_Machine WHERE id_client_machine = {id}";
+            SqlCommand cmd = new(sqlRequest, _SqlConnection);
+            MachineModel machine = new();
 
+            _SqlConnection.Open();
+            using (SqlDataReader reader = cmd.ExecuteReader()) {
+                while (reader.Read()) {
+                    machine.Id = Convert.ToInt32(reader["id_client_machine"]);
+                    machine.Name = Convert.ToString((string)reader["Name"]);
+                    machine.CustomerId = Convert.ToInt32(reader["id_client"]);
+                }
+            }
+            _SqlConnection.Close();
+            return machine;
+        }
     }
 }

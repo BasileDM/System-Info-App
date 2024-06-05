@@ -16,13 +16,13 @@ namespace SystemInfoApi.Controllers
             _MachinesRepository = new MachinesRepository(_Configuration);
         }
 
-        // POST: <Machines>/Create
+        // POST: api/<Machines>/Create
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         public void Create(MachineModel machineModel) {
         }
 
-        // GET: <Machines>/GetAll
+        // GET: api/<Machines>/GetAll
         [HttpGet]
         public ActionResult<List<MachineModel>> GetAll() {
 
@@ -34,16 +34,13 @@ namespace SystemInfoApi.Controllers
             } else { return NotFound(); }
         }
 
-        // GET: <Machines>/GetById/{id}
+        // GET: api/<Machines>/GetById/{id}
         [HttpGet("{machineId:int:min(0)}")]
         public ActionResult<MachineModel> GetById(int machineId) {
-            var machine = new MachineModel()
-            {
-                Id = machineId,
-                Name = "Machine1"
-            };
 
-            if (machine.Id == 0) {
+            MachineModel machine = _MachinesRepository.GetMachineById(machineId);
+
+            if (machine.Id != null) {
                 return Ok(machine);
 
             } else { return NotFound(); }
@@ -54,9 +51,9 @@ namespace SystemInfoApi.Controllers
             return $"Name is : {machineName}";
         }
 
-        [HttpGet("{clientId:int:min(0)}")]
-        public string GetByClientId(int clientId) {
-            return $"Client Id is : {clientId}";
+        [HttpGet("{customerId:int:min(0)}")]
+        public string GetByCustomerId(int clientId) {
+            return $"Customer Id is : {clientId}";
         }
     }
 }
