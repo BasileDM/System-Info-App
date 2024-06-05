@@ -8,12 +8,12 @@ namespace SystemInfoApi.Controllers
     [ApiController]
     public class MachinesController : ControllerBase
     {
-        public IConfiguration Configuration { get; }
-        private MachinesRepository Repository {  get; }
+        private readonly IConfiguration _Configuration;
+        private readonly MachinesRepository _Repository;
 
         public MachinesController(IConfiguration config) {
-            Configuration = config;
-            Repository = new MachinesRepository(Configuration);
+            _Configuration = config;
+            _Repository = new MachinesRepository(_Configuration);
         }
 
         // POST: <Machines>/Create
@@ -26,7 +26,7 @@ namespace SystemInfoApi.Controllers
         [HttpGet]
         public ActionResult<List<MachineModel>> GetAll() {
 
-            Repository.LogConnectionStrings();
+            _Repository.LogConnectionStrings();
 
             var machinesList = new List<MachineModel>()
             {

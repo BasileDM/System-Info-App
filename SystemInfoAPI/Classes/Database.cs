@@ -5,18 +5,16 @@ namespace SystemInfoApi.Classes
     public class Database
     {
         protected readonly IConfiguration _Configuration;
-        private readonly string? _ConnectionString;
-        protected SqlConnection Connection { get; set; }
+        protected readonly string? _ConnectionString;
+        protected readonly SqlConnection _SqlConnection;
 
-        public Database(IConfiguration configuration)
-        {
+        public Database(IConfiguration configuration) {
             _Configuration = configuration;
             _ConnectionString = _Configuration.GetConnectionString("SystemInfoDbSSMS");
-            Connection = new SqlConnection(_ConnectionString);
+            _SqlConnection = new SqlConnection(_ConnectionString);
         }
 
-        public IEnumerable<KeyValuePair<string, string?>> GetConnectionStrings()
-        {
+        public IEnumerable<KeyValuePair<string, string?>> GetConnectionStrings() {
             return _Configuration.GetSection("ConnectionStrings").AsEnumerable();
         }
 
