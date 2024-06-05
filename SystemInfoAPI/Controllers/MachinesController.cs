@@ -1,105 +1,67 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using SystemInfoApi.Data;
 using SystemInfoApi.Models;
+using SystemInfoApi.Repositories;
 
 namespace SystemInfoApi.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/[controller]/[action]")]
     [ApiController]
     public class MachinesController : ControllerBase
     {
-        private readonly SystemInfoContext _context;
+        private readonly IConfiguration _Configuration;
+        private readonly MachinesRepository _Repository;
 
-        public MachinesController(SystemInfoContext context)
-        {
-            _context = context;
+        public MachinesController(IConfiguration config) {
+            _Configuration = config;
+            _Repository = new MachinesRepository(_Configuration);
         }
 
-        // POST: api/MachineModels
+        // POST: <Machines>/Create
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<MachineModel>> PostMachineModel(MachineModel machineModel) {
-            _context.Machines.Add(machineModel);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction("GetMachineModel", new { id = machineModel.Id }, machineModel);
+        public void Create(MachineModel machineModel) {
         }
 
-        // GET: api/MachineModels
+        // GET: <Machines>/GetAll
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<MachineModel>>> GetMachines()
-        {
-            return await _context.Machines.ToListAsync();
+        public ActionResult<List<MachineModel>> GetAll() {
+
+            _Repository.LogConnectionStrings();
+
+            var machinesList = new List<MachineModel>()
+            {
+                new() { Name = "Machine1"},
+                new() { Name = "Machine2"}
+            };
+
+            if (machinesList.Count > 0) {
+                return Ok(machinesList);
+
+            } else { return NotFound(); }
         }
 
-        // GET: api/MachineModels/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<MachineModel>> GetMachineModel(int? id)
-        {
+        [HttpGet("{machineId:int:min(0)}")]
+        public ActionResult<MachineModel> GetById(int machineId) {
+            var machine = new MachineModel()
+            {
+                Id = machineId,
+                Name = "Machine1"
+            };
 
-            var machineModel = await _context.Machines
-                                             .Include(m => m.Drives)
-                                             .ThenInclude(d => d.Os)
-                                             .FirstOrDefaultAsync(m => m.Id == id);
+            if (machine.Id == 0) {
+                return Ok(machine);
 
-            if (machineModel == null) {
-                return NotFound();
-            }
-
-            return machineModel;
+            } else { return NotFound(); }
         }
 
-        // PUT: api/MachineModels/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutMachineModel(int? id, MachineModel machineModel)
-        {
-            if (id != machineModel.Id)
-            {
-                return BadRequest();
-            }
-
-            _context.Entry(machineModel).State = EntityState.Modified;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!MachineModelExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return NoContent();
+        [HttpGet("{machineName}")]
+        public string GetByName(string machineName) {
+            return $"Name is : {machineName}";
         }
 
-        // DELETE: api/MachineModels/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteMachineModel(int? id)
-        {
-            var machineModel = await _context.Machines.FindAsync(id);
-            if (machineModel == null)
-            {
-                return NotFound();
-            }
-
-            _context.Machines.Remove(machineModel);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
-        }
-
-        private bool MachineModelExists(int? id)
-        {
-            return _context.Machines.Any(e => e.Id == id);
+        [HttpGet("{clientId:int:min(0)}")]
+        public string GetByClientId(int clientId) {
+            return $"Client Id is : {clientId}";
         }
     }
 }
