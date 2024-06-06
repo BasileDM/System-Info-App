@@ -8,7 +8,7 @@ namespace SystemInfoApi.Repositories
     public class MachinesRepository(IConfiguration config) : Database(config)
     {
         /// <summary>Asynchronously create a new machine entry in the database.</summary>
-        /// <param name="machine">The machine.</param>
+        /// <param name="machine">The machine to add to the DB.</param>
         /// <returns>
         ///   <br />
         /// </returns>
@@ -19,14 +19,45 @@ namespace SystemInfoApi.Repositories
                 await using SqlConnection connection = GetConnection();
                 await connection.OpenAsync();
 
-                string sqlRequest =
-                    "INSERT INTO Client_Machine (id_client, Name) " +
-                    "Values (@customerId, @machineName)";
+                string machineSql = @"
+                    INSERT INTO Client_Machine (id_client, Name) 
+                    VALUES (@customerId, @machineName);
 
-                using (SqlCommand cmd = new(sqlRequest, connection))
+                    SELECT SCOPE_IDENTITY();";
+
+                int machineId;
+
+                using (SqlCommand cmd = new(machineSql, connection))
                 {
                     cmd.Parameters.AddWithValue("@customerId", machine.CustomerId);
                     cmd.Parameters.AddWithValue("@machineName", machine.Name);
+
+                    var result = await cmd.ExecuteScalarAsync();
+                    machineId = Convert.ToInt32(result);
+                    machine.Id = machineId;
+                }
+
+                string driveSql = @"
+                    INSERT INTO Client_Machine_Disque 
+                        (id_client_machine, Name, Root_Directory, Label, Type, Format, Size, Free_Space, Total_Space, Free_Space_Percentage, Is_System_Drive)
+                    VALUES 
+                        (@machineId, @driveName, @rootDir, @label, @type, @format, @size, @freeSpace, @totalSpace, @freeSpacePer, @isSystemDrive);";
+
+                foreach (var drive in machine.Drives)
+                {
+                    using SqlCommand cmd = new(driveSql, connection);
+
+                    cmd.Parameters.AddWithValue("@machineId", machineId);
+                    cmd.Parameters.AddWithValue("@driveName", drive.Name);
+                    cmd.Parameters.AddWithValue("@rootDir", drive.RootDirectory);
+                    cmd.Parameters.AddWithValue("@label", drive.Label);
+                    cmd.Parameters.AddWithValue("@type", drive.Type);
+                    cmd.Parameters.AddWithValue("@format", drive.Format);
+                    cmd.Parameters.AddWithValue("@size", drive.Size);
+                    cmd.Parameters.AddWithValue("@freeSpace", drive.FreeSpace);
+                    cmd.Parameters.AddWithValue("@totalSpace", drive.TotalSpace);
+                    cmd.Parameters.AddWithValue("@freeSpacePer", drive.FreeSpacePercentage);
+                    cmd.Parameters.AddWithValue("@isSystemDrive", drive.IsSystemDrive);
 
                     await cmd.ExecuteNonQueryAsync();
                 }
@@ -97,35 +128,35 @@ namespace SystemInfoApi.Repositories
                 await using SqlConnection connection = GetConnection();
                 await connection.OpenAsync();
 
-                const string sqlRequest =
-                    "SELECT id_client AS Customer_Id," +
-                        "Machine.id_client_machine AS Machine_Id, " +
-                        "Machine.Name AS Machine_Name, " +
-                        "Drive.id_client_machine_disque AS Drive_Id, " +
-                        "Drive.Name AS Drive_Name, " +
-                        "Root_Directory, " +
-                        "Label, " +
-                        "Type, " +
-                        "Format, " +
-                        "Size, " +
-                        "Free_Space, " +
-                        "Total_Space, " +
-                        "Free_Space_Percentage, " +
-                        "Is_System_Drive, " +
-                        "id_client_machine_disque_os AS Os_Id, " +
-                        "Directory, " +
-                        "Architecture, " +
-                        "Version, " +
-                        "Product_Name, " +
-                        "Release_Id, " +
-                        "Current_Build, " +
-                        "Ubr " +
-                    "FROM Client_Machine AS Machine " +
-                        "LEFT OUTER JOIN Client_Machine_Disque AS Drive " +
-                    "ON Machine.id_client_machine = Drive.id_client_machine " +
-                        "LEFT OUTER JOIN Client_Machine_Disque_Os AS Os " +
-                    "ON Os.id_client_machine_disque = Drive.id_client_machine_disque " +
-                    "WHERE Machine.id_client_machine = @Id";
+                const string sqlRequest = @"
+                    SELECT id_client AS Customer_Id,
+                        Machine.id_client_machine AS Machine_Id,
+                        Machine.Name AS Machine_Name, 
+                        Drive.id_client_machine_disque AS Drive_Id, 
+                        Drive.Name AS Drive_Name, 
+                        Root_Directory, 
+                        Label, 
+                        Type, 
+                        Format, 
+                        Size, 
+                        Free_Space, 
+                        Total_Space, 
+                        Free_Space_Percentage, 
+                        Is_System_Drive, 
+                        id_client_machine_disque_os AS Os_Id, 
+                        Directory, 
+                        Architecture, 
+                        Version, 
+                        Product_Name, 
+                        Release_Id,  
+                        Current_Build, 
+                        Ubr 
+                    FROM Client_Machine AS Machine 
+                        LEFT OUTER JOIN Client_Machine_Disque AS Drive 
+                    ON Machine.id_client_machine = Drive.id_client_machine 
+                        LEFT OUTER JOIN Client_Machine_Disque_Os AS Os 
+                    ON Os.id_client_machine_disque = Drive.id_client_machine_disque 
+                    WHERE Machine.id_client_machine = @Id";
 
                 using (SqlCommand cmd = new(sqlRequest, connection))
                 {

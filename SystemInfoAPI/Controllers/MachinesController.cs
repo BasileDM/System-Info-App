@@ -14,17 +14,31 @@ namespace SystemInfoApi.Controllers
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         [Consumes("application/json")]
-        public async Task<ActionResult<MachineModel>> Create(MachineModel machine)
+        public async Task<ActionResult<MachineModel>> Create([FromBody]MachineModel machine)
         {
-            MachineModel newMachine = await _MachinesRepository.PostAsync(machine);
-
-            if (newMachine == null)
+            if (!ModelState.IsValid)
             {
-                return UnprocessableEntity();
+                Console.WriteLine("Failed to validate model.");
+                return BadRequest(ModelState);
             }
-            else
+
+            try
             {
-                return Ok(newMachine);
+                MachineModel newMachine = await _MachinesRepository.PostAsync(machine);
+
+                if (newMachine == null)
+                {
+                    return StatusCode(500, "An error occured creating the new machine. Machine was null.");
+                }
+                else
+                {
+                    return CreatedAtAction(nameof(Create), new { id = newMachine.Id }, newMachine);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                return StatusCode(500, "Internal server error.");
             }
         }
 

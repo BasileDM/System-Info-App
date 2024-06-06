@@ -36,7 +36,7 @@ namespace SystemInfoApi
             app.MapControllers(); //experimental
 
             // Add error code to ensure application/json accept header is present
-            app.UseMiddleware<NotAcceptableMiddleware>();
+            //app.UseMiddleware<NotAcceptableMiddleware>();
 
             app.Run();
         }
