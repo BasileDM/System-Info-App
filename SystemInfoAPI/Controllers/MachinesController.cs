@@ -18,13 +18,14 @@ namespace SystemInfoApi.Controllers
         {
             MachineModel newMachine = await _MachinesRepository.PostAsync(machine);
 
-            if (newMachine == null) {
+            if (newMachine == null)
+            {
                 return UnprocessableEntity();
             }
-            else {
+            else
+            {
                 return Ok(newMachine);
             }
-
         }
 
         // GET: api/<Machines>/GetAll
@@ -33,10 +34,12 @@ namespace SystemInfoApi.Controllers
         {
             List<MachineModel> machinesList = await _MachinesRepository.GetAllAsync();
 
-            if (machinesList.Count > 0) {
+            if (machinesList.Count > 0)
+            {
                 return Ok(machinesList);
             }
-            else { 
+            else
+            {
                 return NotFound();
             }
         }
@@ -47,11 +50,13 @@ namespace SystemInfoApi.Controllers
         {
             MachineModel machine = await _MachinesRepository.GetByIdAsync(machineId);
 
-            if (machine.Id != null) {
+            if (machine.Id != null)
+            {
                 return Ok(machine);
             }
-            else { 
-                return NotFound(); 
+            else
+            {
+                return NotFound();
             }
         }
 

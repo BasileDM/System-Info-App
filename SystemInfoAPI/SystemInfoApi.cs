@@ -20,7 +20,8 @@ namespace SystemInfoApi
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
-            if (app.Environment.IsDevelopment()) {
+            if (app.Environment.IsDevelopment())
+            {
                 app.UseExceptionHandler("/Home/Error");  //experimental
                 app.UseHsts();  //experimental
                 app.UseSwagger();
