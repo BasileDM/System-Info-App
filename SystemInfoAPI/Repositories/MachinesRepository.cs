@@ -7,6 +7,10 @@ namespace SystemInfoApi.Repositories
 {
     public class MachinesRepository(IConfiguration config) : Database(config)
     {
+        public async Task<MachineModel> PostAsync(MachineModel machine) {
+            string sqlRequest = "INSERT INTO ";
+            return machine;
+        }
 
         /// <summary>Gets all the machines without details (embedded models).</summary>
         /// <returns>
@@ -19,11 +23,12 @@ namespace SystemInfoApi.Repositories
             const string sqlRequest =
                 "SELECT * FROM Client_Machine";
 
-            await _SqlConnection.OpenAsync();
+            await using SqlConnection co = _SqlConnection;
+            await co.OpenAsync();
 
-            SqlCommand cmd = new(sqlRequest, _SqlConnection);
+            using (SqlCommand cmd = new(sqlRequest, _SqlConnection)) {
 
-            using (SqlDataReader reader = await cmd.ExecuteReaderAsync()) {
+                using SqlDataReader reader = await cmd.ExecuteReaderAsync();
                 while (await reader.ReadAsync()) {
                     machinesList.Add(new MachineModel {
                         Id = Convert.ToInt32(reader["id_client_machine"]), // (reader.GetOrdinal("id_client_machine") ?
@@ -32,7 +37,7 @@ namespace SystemInfoApi.Repositories
                     });
                 }
             }
-            await _SqlConnection.CloseAsync();
+            await co.CloseAsync();
 
             return machinesList;
         }
@@ -77,12 +82,13 @@ namespace SystemInfoApi.Repositories
                 "ON Os.id_client_machine_disque = Drive.id_client_machine_disque " +
                 "WHERE Machine.id_client_machine = @Id";
 
-            await _SqlConnection.OpenAsync();
+            await using SqlConnection co = _SqlConnection;
+            await co.OpenAsync();
 
-            SqlCommand cmd = new(sqlRequest, _SqlConnection);
-            cmd.Parameters.AddWithValue("Id", id);
+            using (SqlCommand cmd = new(sqlRequest, _SqlConnection)) {
+                cmd.Parameters.AddWithValue("Id", id);
 
-            using (SqlDataReader reader = await cmd.ExecuteReaderAsync()) {
+                using SqlDataReader reader = await cmd.ExecuteReaderAsync();
                 while (await reader.ReadAsync()) {
                     machine.Id = Convert.ToInt32(reader["Machine_Id"]);
                     machine.Name = (string)reader["Machine_Name"];
@@ -118,14 +124,13 @@ namespace SystemInfoApi.Repositories
                             };
                             drive.Os = Os;
                         }
-
                         drivesList.Add(drive);
                     }
+                machine.Drives = drivesList;
                 }
             }
-            await _SqlConnection.CloseAsync();
+            await co.CloseAsync();
 
-            machine.Drives = drivesList;
 
             return machine;
         }

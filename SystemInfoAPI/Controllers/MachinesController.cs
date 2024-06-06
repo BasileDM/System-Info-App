@@ -13,9 +13,15 @@ namespace SystemInfoApi.Controllers
         // POST: api/<Machines>/Create
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<MachineModel>> Create(MachineModel machineModel) {
-            //MachineModel newMachine = await _MachinesRepository.PostAsync();
-            return machineModel;
+        [Consumes("application/json")]
+        public async Task<ActionResult<MachineModel>> Create(MachineModel machine) {
+            MachineModel newMachine = await _MachinesRepository.PostAsync(machine);
+
+            if (newMachine == null) {
+                return UnprocessableEntity();
+            } else {
+                return Ok(newMachine);
+            }
 
         }
 
