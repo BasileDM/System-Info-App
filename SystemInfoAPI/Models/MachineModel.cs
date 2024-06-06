@@ -1,10 +1,10 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 
-namespace SystemInfoApi.Models {
-
+namespace SystemInfoApi.Models
+{
     [Table("Client_Machine")]
-    public class MachineModel {
-
+    public class MachineModel
+    {
         [Column("id_client_machine")]
         public int? Id { get; set; }
 

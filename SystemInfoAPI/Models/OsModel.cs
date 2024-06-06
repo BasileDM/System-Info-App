@@ -1,11 +1,10 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 
-namespace SystemInfoApi.Models {
-
-
+namespace SystemInfoApi.Models
+{
     [Table("Client_Machine_Disque_Os")]
-    public class OsModel {
-
+    public class OsModel
+    {
         [Column("id_client_machine_disque_os")]
         public int? Id { get; set; }
         public string Directory { get; set; }
@@ -23,7 +22,7 @@ namespace SystemInfoApi.Models {
         [Column("Current_Build")]
         public string? CurrentBuild { get; set; }
 
-        public string? Ubr {  get; set; }
+        public string? Ubr { get; set; }
 
         [Column("id_client_machine_disque")]
         public int DriveId { get; set; }  // Foreign key property

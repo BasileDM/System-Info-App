@@ -7,7 +7,8 @@ namespace SystemInfoApi.Repositories
 {
     public class MachinesRepository(IConfiguration config) : Database(config)
     {
-        public async Task<MachineModel> PostAsync(MachineModel machine) {
+        public async Task<MachineModel> PostAsync(MachineModel machine)
+        {
             string sqlRequest = "INSERT INTO ";
             return machine;
         }
@@ -16,8 +17,8 @@ namespace SystemInfoApi.Repositories
         /// <returns>
         ///   A <see cref="List{MachineModel}"/> of instantiated <see cref="MachineModel"/>.
         /// </returns>
-        public async Task<List<MachineModel>> GetAllAsync() {
-
+        public async Task<List<MachineModel>> GetAllAsync()
+        {
             List<MachineModel> machinesList = [];
 
             const string sqlRequest =
@@ -46,8 +47,8 @@ namespace SystemInfoApi.Repositories
         /// <returns>
         ///   A <see cref="MachineModel"/> instanciated from the data from the DB.
         /// </returns>
-        public async Task<MachineModel> GetByIdAsync(int id) {
-
+        public async Task<MachineModel> GetByIdAsync(int id)
+        {
             MachineModel machine = new();
             List<DriveModel> drivesList = [];
 
@@ -125,17 +126,11 @@ namespace SystemInfoApi.Repositories
                         }
                         drivesList.Add(drive);
                     }
-                machine.Drives = drivesList;
+                    machine.Drives = drivesList;
                 }
             }
             await connection.CloseAsync();
             return machine;
         }
-
-        //public async Task<MachineModel> PostAsync(MachineModel newMachine) {
-        //    string json = await JsonSerializer.DeserializeAsync<MachineModel>(newMachine);
-        //    var machine = newMachine;
-
-        //}
     }
 }
