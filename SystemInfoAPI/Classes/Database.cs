@@ -6,12 +6,14 @@ namespace SystemInfoApi.Classes
     {
         protected readonly IConfiguration _Configuration;
         protected readonly string? _ConnectionString;
-        protected readonly SqlConnection _SqlConnection;
 
         public Database(IConfiguration configuration) {
             _Configuration = configuration;
             _ConnectionString = _Configuration.GetConnectionString("SystemInfoDbSSMS");
-            _SqlConnection = new SqlConnection(_ConnectionString);
+        }
+
+        public SqlConnection GetConnection() {
+            return new SqlConnection(_ConnectionString);
         }
 
         public IEnumerable<KeyValuePair<string, string?>> GetConnectionStrings() {

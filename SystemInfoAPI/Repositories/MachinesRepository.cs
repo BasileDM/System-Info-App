@@ -23,10 +23,10 @@ namespace SystemInfoApi.Repositories
             const string sqlRequest =
                 "SELECT * FROM Client_Machine";
 
-            await using SqlConnection co = _SqlConnection;
-            await co.OpenAsync();
+            await using SqlConnection connection = GetConnection();
+            await connection.OpenAsync();
 
-            using (SqlCommand cmd = new(sqlRequest, _SqlConnection)) {
+            using (SqlCommand cmd = new(sqlRequest, connection)) {
 
                 using SqlDataReader reader = await cmd.ExecuteReaderAsync();
                 while (await reader.ReadAsync()) {
@@ -37,8 +37,7 @@ namespace SystemInfoApi.Repositories
                     });
                 }
             }
-            await co.CloseAsync();
-
+            await connection.CloseAsync();
             return machinesList;
         }
 
@@ -82,10 +81,10 @@ namespace SystemInfoApi.Repositories
                 "ON Os.id_client_machine_disque = Drive.id_client_machine_disque " +
                 "WHERE Machine.id_client_machine = @Id";
 
-            await using SqlConnection co = _SqlConnection;
-            await co.OpenAsync();
+            await using SqlConnection connection = GetConnection();
+            await connection.OpenAsync();
 
-            using (SqlCommand cmd = new(sqlRequest, _SqlConnection)) {
+            using (SqlCommand cmd = new(sqlRequest, connection)) {
                 cmd.Parameters.AddWithValue("Id", id);
 
                 using SqlDataReader reader = await cmd.ExecuteReaderAsync();
@@ -110,7 +109,7 @@ namespace SystemInfoApi.Repositories
                             MachineId = Convert.ToInt32(reader["Machine_Id"]),
                         };
 
-                        if (drive.IsSystemDrive) {
+                        if (drive.IsSystemDrive && reader["Os_Id"] != DBNull.Value) {
                             OsModel Os = new() {
                                 Id = Convert.ToInt32(reader["Os_Id"]),
                                 Directory = (string)(reader["Directory"]),
@@ -129,9 +128,7 @@ namespace SystemInfoApi.Repositories
                 machine.Drives = drivesList;
                 }
             }
-            await co.CloseAsync();
-
-
+            await connection.CloseAsync();
             return machine;
         }
 
