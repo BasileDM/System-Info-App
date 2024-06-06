@@ -62,7 +62,7 @@ namespace SystemInfoApi.Repositories
                     "Total_Space, " +
                     "Free_Space_Percentage, " +
                     "Is_System_Drive, " +
-                    "id_client_machine_disque_os, " +
+                    "id_client_machine_disque_os AS Os_Id, " +
                     "Directory, " +
                     "Architecture, " +
                     "Version, " +
@@ -106,7 +106,7 @@ namespace SystemInfoApi.Repositories
 
                         if (drive.IsSystemDrive) {
                             OsModel Os = new() {
-                                Id = Convert.ToInt32(reader["id_client_machine_disque_os"]),
+                                Id = Convert.ToInt32(reader["Os_Id"]),
                                 Directory = (string)(reader["Directory"]),
                                 Architecture = (string)(reader["Architecture"]),
                                 Version = (string)(reader["Version"]),
