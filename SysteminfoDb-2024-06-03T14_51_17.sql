@@ -33,7 +33,7 @@ CREATE TABLE Client_Machine_Disque
   id_client_machine_disque int          NOT NULL IDENTITY(1,1),
   id_client_machine        int          NOT NULL,
   Name                     varchar(255) NOT NULL,
-  Root_Directory           varchar(255),
+  Root_Directory           varchar(255) NOT NULL,
   Label                    varchar(255),
   Type                     varchar(255) NOT NULL,
   Format                   varchar(255) NOT NULL,

@@ -1,4 +1,5 @@
-﻿using System.Data.SqlClient;
+﻿using Microsoft.AspNetCore.Http.HttpResults;
+using System.Data.SqlClient;
 using System.Text.Json;
 using SystemInfoApi.Classes;
 using SystemInfoApi.Models;
@@ -19,6 +20,7 @@ namespace SystemInfoApi.Repositories
                 await using SqlConnection connection = GetConnection();
                 await connection.OpenAsync();
 
+                // Machine
                 string machineSql = @"
                     INSERT INTO Client_Machine (id_client, Name) 
                     VALUES (@customerId, @machineName);
@@ -32,16 +34,21 @@ namespace SystemInfoApi.Repositories
                     cmd.Parameters.AddWithValue("@customerId", machine.CustomerId);
                     cmd.Parameters.AddWithValue("@machineName", machine.Name);
 
-                    var result = await cmd.ExecuteScalarAsync();
-                    machineId = Convert.ToInt32(result);
+                    var newMachineId = await cmd.ExecuteScalarAsync();
+                    machineId = Convert.ToInt32(newMachineId);
                     machine.Id = machineId;
                 }
 
+                // Drives
                 string driveSql = @"
                     INSERT INTO Client_Machine_Disque 
                         (id_client_machine, Name, Root_Directory, Label, Type, Format, Size, Free_Space, Total_Space, Free_Space_Percentage, Is_System_Drive)
                     VALUES 
-                        (@machineId, @driveName, @rootDir, @label, @type, @format, @size, @freeSpace, @totalSpace, @freeSpacePer, @isSystemDrive);";
+                        (@machineId, @driveName, @rootDir, @label, @type, @format, @size, @freeSpace, @totalSpace, @freeSpacePer, @isSystemDrive);
+
+                    SELECT SCOPE_IDENTITY();";
+
+                int driveId;
 
                 foreach (var drive in machine.Drives)
                 {
@@ -59,9 +66,21 @@ namespace SystemInfoApi.Repositories
                     cmd.Parameters.AddWithValue("@freeSpacePer", drive.FreeSpacePercentage);
                     cmd.Parameters.AddWithValue("@isSystemDrive", drive.IsSystemDrive);
 
-                    await cmd.ExecuteNonQueryAsync();
+                    var newDriveId = await cmd.ExecuteScalarAsync();
+                    driveId = Convert.ToInt32(newDriveId);
+                    drive.Id = driveId;
+
+                    if(drive.IsSystemDrive)
+                    {
+                        OsModel newOs = new()
+                        {
+
+                        };
+                    }
                 }
                 await connection.CloseAsync();
+
+                return machine;
             }
             catch (Exception ex)
             {
@@ -69,7 +88,6 @@ namespace SystemInfoApi.Repositories
                     "An error occured inserting the machine into the database.", ex);
             }
 
-            return machine;
         }
 
         /// <summary>Gets all the machines without details (embedded models).</summary>

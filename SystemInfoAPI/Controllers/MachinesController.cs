@@ -32,7 +32,7 @@ namespace SystemInfoApi.Controllers
                 }
                 else
                 {
-                    return CreatedAtAction(nameof(Create), new { id = newMachine.Id }, newMachine);
+                    return CreatedAtAction(nameof(GetById), new { machineId = newMachine.Id }, newMachine);
                 }
             }
             catch (Exception ex)
