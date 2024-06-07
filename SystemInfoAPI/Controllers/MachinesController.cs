@@ -62,7 +62,7 @@ namespace SystemInfoApi.Controllers
         {
             MachineModel machine = await machinesService.GetByIdAsync(machineId);
 
-            if (machine.Id != null)
+            if (machine.Id != 0)
             {
                 return Ok(machine);
             }

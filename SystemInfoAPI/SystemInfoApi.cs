@@ -26,8 +26,6 @@ namespace SystemInfoApi
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {
-                app.UseExceptionHandler("/Home/Error");  //experimental
-                app.UseHsts();  //experimental
                 app.UseSwagger();
                 app.UseSwaggerUI();
             }
@@ -39,8 +37,8 @@ namespace SystemInfoApi
             app.UseRouting();  //experimental
             app.MapControllers(); //experimental
 
-            // Add error code to ensure application/json accept header is present
-            //app.UseMiddleware<NotAcceptableMiddleware>();
+            // Add 406 error code to ensure application/json accept header is present in requests
+            app.UseMiddleware<NotAcceptableMiddleware>();
 
             app.Run();
         }
