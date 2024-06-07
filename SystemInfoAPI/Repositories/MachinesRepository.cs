@@ -1,13 +1,11 @@
-﻿using System.Data.SqlClient;
-using SystemInfoApi.Classes;
-using SystemInfoApi.Models;
+﻿using SystemInfoApi.Classes;
 
 namespace SystemInfoApi.Repositories
 {
     public class MachinesRepository(IConfiguration config) : Database(config)
     {
         /// <summary>Asynchronously create a new machine entry in the database, Drives, Os etc. included.</summary>
-        /// <param name="machine">The <see cref="MachineModel"/> object to process and add to the DB.</param>
+        /// <param name="machine">The machine to add to the DB.</param>
         /// <returns>
         ///     The <see cref="MachineModel"/> with the newly created IDs from the database
         /// </returns>
