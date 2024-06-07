@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Http.HttpResults;
-using System.Data.SqlClient;
-using System.Text.Json;
+﻿using System.Data.SqlClient;
 using SystemInfoApi.Classes;
 using SystemInfoApi.Models;
 
@@ -8,10 +6,10 @@ namespace SystemInfoApi.Repositories
 {
     public class MachinesRepository(IConfiguration config) : Database(config)
     {
-        /// <summary>Asynchronously create a new machine entry in the database.</summary>
+        /// <summary>Asynchronously create a new machine entry in the database, Drives, Os etc. included.</summary>
         /// <param name="machine">The machine to add to the DB.</param>
         /// <returns>
-        ///   <br />
+        ///     The <see cref="MachineModel"/> with the newly created IDs from the database
         /// </returns>
         public async Task<MachineModel> PostAsync(MachineModel machine)
         {
@@ -75,7 +73,7 @@ namespace SystemInfoApi.Repositories
                     int osId;
 
                     // Operating System
-                    if(drive.Os != null)
+                    if (drive.Os != null)
                     {
                         drive.Os.DriveId = driveId;
 
@@ -159,7 +157,7 @@ namespace SystemInfoApi.Repositories
         /// <summary>Gets a machine with details (embedded Drives, OS etc.).</summary>
         /// <param name="id">The id of the machine in the database.</param>
         /// <returns>
-        ///   A <see cref="MachineModel"/> instanciated from the data from the DB.
+        ///   A <see cref="MachineModel"/> instantiated from the data from the DB.
         /// </returns>
         public async Task<MachineModel> GetByIdAsync(int id)
         {

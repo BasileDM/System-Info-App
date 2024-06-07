@@ -14,7 +14,7 @@ namespace SystemInfoApi.Controllers
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         [Consumes("application/json")]
-        public async Task<ActionResult<MachineModel>> Create([FromBody]MachineModel machine)
+        public async Task<ActionResult<MachineModel>> Create([FromBody] MachineModel machine)
         {
             if (!ModelState.IsValid)
             {
