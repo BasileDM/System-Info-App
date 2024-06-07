@@ -6,7 +6,7 @@ namespace SystemInfoApi.Models
     public class MachineModel
     {
         [Column("id_client_machine")]
-        public int? Id { get; set; }
+        public int Id { get; set; }
 
         public string Name { get; set; }
 

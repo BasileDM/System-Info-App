@@ -1,21 +1,39 @@
 ﻿using SystemInfoApi.Models;
+using SystemInfoApi.Repositories;
 
 namespace SystemInfoApi.Services
 {
-    public interface IMachineService
+    public class MachinesService(MachinesRepository machinesRepository, DrivesRepository drivesRepository, OsRepository osRepository)
     {
-        Task<MachineModel> CreateMachineAsync(MachineModel machine);
-        Task<MachineModel> GetMachineByIdAsync(int machineId);
-    }
+        public async Task<MachineModel> CreateMachineAsync(MachineModel machine)
+        {
+            // Insert machine and get new ID
+            MachineModel newMachine = await machinesRepository.InsertAsync(machine);
 
-    public class MachinesService : IMachineService
-    {
-        private readonly IMachinesRepository _machinesRepository;
-        private readonly IDrivesRepository _drivesRepository;
-        private readonly IOsRepository _osRepository;
+            foreach (DriveModel drive in machine.Drives)
+            {
+                // Set new machineId on drive and insert
+                drive.MachineId = newMachine.Id;
+                DriveModel newDrive = await drivesRepository.InsertAsync(drive);
 
-        public MachinesService()
+                if (drive.IsSystemDrive && drive.Os != null)
+                {
+                    // Set new driveId on OS and insert
+                    drive.Os.DriveId = newDrive.Id;
+                    await osRepository.InsertAsync(drive.Os);
+                }
+            }
+            return newMachine;
+        }
 
+        public async Task<MachineModel> GetByIdAsync(int machineId)
+        {
+            return await machinesRepository.GetByIdAsync(machineId);
+        }
 
+        public async Task<List<MachineModel>> GetAllAsync()
+        {
+            return await machinesRepository.GetAllAsync();
+        }
     }
 }
