@@ -49,6 +49,7 @@ namespace SystemInfoClient
                 );
             } else {
                 Console.WriteLine($"Post request failed: {response.StatusCode}");
+                
             }
         }
     }

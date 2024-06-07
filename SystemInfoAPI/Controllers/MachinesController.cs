@@ -30,7 +30,22 @@ namespace SystemInfoApi.Controllers
                 }
                 else
                 {
-                    return CreatedAtAction(nameof(GetById), new { machineId = newMachine.Id }, newMachine);
+                    CreatedAtActionResult response = 
+                        CreatedAtAction(nameof(GetById), new { machineId = newMachine.Id }, newMachine);
+                    var routeValues = response.RouteValues;
+                    string? location = Url.Action(nameof(GetById), new { machineId = routeValues["machineId"] });
+
+                    Console.WriteLine(
+                        "\r\n" +
+                        "A new machine has been created in the database. \r\n" +
+                        $"Time: {DateTime.Now} \r\n" +
+                        $"Customer ID: {newMachine.CustomerId} \r\n" +
+                        $"Machine ID: { newMachine.Id} \r\n" +
+                        $"Machine name: {newMachine.Name} \r\n" +
+                        $"Drives amount: {newMachine.Drives.Count} \r\n" +
+                        $"Location: {location}"
+                    );
+                    return response;
                 }
             }
             catch (Exception ex)

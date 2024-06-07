@@ -5,10 +5,16 @@ namespace SystemInfoApi.Services
 {
     public class MachinesService(MachinesRepository machinesRepository, DrivesRepository drivesRepository, OsRepository osRepository)
     {
+        /// <summary>Handles business logic to create a machine in the database, making calls to the proper repositories.</summary>
+        /// <param name="machine">The <see cref="MachineModel"/> object without IDs to handle.</param>
+        /// <returns>
+        ///   <br /> A new <see cref="MachineModel"/> object with the created IDs from the database
+        /// </returns>
         public async Task<MachineModel> CreateMachineAsync(MachineModel machine)
         {
             // Insert machine and get new ID
             MachineModel newMachine = await machinesRepository.InsertAsync(machine);
+            List<DriveModel> updatedDrives = [];
 
             foreach (DriveModel drive in machine.Drives)
             {
@@ -20,9 +26,15 @@ namespace SystemInfoApi.Services
                 {
                     // Set new driveId on OS and insert
                     drive.Os.DriveId = newDrive.Id;
-                    await osRepository.InsertAsync(drive.Os);
+                    OsModel newOs = await osRepository.InsertAsync(drive.Os);
+
+                    // Update drive.OS with new created ID
+                    newDrive.Os = newOs;
                 }
+                updatedDrives.Add(newDrive);
             }
+            // Update machine with drives containing the proper IDs
+            newMachine.Drives = updatedDrives;
             return newMachine;
         }
 
