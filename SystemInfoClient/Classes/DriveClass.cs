@@ -3,20 +3,41 @@
 namespace SystemInfoClient.Classes
 {
     [SupportedOSPlatform("windows")]
-    public class DriveClass(DriveInfo drive, bool isSystemDrive)
+    public class DriveClass
     {
-        public string Name { get; set; } = drive.Name;
-        public string RootDirectory { get; set; } = drive.RootDirectory.ToString();
-        public string? Label { get; set; } = drive.VolumeLabel;
-        public string Type { get; set; } = drive.DriveType.ToString();
-        public string Format { get; set; } = drive.DriveFormat;
-        public long Size { get; set; } = drive.TotalSize;
-        public long FreeSpace { get; set; } = drive.AvailableFreeSpace;
-        public long TotalSpace { get; set; } = drive.TotalFreeSpace;
+        public string Name { get; set; }
+        public string RootDirectory { get; set; }
+        public string? Label { get; set; }
+        public string Type { get; set; }
+        public string Format { get; set; }
+        public long Size { get; set; }
+        public long FreeSpace { get; set; }
+        public long TotalSpace { get; set; }
         public int FreeSpacePercentage { get; set; }
-            = (int)((double)drive.AvailableFreeSpace / drive.TotalSize * 100);
-        public bool IsSystemDrive { get; set; } = isSystemDrive;
-        public OsClass? Os { get; set; } = isSystemDrive ? new OsClass() : null;
+        public bool IsSystemDrive { get; set; }
+        public OsClass? Os { get; set; }
+
+        public DriveClass(DriveInfo drive, bool isSystemDrive) 
+        {
+            try
+            {
+                Name = drive.Name;
+                RootDirectory = drive.RootDirectory.ToString();
+                Label = drive.VolumeLabel;
+                Type = drive.DriveType.ToString();
+                Format = drive.DriveFormat;
+                Size = drive.TotalSize;
+                FreeSpace = drive.AvailableFreeSpace;
+                TotalSpace = drive.TotalFreeSpace;
+                FreeSpacePercentage = (int)((double)drive.AvailableFreeSpace / drive.TotalSize * 100);
+                IsSystemDrive = isSystemDrive;
+                Os = IsSystemDrive ? new OsClass() : null;
+            }
+            catch (Exception ex)
+            {
+                throw new ApplicationException("Error instantiating the machine's drives.", ex);
+            }
+        }
 
         public void LogInfo() {
             Console.WriteLine($"Drive Name: {Name}");

@@ -17,6 +17,9 @@ namespace SystemInfoClient
             // Get machine information into instantiated object
             MachineClass machine = new();
 
+            // Log info of the machine, its drives etc. about to be sent to the API
+            machine.LogInfo();
+
             //Serialize and send object to POST API route
             await PostMachineInfo(machine, customerId);
 
@@ -42,6 +45,7 @@ namespace SystemInfoClient
 
             if (response.IsSuccessStatusCode) {
                 Console.WriteLine(
+                    $"\r\n" +
                     $"Machine data sent successfully.\r\n" +
                     $"Code: {response.StatusCode}.\r\n" +
                     $"Time: {response.Headers.Date}\r\n" +
@@ -49,7 +53,6 @@ namespace SystemInfoClient
                 );
             } else {
                 Console.WriteLine($"Post request failed: {response.StatusCode}");
-                
             }
         }
     }
