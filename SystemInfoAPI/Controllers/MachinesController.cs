@@ -1,14 +1,13 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using SystemInfoApi.Models;
-using SystemInfoApi.Repositories;
+using SystemInfoApi.Services;
 
 namespace SystemInfoApi.Controllers
 {
     [Route("api/[controller]/[action]")]
     [ApiController]
-    public class MachinesController(MachinesRepository machinesRepository) : ControllerBase
+    public class MachinesController : ControllerBase
     {
-        private readonly MachinesRepository _MachinesRepository = machinesRepository;
 
         // POST: api/<Machines>/Create
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
@@ -16,6 +15,8 @@ namespace SystemInfoApi.Controllers
         [Consumes("application/json")]
         public async Task<ActionResult<MachineModel>> Create([FromBody] MachineModel machine)
         {
+
+            MachinesService
             if (!ModelState.IsValid)
             {
                 Console.WriteLine("Failed to validate model.");

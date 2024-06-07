@@ -4,7 +4,14 @@ using SystemInfoApi.Models;
 
 namespace SystemInfoApi.Repositories
 {
-    public class MachinesRepository(IConfiguration config) : Database(config)
+    public interface IMachinesRepository
+    {
+        Task<MachineModel> PostAsync(MachineModel machine);
+        Task<List<MachineModel>> GetAllAsync();
+        Task<MachineModel> GetByIdAsync(int id);
+    }
+
+    public class MachinesRepository(IConfiguration config) : Database(config), IMachinesRepository
     {
         /// <summary>Asynchronously create a new machine entry in the database, Drives, Os etc. included.</summary>
         /// <param name="machine">The machine to add to the DB.</param>
