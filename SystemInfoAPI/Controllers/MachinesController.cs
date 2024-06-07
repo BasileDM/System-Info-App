@@ -1,110 +1,89 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using SystemInfoApi.Data;
+﻿using Microsoft.AspNetCore.Mvc;
 using SystemInfoApi.Models;
+using SystemInfoApi.Repositories;
 
 namespace SystemInfoApi.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/[controller]/[action]")]
     [ApiController]
-    public class MachinesController : ControllerBase
+    public class MachinesController(MachinesRepository machinesRepository) : ControllerBase
     {
-        private readonly SystemInfoContext _context;
+        private readonly MachinesRepository _MachinesRepository = machinesRepository;
 
-        public MachinesController(SystemInfoContext context)
-        {
-            _context = context;
-        }
-
-        // POST: api/MachineModels
+        // POST: api/<Machines>/Create
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<MachineModel>> PostMachineModel(MachineModel machineModel) {
-            _context.Machines.Add(machineModel);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction("GetMachineModel", new { id = machineModel.Id }, machineModel);
-        }
-
-        // GET: api/MachineModels
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<MachineModel>>> GetMachines()
+        [Consumes("application/json")]
+        public async Task<ActionResult<MachineModel>> Create([FromBody] MachineModel machine)
         {
-            return await _context.Machines.ToListAsync();
-        }
-
-        // GET: api/MachineModels/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<MachineModel>> GetMachineModel(int? id)
-        {
-
-            var machineModel = await _context.Machines
-                                             .Include(m => m.Drives)
-                                             .ThenInclude(d => d.Os)
-                                             .FirstOrDefaultAsync(m => m.Id == id);
-
-            if (machineModel == null) {
-                return NotFound();
-            }
-
-            return machineModel;
-        }
-
-        // PUT: api/MachineModels/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutMachineModel(int? id, MachineModel machineModel)
-        {
-            if (id != machineModel.Id)
+            if (!ModelState.IsValid)
             {
-                return BadRequest();
+                Console.WriteLine("Failed to validate model.");
+                return BadRequest(ModelState);
             }
-
-            _context.Entry(machineModel).State = EntityState.Modified;
 
             try
             {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!MachineModelExists(id))
+                MachineModel newMachine = await _MachinesRepository.PostAsync(machine);
+
+                if (newMachine == null)
                 {
-                    return NotFound();
+                    return StatusCode(500, "An error occured creating the new machine. Machine was null.");
                 }
                 else
                 {
-                    throw;
+                    return CreatedAtAction(nameof(GetById), new { machineId = newMachine.Id }, newMachine);
                 }
             }
-
-            return NoContent();
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                return StatusCode(500, "Internal server error.");
+            }
         }
 
-        // DELETE: api/MachineModels/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteMachineModel(int? id)
+        // GET: api/<Machines>/GetAll
+        [HttpGet]
+        public async Task<ActionResult<List<MachineModel>>> GetAll()
         {
-            var machineModel = await _context.Machines.FindAsync(id);
-            if (machineModel == null)
+            List<MachineModel> machinesList = await _MachinesRepository.GetAllAsync();
+
+            if (machinesList.Count > 0)
+            {
+                return Ok(machinesList);
+            }
+            else
             {
                 return NotFound();
             }
-
-            _context.Machines.Remove(machineModel);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
         }
 
-        private bool MachineModelExists(int? id)
+        // GET: api/<Machines>/GetById/{id}
+        [HttpGet("{machineId:int:min(0)}")]
+        public async Task<ActionResult<MachineModel>> GetById(int machineId)
         {
-            return _context.Machines.Any(e => e.Id == id);
+            MachineModel machine = await _MachinesRepository.GetByIdAsync(machineId);
+
+            if (machine.Id != null)
+            {
+                return Ok(machine);
+            }
+            else
+            {
+                return NotFound();
+            }
+        }
+
+        [HttpGet("{machineName}")]
+        public string GetByName(string machineName)
+        {
+            return $"Name is : {machineName}";
+        }
+
+        [HttpGet("{customerId:int:min(0)}")]
+        public string GetByCustomerId(int customerId)
+        {
+            return $"Customer Id is : {customerId}";
         }
     }
 }

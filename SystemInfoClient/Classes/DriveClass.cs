@@ -1,10 +1,12 @@
 ﻿using System.Runtime.Versioning;
 
-namespace SystemInfoClient.Classes {
-
+namespace SystemInfoClient.Classes
+{
     [SupportedOSPlatform("windows")]
-    public class DriveClass(DriveInfo drive, bool isSystemDrive) {
+    public class DriveClass(DriveInfo drive, bool isSystemDrive)
+    {
         public string Name { get; set; } = drive.Name;
+        public string RootDirectory { get; set; } = drive.RootDirectory.ToString();
         public string? Label { get; set; } = drive.VolumeLabel;
         public string Type { get; set; } = drive.DriveType.ToString();
         public string Format { get; set; } = drive.DriveFormat;

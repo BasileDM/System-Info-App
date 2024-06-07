@@ -1,34 +1,44 @@
-using Microsoft.EntityFrameworkCore;
-using System.Text.Json.Serialization;
-using System.Text.Json;
-using SystemInfoApi.Data;
-using SystemInfoApi.Models;
+using SystemInfoApi.Middleware;
+using SystemInfoApi.Repositories;
 
-internal class Program {
-    private static void Main(string[] args) {
-        var builder = WebApplication.CreateBuilder(args);
+namespace SystemInfoApi
+{
+    internal class Program
+    {
+        private static void Main(string[] args)
+        {
+            var builder = WebApplication.CreateBuilder(args);
 
-        builder.Services.AddControllers();
+            // Add services to the container.
+            builder.Services.AddControllers();
+            builder.Services.AddScoped<MachinesRepository>();
 
-        builder.Services.AddDbContext<SystemInfoContext>(opt =>
-            opt.UseSqlServer(builder.Configuration.GetConnectionString("SystemInfoDbLocal")));
+            // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+            builder.Services.AddEndpointsApiExplorer();
+            builder.Services.AddSwaggerGen();
 
-        builder.Services.AddEndpointsApiExplorer();
-        builder.Services.AddSwaggerGen();
+            var app = builder.Build();
 
-        var app = builder.Build();
+            // Configure the HTTP request pipeline.
+            if (app.Environment.IsDevelopment())
+            {
+                app.UseExceptionHandler("/Home/Error");  //experimental
+                app.UseHsts();  //experimental
+                app.UseSwagger();
+                app.UseSwaggerUI();
+            }
 
-        if (app.Environment.IsDevelopment()) {
-            app.UseSwagger();
-            app.UseSwaggerUI();
+            app.UseHttpsRedirection();
+
+            app.UseAuthorization();
+
+            app.UseRouting();  //experimental
+            app.MapControllers(); //experimental
+
+            // Add error code to ensure application/json accept header is present
+            //app.UseMiddleware<NotAcceptableMiddleware>();
+
+            app.Run();
         }
-
-        app.UseHttpsRedirection();
-
-        app.UseAuthorization();
-
-        app.MapControllers();
-
-        app.Run();
     }
 }

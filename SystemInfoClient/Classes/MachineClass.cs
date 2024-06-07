@@ -1,9 +1,10 @@
 ﻿using System.Runtime.Versioning;
 
-namespace SystemInfoClient.Classes {
-
+namespace SystemInfoClient.Classes
+{
     [SupportedOSPlatform("windows")]
-    internal class MachineClass {
+    public class MachineClass
+    {
         public string Name { get; set; }
 
         public int CustomerId { get; set; }
@@ -11,8 +12,7 @@ namespace SystemInfoClient.Classes {
         public List<DriveClass> Drives { get; set; } = [];
 
         public MachineClass() {
-            //Name = Environment.MachineName;
-            Name = "0306241012Machine";
+            Name = Environment.MachineName;
 
             while (true) {
                 Console.Write("Customer ID: ");
@@ -29,7 +29,6 @@ namespace SystemInfoClient.Classes {
             foreach (var drive in DriveInfo.GetDrives()) {
                 if (drive.IsReady) {
                     bool isSystemDriveBool = drive.Name == systemDrive;
-                    int isSystemDrive = isSystemDriveBool ? 1 : 0;
                     Drives.Add(new DriveClass(drive, isSystemDriveBool));
                 }
             }
