@@ -15,10 +15,10 @@ namespace SystemInfoClient
             //Read config file to get customer_id
             int customerId = 1;
 
-            // Get machine information instanciated
+            // Get machine information into instantiated object
             MachineClass machine = new();
 
-            //POST API
+            //Serialize and send object to POST API route
             await PostMachineInfo(machine, customerId);
 
             //string appPath = "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\Common7\\IDE\\devenv.exe";
