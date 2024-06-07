@@ -32,7 +32,7 @@ namespace SystemInfoClient
                 new MediaTypeWithQualityHeaderValue("application/json"));
             client.DefaultRequestHeaders.Add("User-Agent", "Systeminfo App Client");
 
-            var route = "https://localhost:7056/api/Machines";
+            var route = "https://localhost:7056/api/Machines/Create";
 
             JsonSerializerOptions jsonOptions = new() { WriteIndented = true };
             var json = JsonSerializer.Serialize(machine, jsonOptions);
@@ -42,7 +42,12 @@ namespace SystemInfoClient
             var response = await client.PostAsync(route, content);
 
             if (response.IsSuccessStatusCode) {
-                Console.WriteLine($"Machine data sent successfully. Code: {response.StatusCode}");
+                Console.WriteLine(
+                    $"Machine data sent successfully.\r\n" +
+                    $"Code: {response.StatusCode}.\r\n" +
+                    $"Time: {response.Headers.Date}\r\n" +
+                    $"Location: {response.Headers.Location}"
+                );
             } else {
                 Console.WriteLine($"Post request failed: {response.StatusCode}");
             }
