@@ -52,30 +52,55 @@ namespace SystemInfoApi.Repositories
 
                 foreach (var drive in machine.Drives)
                 {
-                    using SqlCommand cmd = new(driveSql, connection);
+                    drive.MachineId = machineId;
 
-                    cmd.Parameters.AddWithValue("@machineId", machineId);
-                    cmd.Parameters.AddWithValue("@driveName", drive.Name);
-                    cmd.Parameters.AddWithValue("@rootDir", drive.RootDirectory);
-                    cmd.Parameters.AddWithValue("@label", drive.Label);
-                    cmd.Parameters.AddWithValue("@type", drive.Type);
-                    cmd.Parameters.AddWithValue("@format", drive.Format);
-                    cmd.Parameters.AddWithValue("@size", drive.Size);
-                    cmd.Parameters.AddWithValue("@freeSpace", drive.FreeSpace);
-                    cmd.Parameters.AddWithValue("@totalSpace", drive.TotalSpace);
-                    cmd.Parameters.AddWithValue("@freeSpacePer", drive.FreeSpacePercentage);
-                    cmd.Parameters.AddWithValue("@isSystemDrive", drive.IsSystemDrive);
+                    using SqlCommand driveCmd = new(driveSql, connection);
 
-                    var newDriveId = await cmd.ExecuteScalarAsync();
+                    driveCmd.Parameters.AddWithValue("@machineId", machineId);
+                    driveCmd.Parameters.AddWithValue("@driveName", drive.Name);
+                    driveCmd.Parameters.AddWithValue("@rootDir", drive.RootDirectory);
+                    driveCmd.Parameters.AddWithValue("@label", drive.Label);
+                    driveCmd.Parameters.AddWithValue("@type", drive.Type);
+                    driveCmd.Parameters.AddWithValue("@format", drive.Format);
+                    driveCmd.Parameters.AddWithValue("@size", drive.Size);
+                    driveCmd.Parameters.AddWithValue("@freeSpace", drive.FreeSpace);
+                    driveCmd.Parameters.AddWithValue("@totalSpace", drive.TotalSpace);
+                    driveCmd.Parameters.AddWithValue("@freeSpacePer", drive.FreeSpacePercentage);
+                    driveCmd.Parameters.AddWithValue("@isSystemDrive", drive.IsSystemDrive);
+
+                    var newDriveId = await driveCmd.ExecuteScalarAsync();
                     driveId = Convert.ToInt32(newDriveId);
                     drive.Id = driveId;
 
-                    if(drive.IsSystemDrive)
-                    {
-                        OsModel newOs = new()
-                        {
+                    int osId;
 
-                        };
+                    // Operating System
+                    if(drive.Os != null)
+                    {
+                        drive.Os.DriveId = driveId;
+
+                        string osSql = @"
+                            INSERT INTO Client_Machine_Disque_Os
+                                (id_client_machine_disque, Directory, Architecture, Version, Product_Name, Release_Id, Current_Build, Ubr)
+                            VALUES 
+                                (@driveId, @directory, @architecture, @version, @productName, @releaseId, @currentBuild, @ubr);
+
+                            SELECT SCOPE_IDENTITY();";
+
+                        using SqlCommand osCmd = new(osSql, connection);
+
+                        osCmd.Parameters.AddWithValue("@driveId", driveId);
+                        osCmd.Parameters.AddWithValue("@directory", drive.Os?.Directory);
+                        osCmd.Parameters.AddWithValue("@architecture", drive.Os?.Architecture);
+                        osCmd.Parameters.AddWithValue("@version", drive.Os?.Version);
+                        osCmd.Parameters.AddWithValue("@productName", drive.Os?.ProductName);
+                        osCmd.Parameters.AddWithValue("@releaseId", drive.Os?.ReleaseId);
+                        osCmd.Parameters.AddWithValue("@currentBuild", drive.Os?.CurrentBuild);
+                        osCmd.Parameters.AddWithValue("@ubr", drive.Os?.Ubr);
+
+                        var newOsId = await osCmd.ExecuteScalarAsync();
+                        osId = Convert.ToInt32(newOsId);
+                        drive.Os.Id = osId;
                     }
                 }
                 await connection.CloseAsync();

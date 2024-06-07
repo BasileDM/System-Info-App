@@ -7,11 +7,11 @@ namespace SystemInfoApi.Models
     {
         [Column("id_client_machine_disque_os")]
         public int? Id { get; set; }
-        public string Directory { get; set; }
+        public string? Directory { get; set; }
 
-        public string Architecture { get; set; }
+        public string? Architecture { get; set; }
 
-        public string Version { get; set; }
+        public string? Version { get; set; }
 
         [Column("Product_Name")]
         public string? ProductName { get; set; }
