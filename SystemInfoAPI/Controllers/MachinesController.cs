@@ -1,15 +1,13 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using SystemInfoApi.Models;
-using SystemInfoApi.Repositories;
+using SystemInfoApi.Services;
 
 namespace SystemInfoApi.Controllers
 {
     [Route("api/[controller]/[action]")]
     [ApiController]
-    public class MachinesController(MachinesRepository machinesRepository) : ControllerBase
+    public class MachinesController(MachinesService machinesService) : ControllerBase
     {
-        private readonly MachinesRepository _MachinesRepository = machinesRepository;
-
         // POST: api/<Machines>/Create
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
@@ -24,7 +22,7 @@ namespace SystemInfoApi.Controllers
 
             try
             {
-                MachineModel newMachine = await _MachinesRepository.PostAsync(machine);
+                MachineModel newMachine = await machinesService.CreateMachineAsync(machine);
 
                 if (newMachine == null)
                 {
@@ -46,7 +44,7 @@ namespace SystemInfoApi.Controllers
         [HttpGet]
         public async Task<ActionResult<List<MachineModel>>> GetAll()
         {
-            List<MachineModel> machinesList = await _MachinesRepository.GetAllAsync();
+            List<MachineModel> machinesList = await machinesService.GetAllAsync();
 
             if (machinesList.Count > 0)
             {
@@ -62,7 +60,7 @@ namespace SystemInfoApi.Controllers
         [HttpGet("{machineId:int:min(0)}")]
         public async Task<ActionResult<MachineModel>> GetById(int machineId)
         {
-            MachineModel machine = await _MachinesRepository.GetByIdAsync(machineId);
+            MachineModel machine = await machinesService.GetByIdAsync(machineId);
 
             if (machine.Id != null)
             {

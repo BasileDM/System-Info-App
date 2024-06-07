@@ -7,7 +7,7 @@ namespace SystemInfoApi.Models
     public class DriveModel
     {
         [Column("id_client_machine_disque")]
-        public int? Id { get; set; }
+        public int Id { get; set; }
 
         public string Name { get; set; }
 

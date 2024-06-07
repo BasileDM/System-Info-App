@@ -6,26 +6,23 @@ namespace SystemInfoApi.Repositories
 {
     public class MachinesRepository(IConfiguration config) : Database(config)
     {
-        /// <summary>Asynchronously create a new machine entry in the database, Drives, Os etc. included.</summary>
-        /// <param name="machine">The machine to add to the DB.</param>
+        /// <summary>Asynchronously inserts a new machine entry in the database.</summary>
+        /// <param name="machine">The <see cref="MachineModel"/> to add to the DB.</param>
         /// <returns>
-        ///     The <see cref="MachineModel"/> with the newly created IDs from the database
+        ///     The <see cref="MachineModel"/> with the newly created ID from the database.
         /// </returns>
-        public async Task<MachineModel> PostAsync(MachineModel machine)
+        public async Task<MachineModel> InsertAsync(MachineModel machine)
         {
             try
             {
                 await using SqlConnection connection = GetConnection();
                 await connection.OpenAsync();
 
-                // Machine
                 string machineSql = @"
                     INSERT INTO Client_Machine (id_client, Name) 
                     VALUES (@customerId, @machineName);
 
                     SELECT SCOPE_IDENTITY();";
-
-                int machineId;
 
                 using (SqlCommand cmd = new(machineSql, connection))
                 {
@@ -33,84 +30,17 @@ namespace SystemInfoApi.Repositories
                     cmd.Parameters.AddWithValue("@machineName", machine.Name);
 
                     var newMachineId = await cmd.ExecuteScalarAsync();
-                    machineId = Convert.ToInt32(newMachineId);
-                    machine.Id = machineId;
+                    machine.Id = Convert.ToInt32(newMachineId);
                 }
 
-                // Drives
-                string driveSql = @"
-                    INSERT INTO Client_Machine_Disque 
-                        (id_client_machine, Name, Root_Directory, Label, Type, Format, Size, Free_Space, Total_Space, Free_Space_Percentage, Is_System_Drive)
-                    VALUES 
-                        (@machineId, @driveName, @rootDir, @label, @type, @format, @size, @freeSpace, @totalSpace, @freeSpacePer, @isSystemDrive);
-
-                    SELECT SCOPE_IDENTITY();";
-
-                int driveId;
-
-                foreach (var drive in machine.Drives)
-                {
-                    drive.MachineId = machineId;
-
-                    using SqlCommand driveCmd = new(driveSql, connection);
-
-                    driveCmd.Parameters.AddWithValue("@machineId", machineId);
-                    driveCmd.Parameters.AddWithValue("@driveName", drive.Name);
-                    driveCmd.Parameters.AddWithValue("@rootDir", drive.RootDirectory);
-                    driveCmd.Parameters.AddWithValue("@label", drive.Label);
-                    driveCmd.Parameters.AddWithValue("@type", drive.Type);
-                    driveCmd.Parameters.AddWithValue("@format", drive.Format);
-                    driveCmd.Parameters.AddWithValue("@size", drive.Size);
-                    driveCmd.Parameters.AddWithValue("@freeSpace", drive.FreeSpace);
-                    driveCmd.Parameters.AddWithValue("@totalSpace", drive.TotalSpace);
-                    driveCmd.Parameters.AddWithValue("@freeSpacePer", drive.FreeSpacePercentage);
-                    driveCmd.Parameters.AddWithValue("@isSystemDrive", drive.IsSystemDrive);
-
-                    var newDriveId = await driveCmd.ExecuteScalarAsync();
-                    driveId = Convert.ToInt32(newDriveId);
-                    drive.Id = driveId;
-
-                    int osId;
-
-                    // Operating System
-                    if (drive.Os != null)
-                    {
-                        drive.Os.DriveId = driveId;
-
-                        string osSql = @"
-                            INSERT INTO Client_Machine_Disque_Os
-                                (id_client_machine_disque, Directory, Architecture, Version, Product_Name, Release_Id, Current_Build, Ubr)
-                            VALUES 
-                                (@driveId, @directory, @architecture, @version, @productName, @releaseId, @currentBuild, @ubr);
-
-                            SELECT SCOPE_IDENTITY();";
-
-                        using SqlCommand osCmd = new(osSql, connection);
-
-                        osCmd.Parameters.AddWithValue("@driveId", driveId);
-                        osCmd.Parameters.AddWithValue("@directory", drive.Os?.Directory);
-                        osCmd.Parameters.AddWithValue("@architecture", drive.Os?.Architecture);
-                        osCmd.Parameters.AddWithValue("@version", drive.Os?.Version);
-                        osCmd.Parameters.AddWithValue("@productName", drive.Os?.ProductName);
-                        osCmd.Parameters.AddWithValue("@releaseId", drive.Os?.ReleaseId);
-                        osCmd.Parameters.AddWithValue("@currentBuild", drive.Os?.CurrentBuild);
-                        osCmd.Parameters.AddWithValue("@ubr", drive.Os?.Ubr);
-
-                        var newOsId = await osCmd.ExecuteScalarAsync();
-                        osId = Convert.ToInt32(newOsId);
-                        drive.Os.Id = osId;
-                    }
-                }
                 await connection.CloseAsync();
-
                 return machine;
+
             }
             catch (Exception ex)
             {
-                throw new ApplicationException(
-                    "An error occured inserting the machine into the database.", ex);
+                throw new ApplicationException("An error occured inserting the machine into the database.", ex);
             }
-
         }
 
         /// <summary>Gets all the machines without details (embedded models).</summary>
@@ -256,6 +186,6 @@ namespace SystemInfoApi.Repositories
                 throw new ApplicationException("Could not retrieve data from the database", ex);
             }
             return machine;
-        }
+}
     }
 }

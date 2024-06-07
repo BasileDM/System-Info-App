@@ -3,7 +3,6 @@ using System.Runtime.Versioning;
 using System.Text;
 using System.Text.Json;
 using SystemInfoClient.Classes;
-using SystemInfoClient.Services;
 
 namespace SystemInfoClient
 {
