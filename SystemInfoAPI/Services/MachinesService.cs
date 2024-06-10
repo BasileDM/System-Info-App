@@ -1,41 +1,85 @@
-﻿using SystemInfoApi.Models;
+﻿using System.Data.Common;
+using System.Data.SqlClient;
+using System.Reflection.PortableExecutable;
+using System.Transactions;
+using SystemInfoApi.Classes;
+using SystemInfoApi.Models;
 using SystemInfoApi.Repositories;
 
 namespace SystemInfoApi.Services
 {
-    public class MachinesService(MachinesRepository machinesRepository, DrivesRepository drivesRepository, OsRepository osRepository)
+    public class MachinesService(MachinesRepository machinesRepository, DrivesRepository drivesRepository,
+        OsRepository osRepository, IConfiguration config) : Database(config)
     {
-        /// <summary>Handles business logic to create a machine in the database, making calls to the proper repositories.</summary>
+        /// <summary>Handles SQL connection and transaction to create a new machine in the database.</summary>
         /// <param name="machine">The <see cref="MachineModel"/> object without IDs to handle.</param>
         /// <returns>
-        ///   <br /> A new <see cref="MachineModel"/> object with the created IDs from the database
+        ///   <br /> A new <see cref="MachineModel"/> object with the created IDs from the database.
         /// </returns>
-        public async Task<MachineModel> CreateMachineAsync(MachineModel machine)
+        public async Task<MachineModel> CreateMachineTransactionAsync(MachineModel machine)
         {
-            // Insert machine and get new ID
-            MachineModel newMachine = await machinesRepository.InsertAsync(machine);
-            List<DriveModel> updatedDrives = [];
+            await using SqlConnection connection = GetConnection();
+            await connection.OpenAsync();
+            var transaction = connection.BeginTransaction();
 
-            foreach (DriveModel drive in machine.Drives)
+            try
             {
-                // Set new machineId on drive and insert
-                drive.MachineId = newMachine.Id;
-                DriveModel newDrive = await drivesRepository.InsertAsync(drive);
-
-                if (drive.IsSystemDrive && drive.Os != null)
-                {
-                    // Set new driveId on OS and insert
-                    drive.Os.DriveId = newDrive.Id;
-                    OsModel newOs = await osRepository.InsertAsync(drive.Os);
-
-                    // Update drive.OS with new created ID
-                    newDrive.Os = newOs;
-                }
-                updatedDrives.Add(newDrive);
+                MachineModel newMachine = await InsertFullMachineAsync(machine, connection, transaction);
+                transaction.Commit();
+                return newMachine;
             }
-            // Update machine with drives containing the proper IDs
-            newMachine.Drives = updatedDrives;
-            return newMachine;
+            catch (Exception ex)
+            {
+                transaction.Rollback();
+                throw new ApplicationException("Error finalising the transaction with the database. Rolling back...", ex);
+            }
+            finally
+            {
+                await connection.CloseAsync();
+            }
+        }
+
+        /// <summary>Handles business logic to create a new full machine in the database.</summary>
+        /// <param name="machine">The <see cref="MachineModel"/> object without IDs to handle.</param>
+        /// <param name="connection">The <see cref="SqlConnection"/> to use.</param>
+        /// <param name="transaction">The <see cref="SqlTransaction"/> object to give the repositories that will be rolled back in case of error.</param>
+        /// <returns>
+        ///   <br /> A new <see cref="MachineModel"/> object with the created IDs from the database.
+        /// </returns>
+        private async Task<MachineModel> InsertFullMachineAsync(MachineModel machine, SqlConnection connection, SqlTransaction transaction)
+        {
+            try
+            {
+                // Insert machine and get new ID
+                MachineModel updatedMachine = await machinesRepository.InsertAsync(machine, connection, transaction);
+                List<DriveModel> updatedDrivesList = [];
+
+                foreach (DriveModel drive in machine.Drives)
+                {
+                    // Set new machineId on drive and insert
+                    drive.MachineId = updatedMachine.Id;
+                    DriveModel updatedDrive = await drivesRepository.InsertAsync(drive, connection, transaction);
+
+                    if (drive.IsSystemDrive && drive.Os != null)
+                    {
+                        // Set new driveId on OS and insert
+                        drive.Os.DriveId = updatedDrive.Id;
+                        OsModel updatedOs = await osRepository.InsertAsync(drive.Os, connection, transaction);
+
+                        // Update drive.OS with new created ID
+                        updatedDrive.Os = updatedOs;
+                    }
+                    updatedDrivesList.Add(updatedDrive);
+                }
+                // Update machine with drives containing the proper IDs
+                updatedMachine.Drives = updatedDrivesList;
+                return updatedMachine;
+            }
+            catch (Exception ex)
+            {
+
+                throw new ApplicationException("Service error while handling the machine creation logic.", ex);
+            }
         }
 
         public async Task<MachineModel> GetByIdAsync(int machineId)

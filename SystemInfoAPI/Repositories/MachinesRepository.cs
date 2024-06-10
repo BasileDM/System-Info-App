@@ -1,30 +1,28 @@
-﻿using System.Data.SqlClient;
+﻿using System.Data.Common;
+using System.Data.SqlClient;
 using SystemInfoApi.Classes;
 using SystemInfoApi.Models;
 
 namespace SystemInfoApi.Repositories
 {
-    public class MachinesRepository(IConfiguration config) : Database(config)
+    public class MachinesRepository
     {
         /// <summary>Asynchronously inserts a new machine entry in the database.</summary>
         /// <param name="machine">The <see cref="MachineModel"/> to add to the DB.</param>
         /// <returns>
         ///     The <see cref="MachineModel"/> with the newly created ID from the database.
         /// </returns>
-        public async Task<MachineModel> InsertAsync(MachineModel machine)
+        public async Task<MachineModel> InsertAsync(MachineModel machine, SqlConnection connection, SqlTransaction transaction)
         {
             try
             {
-                await using SqlConnection connection = GetConnection();
-                await connection.OpenAsync();
-
                 string machineSql = @"
                     INSERT INTO Client_Machine (id_client, Name) 
                     VALUES (@customerId, @machineName);
 
                     SELECT SCOPE_IDENTITY();";
 
-                using (SqlCommand cmd = new(machineSql, connection))
+                using (SqlCommand cmd = new(machineSql, connection, transaction))
                 {
                     cmd.Parameters.AddWithValue("@customerId", machine.CustomerId);
                     cmd.Parameters.AddWithValue("@machineName", machine.Name);
@@ -32,8 +30,6 @@ namespace SystemInfoApi.Repositories
                     var newMachineId = await cmd.ExecuteScalarAsync();
                     machine.Id = Convert.ToInt32(newMachineId);
                 }
-
-                await connection.CloseAsync();
                 return machine;
 
             }
@@ -53,7 +49,7 @@ namespace SystemInfoApi.Repositories
 
             try
             {
-                await using SqlConnection connection = GetConnection();
+                await using SqlConnection connection = new();
                 await connection.OpenAsync();
 
                 const string sqlRequest =
@@ -96,7 +92,7 @@ namespace SystemInfoApi.Repositories
 
             try
             {
-                await using SqlConnection connection = GetConnection();
+                await using SqlConnection connection = new();
                 await connection.OpenAsync();
 
                 const string sqlRequest = @"
