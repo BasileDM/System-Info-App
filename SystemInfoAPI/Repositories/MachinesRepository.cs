@@ -1,9 +1,10 @@
 ﻿using System.Data.SqlClient;
+using SystemInfoApi.Classes;
 using SystemInfoApi.Models;
 
 namespace SystemInfoApi.Repositories
 {
-    public class MachinesRepository
+    public class MachinesRepository(IConfiguration config) : Database(config)
     {
         /// <summary>Asynchronously inserts a new machine entry in the database.</summary>
         /// <param name="machine">The <see cref="MachineModel"/> to add to the DB.</param>
@@ -47,7 +48,7 @@ namespace SystemInfoApi.Repositories
 
             try
             {
-                await using SqlConnection connection = new();
+                await using SqlConnection connection = GetConnection();
                 await connection.OpenAsync();
 
                 const string sqlRequest =
@@ -90,7 +91,7 @@ namespace SystemInfoApi.Repositories
 
             try
             {
-                await using SqlConnection connection = new();
+                await using SqlConnection connection = GetConnection();
                 await connection.OpenAsync();
 
                 const string sqlRequest = @"
