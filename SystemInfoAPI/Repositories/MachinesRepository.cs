@@ -1,6 +1,4 @@
-﻿using System.Data.Common;
-using System.Data.SqlClient;
-using SystemInfoApi.Classes;
+﻿using System.Data.SqlClient;
 using SystemInfoApi.Models;
 
 namespace SystemInfoApi.Repositories
