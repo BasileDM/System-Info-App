@@ -12,16 +12,18 @@ namespace SystemInfoClient.Services
         /// <returns>
         ///   A <see cref="string"/> of the registry value or the default value if an error occured.
         /// </returns>
-        public static string? GetRegistryValue(string keyPath, string valueName, string defaultValue) {
-            try {
+        public static string? GetRegistryValue(string keyPath, string valueName, string defaultValue)
+        {
+            try
+            {
                 RegistryKey? key = Registry.LocalMachine.OpenSubKey(keyPath);
                 return key?.GetValue(valueName)?.ToString();
             }
-            catch (Exception ex) {
+            catch (Exception ex)
+            {
                 Console.WriteLine($"Error reading registry: {ex.Message}");
                 return defaultValue;
             }
         }
-
     }
 }

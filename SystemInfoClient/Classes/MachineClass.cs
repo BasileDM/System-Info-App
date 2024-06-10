@@ -17,18 +17,6 @@ namespace SystemInfoClient.Classes
                 Name = Environment.MachineName;
                 Drives = [];
 
-                while (true)
-                {
-                    Console.Write("Customer ID: ");
-                    string? CustomerIdStr = Console.ReadLine();
-                    if (CustomerIdStr != String.Empty && int.TryParse(CustomerIdStr, out int CustomerIdInt))
-                    {
-                        CustomerId = CustomerIdInt;
-                        break;
-                    }
-                    Console.WriteLine("Invalid customer ID number.");
-                }
-
                 string? systemDrive = Path.GetPathRoot(Environment.SystemDirectory);
 
                 foreach (var drive in DriveInfo.GetDrives())
@@ -48,6 +36,7 @@ namespace SystemInfoClient.Classes
 
         public void LogInfo() {
             Console.WriteLine($"Device name: {Name}");
+            Console.WriteLine($"Customer ID: {CustomerId}");
             Console.WriteLine();
             foreach (var drive in Drives) {
                 drive.LogInfo();
