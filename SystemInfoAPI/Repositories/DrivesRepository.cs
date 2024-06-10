@@ -1,23 +1,19 @@
 ﻿using System.Data.SqlClient;
-using SystemInfoApi.Classes;
 using SystemInfoApi.Models;
 
 namespace SystemInfoApi.Repositories
 {
-    public class DrivesRepository(IConfiguration config) : Database(config)
+    public class DrivesRepository
     {
         /// <summary>Asynchronously inserts a new drive entry in the database.</summary>
         /// <param name="drive">The <see cref="DriveModel"/> to add to the DB.</param>
         /// <returns>
         ///     The <see cref="DriveModel"/> with the newly created ID from the database.
         /// </returns>
-        public async Task<DriveModel> InsertAsync(DriveModel drive)
+        public async Task<DriveModel> InsertAsync(DriveModel drive, SqlConnection connection, SqlTransaction transaction)
         {
             try
             {
-                await using SqlConnection connection = GetConnection();
-                await connection.OpenAsync();
-
                 string sqlRequest = @"
                     INSERT INTO Client_Machine_Disque 
                         (id_client_machine, Name, Root_Directory, Label, Type, Format, Size, Free_Space, Total_Space, Free_Space_Percentage, Is_System_Drive)
@@ -26,7 +22,7 @@ namespace SystemInfoApi.Repositories
 
                     SELECT SCOPE_IDENTITY();";
 
-                using (SqlCommand cmd = new(sqlRequest, connection))
+                using (SqlCommand cmd = new(sqlRequest, connection, transaction))
                 {
                     cmd.Parameters.AddWithValue("@machineId", drive.MachineId);
                     cmd.Parameters.AddWithValue("@driveName", drive.Name);
@@ -43,8 +39,6 @@ namespace SystemInfoApi.Repositories
                     var newDriveId = await cmd.ExecuteScalarAsync();
                     drive.Id = Convert.ToInt32(newDriveId);
                 }
-
-                await connection.CloseAsync();
                 return drive;
 
             }

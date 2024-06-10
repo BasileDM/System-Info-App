@@ -1,23 +1,19 @@
 ﻿using System.Data.SqlClient;
-using SystemInfoApi.Classes;
 using SystemInfoApi.Models;
 
 namespace SystemInfoApi.Repositories
 {
-    public class OsRepository(IConfiguration config) : Database(config)
+    public class OsRepository
     {
         /// <summary>Asynchronously inserts a new Operating System entry in the database.</summary>
         /// <param name="os">The <see cref="OsModel"/> to add to the DB.</param>
         /// <returns>
         ///     The <see cref="OsModel"/> with the newly created ID from the database.
         /// </returns>
-        public async Task<OsModel> InsertAsync(OsModel os)
+        public async Task<OsModel> InsertAsync(OsModel os, SqlConnection connection, SqlTransaction transaction)
         {
             try
             {
-                await using SqlConnection connection = GetConnection();
-                await connection.OpenAsync();
-
                 string sqlRequest = @"
                     INSERT INTO Client_Machine_Disque_Os
                         (id_client_machine_disque, Directory, Architecture, Version, Product_Name, Release_Id, Current_Build, Ubr)
@@ -26,7 +22,7 @@ namespace SystemInfoApi.Repositories
 
                     SELECT SCOPE_IDENTITY();";
 
-                using (SqlCommand cmd = new(sqlRequest, connection))
+                using (SqlCommand cmd = new(sqlRequest, connection, transaction))
                 {
                     cmd.Parameters.AddWithValue("@driveId", os.DriveId);
                     cmd.Parameters.AddWithValue("@directory", os.Directory);
@@ -40,8 +36,6 @@ namespace SystemInfoApi.Repositories
                     var newOsId = await cmd.ExecuteScalarAsync();
                     os.Id = Convert.ToInt32(newOsId);
                 }
-
-                await connection.CloseAsync();
                 return os;
 
             }

@@ -22,11 +22,11 @@ namespace SystemInfoApi.Controllers
 
             try
             {
-                MachineModel newMachine = await machinesService.CreateMachineAsync(machine);
+                MachineModel newMachine = await machinesService.CreateMachineTransactionAsync(machine);
 
-                if (newMachine == null)
+                if (newMachine.Id == 0)
                 {
-                    return StatusCode(500, "An error occured creating the new machine. Machine is null.");
+                    return StatusCode(500, "An error occured creating the new machine. Machine ID is null.");
                 }
                 else
                 {
