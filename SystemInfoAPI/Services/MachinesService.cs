@@ -1,7 +1,4 @@
-﻿using System.Data.Common;
-using System.Data.SqlClient;
-using System.Reflection.PortableExecutable;
-using System.Transactions;
+﻿using System.Data.SqlClient;
 using SystemInfoApi.Classes;
 using SystemInfoApi.Models;
 using SystemInfoApi.Repositories;
@@ -35,6 +32,8 @@ namespace SystemInfoApi.Services
             }
             finally
             {
+
+                transaction.Dispose();
                 await connection.CloseAsync();
             }
         }
