@@ -22,18 +22,17 @@ namespace SystemInfoApi.Services
             try
             {
                 MachineModel newMachine = await InsertFullMachineAsync(machine, connection, transaction);
-                transaction.Commit();
+                await transaction.CommitAsync();
                 return newMachine;
             }
             catch (Exception ex)
             {
-                transaction.Rollback();
+                await transaction.RollbackAsync();
                 throw new ApplicationException("Error finalising the transaction with the database. Rolling back...", ex);
             }
             finally
             {
-
-                transaction.Dispose();
+                await transaction.DisposeAsync();
                 await connection.CloseAsync();
             }
         }
@@ -76,7 +75,6 @@ namespace SystemInfoApi.Services
             }
             catch (Exception ex)
             {
-
                 throw new ApplicationException("Service error while handling the machine creation logic.", ex);
             }
         }

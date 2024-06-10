@@ -24,7 +24,7 @@ namespace SystemInfoApi.Controllers
             {
                 MachineModel newMachine = await machinesService.CreateMachineTransactionAsync(machine);
 
-                if (newMachine.Id != 0)
+                if (newMachine.Id == 0)
                 {
                     return StatusCode(500, "An error occured creating the new machine. Machine ID is null.");
                 }
