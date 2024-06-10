@@ -28,12 +28,10 @@ namespace SystemInfoApi.Services
                     drive.Os.DriveId = newDrive.Id;
                     OsModel newOs = await osRepository.InsertAsync(drive.Os);
 
-                    // Update drive.OS with new created ID
                     newDrive.Os = newOs;
                 }
                 updatedDrives.Add(newDrive);
             }
-            // Update machine with drives containing the proper IDs
             newMachine.Drives = updatedDrives;
             return newMachine;
         }
