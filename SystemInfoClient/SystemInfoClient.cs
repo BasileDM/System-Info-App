@@ -23,20 +23,17 @@ namespace SystemInfoClient
             }
 
             // Instantiate object with machine info and customer ID from settings file
-            MachineClass machine = new()
-            {
-                CustomerId = customerId
-            };
+            MachineClass machine = new(){ CustomerId = customerId };
 
             machine.LogInfo();
             ApplicationsService.LogExeInfo(settings.Applications["AnyDesk"]);
 
             //Serialize and send object to POST API route
-            await PostMachineInfo(machine, customerId);
+            //await PostMachineInfo(machine);
 
         }
 
-        private static async Task PostMachineInfo(MachineClass machine, int? customerId)
+        private static async Task PostMachineInfo(MachineClass machine)
         {
             HttpClient client = new();
             client.DefaultRequestHeaders.Accept.Clear();
