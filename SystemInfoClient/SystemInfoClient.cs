@@ -29,7 +29,7 @@ namespace SystemInfoClient
             ApplicationsService.LogExeInfo(settings.Applications["AnyDesk"]);
 
             //Serialize and send object to POST API route
-            //await PostMachineInfo(machine);
+            await PostMachineInfo(machine);
 
         }
 

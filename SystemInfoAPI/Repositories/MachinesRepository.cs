@@ -4,7 +4,7 @@ using SystemInfoApi.Models;
 
 namespace SystemInfoApi.Repositories
 {
-    public class MachinesRepository(IConfiguration config) : Database(config)
+    public class MachinesRepository(IConfiguration config, IWebHostEnvironment env) : Database(config, env)
     {
         /// <summary>Asynchronously inserts a new machine entry in the database.</summary>
         /// <param name="machine">The <see cref="MachineModel"/> to add to the DB.</param>

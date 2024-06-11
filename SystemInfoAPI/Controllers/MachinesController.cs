@@ -9,7 +9,6 @@ namespace SystemInfoApi.Controllers
     public class MachinesController(MachinesService machinesService) : ControllerBase
     {
         // POST: api/<Machines>/Create
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         [Consumes("application/json")]
         public async Task<ActionResult<MachineModel>> Create([FromBody] MachineModel machine)

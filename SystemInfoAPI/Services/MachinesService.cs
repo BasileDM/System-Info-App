@@ -6,7 +6,7 @@ using SystemInfoApi.Repositories;
 namespace SystemInfoApi.Services
 {
     public class MachinesService(MachinesRepository machinesRepository, DrivesRepository drivesRepository,
-        OsRepository osRepository, IConfiguration config) : Database(config)
+        OsRepository osRepository, IConfiguration config, IWebHostEnvironment env) : Database(config, env)
     {
         /// <summary>Handles SQL connection and transaction to create a new machine in the database.</summary>
         /// <param name="machine">The <see cref="MachineModel"/> object without IDs to handle.</param>
