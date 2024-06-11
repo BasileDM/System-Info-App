@@ -1,4 +1,3 @@
-using System.Data.SqlClient;
 using SystemInfoApi.Classes;
 using SystemInfoApi.Middleware;
 using SystemInfoApi.Repositories;
@@ -13,6 +12,7 @@ namespace SystemInfoApi
             var builder = WebApplication.CreateBuilder(args);
 
             // Add services to the container.
+
             builder.Services.AddControllers(); 
             builder.Services.AddScoped<MachinesService>();
             builder.Services.AddScoped<MachinesRepository>();
@@ -25,25 +25,26 @@ namespace SystemInfoApi
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
+
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
                 app.UseSwaggerUI();
             }
 
-
             app.UseHttpsRedirection();
 
-            app.UseAuthorization();
+            app.UseRouting();
 
-            app.UseRouting();  //experimental
-            app.MapControllers(); //experimental
+            app.UseAuthorization();
 
             // Add 406 error code to ensure application/json accept header is present in requests
             app.UseMiddleware<NotAcceptableMiddleware>();
 
             // Try establishing a connection to the database and check if tables exist
             Database.Init(app);
+
+            app.MapControllers();
 
             app.Run();
         }
