@@ -7,6 +7,8 @@ namespace SystemInfoApi.Repositories
     {
         /// <summary>Asynchronously inserts a new Operating System entry in the database.</summary>
         /// <param name="os">The <see cref="OsModel"/> to add to the DB.</param>
+        /// <param name="connection">The <see cref="SqlConnection"/> to use.</param>
+        /// <param name="transaction">The <see cref="SqlTransaction"/> to use.</param>
         /// <returns>
         ///     The <see cref="OsModel"/> with the newly created ID from the database.
         /// </returns>

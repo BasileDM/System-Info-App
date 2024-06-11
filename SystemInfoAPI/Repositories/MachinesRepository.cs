@@ -8,6 +8,8 @@ namespace SystemInfoApi.Repositories
     {
         /// <summary>Asynchronously inserts a new machine entry in the database.</summary>
         /// <param name="machine">The <see cref="MachineModel"/> to add to the DB.</param>
+        /// <param name="connection">The <see cref="SqlConnection"/> to use.</param>
+        /// <param name="transaction">The <see cref="SqlTransaction"/> to use.</param>
         /// <returns>
         ///     The <see cref="MachineModel"/> with the newly created ID from the database.
         /// </returns>

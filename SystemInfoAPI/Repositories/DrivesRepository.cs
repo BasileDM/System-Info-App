@@ -7,6 +7,8 @@ namespace SystemInfoApi.Repositories
     {
         /// <summary>Asynchronously inserts a new drive entry in the database.</summary>
         /// <param name="drive">The <see cref="DriveModel"/> to add to the DB.</param>
+        /// <param name="connection">The <see cref="SqlConnection"/> to use.</param>
+        /// <param name="transaction">The <see cref="SqlTransaction"/> to use.</param>
         /// <returns>
         ///     The <see cref="DriveModel"/> with the newly created ID from the database.
         /// </returns>
