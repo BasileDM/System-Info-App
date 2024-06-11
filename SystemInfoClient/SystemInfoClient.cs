@@ -62,7 +62,9 @@ namespace SystemInfoClient
             }
             else
             {
-                Console.WriteLine($"Post request failed: {response.StatusCode}");
+                var errorContent = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"\r\n" +
+                    $"{response.ReasonPhrase}: {errorContent}");
             }
         }
 

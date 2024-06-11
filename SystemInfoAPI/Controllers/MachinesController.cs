@@ -46,10 +46,15 @@ namespace SystemInfoApi.Controllers
                     return response;
                 }
             }
+            catch (ArgumentException ex)
+            {
+                Console.WriteLine(ex.Message);
+                return BadRequest("Invalid request, check API logs for more information.");
+            }
             catch (Exception ex)
             {
-                Console.WriteLine(ex);
-                return StatusCode(500, "Internal server error.");
+                Console.WriteLine(ex.Message);
+                return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
 

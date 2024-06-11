@@ -25,6 +25,11 @@ namespace SystemInfoApi.Services
                 await transaction.CommitAsync();
                 return newMachine;
             }
+            catch (ArgumentException ex)
+            {
+                await transaction.RollbackAsync();
+                throw new ArgumentException(ex.Message);
+            }
             catch (Exception ex)
             {
                 await transaction.RollbackAsync();
@@ -72,6 +77,10 @@ namespace SystemInfoApi.Services
                 // Update machine with drives containing the proper IDs
                 updatedMachine.Drives = updatedDrivesList;
                 return updatedMachine;
+            }
+            catch (ArgumentException ex)
+            {
+                throw new ArgumentException(ex.Message);
             }
             catch (Exception ex)
             {
