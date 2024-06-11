@@ -6,7 +6,7 @@ using SystemInfoApi.Repositories;
 namespace SystemInfoApi.Services
 {
     public class MachinesService(MachinesRepository machinesRepository, DrivesRepository drivesRepository,
-        OsRepository osRepository, IConfiguration config) : Database(config)
+        OsRepository osRepository, IConfiguration config, IWebHostEnvironment env) : Database(config, env)
     {
         /// <summary>Handles SQL connection and transaction to create a new machine in the database.</summary>
         /// <param name="machine">The <see cref="MachineModel"/> object without IDs to handle.</param>
@@ -24,6 +24,11 @@ namespace SystemInfoApi.Services
                 MachineModel newMachine = await InsertFullMachineAsync(machine, connection, transaction);
                 await transaction.CommitAsync();
                 return newMachine;
+            }
+            catch (ArgumentException ex)
+            {
+                await transaction.RollbackAsync();
+                throw new ArgumentException(ex.Message);
             }
             catch (Exception ex)
             {
@@ -72,6 +77,10 @@ namespace SystemInfoApi.Services
                 // Update machine with drives containing the proper IDs
                 updatedMachine.Drives = updatedDrivesList;
                 return updatedMachine;
+            }
+            catch (ArgumentException ex)
+            {
+                throw new ArgumentException(ex.Message);
             }
             catch (Exception ex)
             {

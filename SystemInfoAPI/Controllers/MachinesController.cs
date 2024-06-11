@@ -9,7 +9,6 @@ namespace SystemInfoApi.Controllers
     public class MachinesController(MachinesService machinesService) : ControllerBase
     {
         // POST: api/<Machines>/Create
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         [Consumes("application/json")]
         public async Task<ActionResult<MachineModel>> Create([FromBody] MachineModel machine)
@@ -47,10 +46,15 @@ namespace SystemInfoApi.Controllers
                     return response;
                 }
             }
+            catch (ArgumentException ex)
+            {
+                Console.WriteLine(ex.Message);
+                return BadRequest("Invalid request, check API logs for more information.");
+            }
             catch (Exception ex)
             {
-                Console.WriteLine(ex);
-                return StatusCode(500, "Internal server error.");
+                Console.WriteLine(ex.Message);
+                return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
 

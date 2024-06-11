@@ -4,7 +4,7 @@ using SystemInfoApi.Models;
 
 namespace SystemInfoApi.Repositories
 {
-    public class MachinesRepository(IConfiguration config) : Database(config)
+    public class MachinesRepository(IConfiguration config, IWebHostEnvironment env) : Database(config, env)
     {
         /// <summary>Asynchronously inserts a new machine entry in the database.</summary>
         /// <param name="machine">The <see cref="MachineModel"/> to add to the DB.</param>
@@ -27,10 +27,14 @@ namespace SystemInfoApi.Repositories
                     cmd.Parameters.AddWithValue("@machineName", machine.Name);
 
                     var newMachineId = await cmd.ExecuteScalarAsync();
-                    machine.Id = Convert.ToInt32(newMachineId);
-                }
-                return machine;
 
+                    machine.Id = Convert.ToInt32(newMachineId);
+                    return machine;
+                }
+            }
+            catch (SqlException ex) when (ex.Number == 547) // Foreign key violation error number
+            {
+                throw new ArgumentException("The provided customer ID is invalid or does not exist in the database.");
             }
             catch (Exception ex)
             {
