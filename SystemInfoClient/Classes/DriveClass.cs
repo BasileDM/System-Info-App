@@ -17,7 +17,7 @@ namespace SystemInfoClient.Classes
         public bool IsSystemDrive { get; set; }
         public OsClass? Os { get; set; }
 
-        public DriveClass(DriveInfo drive, bool isSystemDrive) 
+        public DriveClass(DriveInfo drive, bool isSystemDrive)
         {
             try
             {
@@ -29,7 +29,7 @@ namespace SystemInfoClient.Classes
                 Size = drive.TotalSize;
                 FreeSpace = drive.AvailableFreeSpace;
                 TotalSpace = drive.TotalFreeSpace;
-                FreeSpacePercentage = (int)((double)drive.AvailableFreeSpace / drive.TotalSize * 100);
+                FreeSpacePercentage = CalculateFreeSpacePercentage(drive.AvailableFreeSpace, drive.TotalSize);
                 IsSystemDrive = isSystemDrive;
                 Os = IsSystemDrive ? new OsClass() : null;
             }
@@ -39,7 +39,8 @@ namespace SystemInfoClient.Classes
             }
         }
 
-        public void LogInfo() {
+        public void LogInfo()
+        {
             Console.WriteLine($"Drive Name: {Name}");
             Console.WriteLine($"Drive Label: {Label}");
             Console.WriteLine($"Drive Type: {Type}");
@@ -50,10 +51,23 @@ namespace SystemInfoClient.Classes
             Console.WriteLine($"Free Space Percentage: {FreeSpacePercentage}%");
             Console.WriteLine($"Is system drive: {IsSystemDrive}");
 
-            if (IsSystemDrive) {
+            if (IsSystemDrive)
+            {
                 Os?.LogInfo();
             }
             Console.WriteLine();
+        }
+
+        private int CalculateFreeSpacePercentage(long availableFreeSpace, long totalSize)
+        {
+            if (totalSize <= 0)
+            {
+                throw new ArgumentOutOfRangeException($"Error division by 0. Total drive size was null or negative on drive {Name}");
+            }
+            else
+            {
+                return (int)((double)availableFreeSpace / totalSize * 100);
+            }
         }
     }
 }
