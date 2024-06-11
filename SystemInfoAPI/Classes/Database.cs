@@ -21,53 +21,88 @@ namespace SystemInfoApi.Classes
             return new SqlConnection(_ConnectionString);
         }
 
-        public static bool Init(WebApplication app)
+        public static void Init(WebApplication app)
         {
             string? connectionString = app.Environment.IsDevelopment() ?
                 app.Configuration.GetConnectionString("SystemInfoDbDev") :
                 app.Configuration.GetConnectionString("SysteminfoDb");
 
+            using (SqlConnection connection = new(connectionString))
+            {
+                TryConnection(connection);
+                if (!DoTablesExist(connection)) { CreateTables(connection, app); }
+            };
+        }
+
+        private static void TryConnection(SqlConnection connection)
+        {
             try
             {
-                using (SqlConnection connection = new(connectionString))
-                {
-                    connection.Open();
-                    Console.WriteLine("Connection to the database established successfully."); 
-                    
-                    if (!CheckIfTablesExist(connection))
-                    {
-                        Console.WriteLine("Tables not detected. Creating tables...");
-                        string migrationPath = AppDomain.CurrentDomain.BaseDirectory + "/Migrations/SysteminfoDb.sql";
-                        ExecuteSqlScript(connection, migrationPath);
-                    }
-                    return true;
-                };
+                connection.Open();
+                Console.WriteLine("Connection to the database established successfully.\r\n");
             }
             catch (Exception ex)
             {
                 throw new Exception(
-                    "Error: Could not connect to the database, please check your appsettings.json configuration file.", ex);
+                    "Error connecting to the database, please check your appsettings.json configuration file.", ex);
             }
+
         }
 
-        private static bool CheckIfTablesExist(SqlConnection connection)
+        private static bool DoTablesExist(SqlConnection connection)
         {
-            string checkTablesSql = @"
+            try
+            {
+                string checkTablesSql = @"
                 SELECT COUNT(*) 
                 FROM information_schema.tables 
                 WHERE table_name = 'Client_Machine'";
 
-            using SqlCommand cmd = new(checkTablesSql, connection);
-            int? tableCount = (int?)cmd.ExecuteScalar();
-            return tableCount > 0;
+                using SqlCommand cmd = new(checkTablesSql, connection);
+                int? tableCount = (int?)cmd.ExecuteScalar();
+                return tableCount > 0;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(
+                    "Error verifying database tables.", ex);
+            }
         }
 
-        private static void ExecuteSqlScript (SqlConnection connection, string path)
+        private static void CreateTables(SqlConnection connection, WebApplication app)
         {
-            string script = File.ReadAllText(path);
+            try
+            {
+                string? answer;
+                do
+                {
+                    Console.WriteLine("Database tables not detected. Do you want to create them ? y/n \r\n");
+                    answer = Console.ReadLine()?.ToLower();
 
-            using SqlCommand cmd = new(script, connection);
-            cmd.ExecuteNonQuery();
+                } while (answer != "y" && answer != "n");
+
+                if (answer == "y")
+                {
+                    Console.WriteLine("Creating tables...\r\n");
+
+                    string migrationPath = AppDomain.CurrentDomain.BaseDirectory + "/Migrations/SysteminfoDb.sql";
+
+                    string script = File.ReadAllText(migrationPath);
+
+                    using SqlCommand cmd = new(script, connection);
+                    cmd.ExecuteNonQuery();
+                }
+                else if (answer == "n") 
+                {
+                    Console.WriteLine("Aborting table creation. The app will shut down.\r\n");
+                    app.StopAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(
+                    "Error executing SQL migration script. Failed to create necessary tables.", ex);
+            }
         }
     }
 }
