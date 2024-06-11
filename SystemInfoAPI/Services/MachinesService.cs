@@ -88,12 +88,12 @@ namespace SystemInfoApi.Services
 
         public async Task<MachineModel> GetByIdAsync(int machineId)
         {
-            return await machinesRepository.GetByIdAsync(machineId);
+            return await machinesRepository.GetByIdAsync(machineId, GetConnection());
         }
 
         public async Task<List<MachineModel>> GetAllAsync()
         {
-            return await machinesRepository.GetAllAsync();
+            return await machinesRepository.GetAllAsync(GetConnection());
         }
     }
 }

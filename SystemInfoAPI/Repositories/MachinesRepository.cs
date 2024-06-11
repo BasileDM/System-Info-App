@@ -4,7 +4,7 @@ using SystemInfoApi.Models;
 
 namespace SystemInfoApi.Repositories
 {
-    public class MachinesRepository(IConfiguration config, IWebHostEnvironment env) : Database(config, env)
+    public class MachinesRepository
     {
         /// <summary>Asynchronously inserts a new machine entry in the database.</summary>
         /// <param name="machine">The <see cref="MachineModel"/> to add to the DB.</param>
@@ -48,13 +48,12 @@ namespace SystemInfoApi.Repositories
         /// <returns>
         ///   A <see cref="List{MachineModel}"/> of instantiated <see cref="MachineModel"/>.
         /// </returns>
-        public async Task<List<MachineModel>> GetAllAsync()
+        public async Task<List<MachineModel>> GetAllAsync(SqlConnection connection)
         {
             List<MachineModel> machinesList = [];
 
             try
             {
-                await using SqlConnection connection = GetConnection();
                 await connection.OpenAsync();
 
                 const string sqlRequest =
@@ -90,14 +89,13 @@ namespace SystemInfoApi.Repositories
         /// <returns>
         ///   A <see cref="MachineModel"/> instantiated from the data from the DB.
         /// </returns>
-        public async Task<MachineModel> GetByIdAsync(int id)
+        public async Task<MachineModel> GetByIdAsync(int id, SqlConnection connection)
         {
             MachineModel machine = new();
             List<DriveModel> drivesList = [];
 
             try
             {
-                await using SqlConnection connection = GetConnection();
                 await connection.OpenAsync();
 
                 const string sqlRequest = @"
