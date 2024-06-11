@@ -1,3 +1,4 @@
+
 CREATE TABLE Client_Machine
 (
   id_client_machine int          NOT NULL IDENTITY(1,1),
@@ -5,11 +6,9 @@ CREATE TABLE Client_Machine
   Name              varchar(255) NOT NULL,
   CONSTRAINT PK_Client_Machine PRIMARY KEY (id_client_machine)
 )
-GO
 
 ALTER TABLE Client_Machine
   ADD CONSTRAINT UQ_id_client_machine UNIQUE (id_client_machine)
-GO
 
 CREATE TABLE Client_Machine_Disque
 (
@@ -27,11 +26,9 @@ CREATE TABLE Client_Machine_Disque
   Is_System_Drive          bit          NOT NULL,
   CONSTRAINT PK_Client_Machine_Disque PRIMARY KEY (id_client_machine_disque)
 )
-GO
 
 ALTER TABLE Client_Machine_Disque
   ADD CONSTRAINT UQ_id_client_machine_disque UNIQUE (id_client_machine_disque)
-GO
 
 CREATE TABLE Client_Machine_Disque_Application
 (
@@ -39,11 +36,9 @@ CREATE TABLE Client_Machine_Disque_Application
   Name                         varchar(255) NOT NULL,
   CONSTRAINT PK_Client_Machine_Disque_Application PRIMARY KEY (id_client_machine_disque_app)
 )
-GO
 
 ALTER TABLE Client_Machine_Disque_Application
   ADD CONSTRAINT UQ_id_client_machine_disque_app UNIQUE (id_client_machine_disque_app)
-GO
 
 CREATE TABLE Client_Machine_Disque_Os
 (
@@ -58,11 +53,9 @@ CREATE TABLE Client_Machine_Disque_Os
   Ubr                         varchar(255),
   CONSTRAINT PK_Client_Machine_Disque_Os PRIMARY KEY (id_client_machine_disque_os)
 )
-GO
 
 ALTER TABLE Client_Machine_Disque_Os
   ADD CONSTRAINT UQ_id_client_machine_disque_os UNIQUE (id_client_machine_disque_os)
-GO
 
 CREATE TABLE Relation_Disque_Application
 (
@@ -75,34 +68,28 @@ CREATE TABLE Relation_Disque_Application
   Product_Version              varchar(255),
   Type                         varchar(255)
 )
-GO
 
 ALTER TABLE Client_Machine
   ADD CONSTRAINT FK_Client_TO_Client_Machine
     FOREIGN KEY (id_client)
     REFERENCES Client (id_client)
-GO
 
 ALTER TABLE Client_Machine_Disque
   ADD CONSTRAINT FK_Client_Machine_TO_Client_Machine_Disque
     FOREIGN KEY (id_client_machine)
     REFERENCES Client_Machine (id_client_machine)
-GO
 
 ALTER TABLE Client_Machine_Disque_Os
   ADD CONSTRAINT FK_Client_Machine_Disque_TO_Client_Machine_Disque_Os
     FOREIGN KEY (id_client_machine_disque)
     REFERENCES Client_Machine_Disque (id_client_machine_disque)
-GO
 
 ALTER TABLE Relation_Disque_Application
   ADD CONSTRAINT FK_Client_Machine_Disque_TO_Relation_Disque_Application
     FOREIGN KEY (id_client_machine_disque)
     REFERENCES Client_Machine_Disque (id_client_machine_disque)
-GO
 
 ALTER TABLE Relation_Disque_Application
   ADD CONSTRAINT FK_Client_Machine_Disque_Application_TO_Relation_Disque_Application
     FOREIGN KEY (id_client_machine_disque_app)
     REFERENCES Client_Machine_Disque_Application (id_client_machine_disque_app)
-GO
