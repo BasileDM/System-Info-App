@@ -9,33 +9,34 @@ namespace SystemInfoClient.Classes
 
         public int CustomerId { get; set; }
 
-        public List<DriveClass> Drives { get; set; } = [];
+        public List<DriveClass> Drives { get; set; }
 
         public MachineClass() {
-            Name = Environment.MachineName;
+            try
+            {
+                Name = Environment.MachineName;
+                Drives = [];
 
-            while (true) {
-                Console.Write("Customer ID: ");
-                string? CustomerIdStr = Console.ReadLine();
-                if (CustomerIdStr != String.Empty && int.TryParse(CustomerIdStr, out int CustomerIdInt)) {
-                    CustomerId = CustomerIdInt;
-                    break;
+                string? systemDrive = Path.GetPathRoot(Environment.SystemDirectory);
+
+                foreach (var drive in DriveInfo.GetDrives())
+                {
+                    if (drive.IsReady)
+                    {
+                        bool isSystemDriveBool = drive.Name == systemDrive;
+                        Drives.Add(new DriveClass(drive, isSystemDriveBool));
+                    }
                 }
-                Console.WriteLine("Invalid customer ID number.");
             }
-
-            string? systemDrive = Path.GetPathRoot(Environment.SystemDirectory);
-
-            foreach (var drive in DriveInfo.GetDrives()) {
-                if (drive.IsReady) {
-                    bool isSystemDriveBool = drive.Name == systemDrive;
-                    Drives.Add(new DriveClass(drive, isSystemDriveBool));
-                }
+            catch (Exception ex)
+            {
+                throw new ApplicationException("Error instantiating the machine.", ex);
             }
         }
 
         public void LogInfo() {
             Console.WriteLine($"Device name: {Name}");
+            Console.WriteLine($"Customer ID: {CustomerId}");
             Console.WriteLine();
             foreach (var drive in Drives) {
                 drive.LogInfo();

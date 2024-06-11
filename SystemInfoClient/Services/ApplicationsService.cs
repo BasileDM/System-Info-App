@@ -5,8 +5,10 @@ namespace SystemInfoClient.Services
 {
     internal class ApplicationsService
     {
-        private static Dictionary<string, string?> GetExeInfo(string exePath) {
-            Dictionary<string, string?> exeInfo = new() {
+        private static Dictionary<string, string?> GetExeInfo(string exePath)
+        {
+            Dictionary<string, string?> exeInfo = new()
+            {
                 ["ProductName"] = FileVersionInfo.GetVersionInfo(exePath).ProductName,
                 ["ProductVersion"] = FileVersionInfo.GetVersionInfo(exePath).ProductVersion,
                 ["ProductMajorPart"] = FileVersionInfo.GetVersionInfo(exePath).ProductMajorPart.ToString(),
@@ -33,16 +35,19 @@ namespace SystemInfoClient.Services
             return exeInfo;
         }
 
-        public static void LogExeInfo(string path) {
-            if (File.Exists(path)) {
-
+        public static void LogExeInfo(string path)
+        {
+            if (File.Exists(path))
+            {
                 FileVersionInfo fileVersionInfo = FileVersionInfo.GetVersionInfo(path);
-                foreach (PropertyInfo property in typeof(FileVersionInfo).GetProperties()) {
+                foreach (PropertyInfo property in typeof(FileVersionInfo).GetProperties())
+                {
                     object? value = property.GetValue(fileVersionInfo);
                     Console.WriteLine($"{property.Name} : {value}");
                 }
-
-            } else {
+            }
+            else
+            {
                 Console.WriteLine("File not found.");
             }
         }

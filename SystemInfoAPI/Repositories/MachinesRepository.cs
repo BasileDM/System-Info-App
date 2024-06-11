@@ -11,20 +11,17 @@ namespace SystemInfoApi.Repositories
         /// <returns>
         ///     The <see cref="MachineModel"/> with the newly created ID from the database.
         /// </returns>
-        public async Task<MachineModel> InsertAsync(MachineModel machine)
+        public async Task<MachineModel> InsertAsync(MachineModel machine, SqlConnection connection, SqlTransaction transaction)
         {
             try
             {
-                await using SqlConnection connection = GetConnection();
-                await connection.OpenAsync();
-
                 string machineSql = @"
                     INSERT INTO Client_Machine (id_client, Name) 
                     VALUES (@customerId, @machineName);
 
                     SELECT SCOPE_IDENTITY();";
 
-                using (SqlCommand cmd = new(machineSql, connection))
+                using (SqlCommand cmd = new(machineSql, connection, transaction))
                 {
                     cmd.Parameters.AddWithValue("@customerId", machine.CustomerId);
                     cmd.Parameters.AddWithValue("@machineName", machine.Name);
@@ -32,8 +29,6 @@ namespace SystemInfoApi.Repositories
                     var newMachineId = await cmd.ExecuteScalarAsync();
                     machine.Id = Convert.ToInt32(newMachineId);
                 }
-
-                await connection.CloseAsync();
                 return machine;
 
             }

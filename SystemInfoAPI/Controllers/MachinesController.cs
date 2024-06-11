@@ -22,15 +22,29 @@ namespace SystemInfoApi.Controllers
 
             try
             {
-                MachineModel newMachine = await machinesService.CreateMachineAsync(machine);
+                MachineModel newMachine = await machinesService.CreateMachineTransactionAsync(machine);
 
-                if (newMachine == null)
+                if (newMachine.Id == 0)
                 {
-                    return StatusCode(500, "An error occured creating the new machine. Machine was null.");
+                    return StatusCode(500, "An error occured creating the new machine. Machine ID is null.");
                 }
                 else
                 {
-                    return CreatedAtAction(nameof(GetById), new { machineId = newMachine.Id }, newMachine);
+                    CreatedAtActionResult response = CreatedAtAction(nameof(GetById), new { machineId = newMachine.Id }, newMachine);
+                    RouteValueDictionary? routeValues = response.RouteValues;
+                    string? location = Url.Action(nameof(GetById), new { machineId = routeValues["machineId"] });
+
+                    Console.WriteLine(
+                        "\r\n" +
+                        "A new machine has been created in the database. \r\n" +
+                        $"Time: {DateTime.Now} \r\n" +
+                        $"Customer ID: {newMachine.CustomerId} \r\n" +
+                        $"Machine ID: {newMachine.Id} \r\n" +
+                        $"Machine name: {newMachine.Name} \r\n" +
+                        $"Drives amount: {newMachine.Drives.Count} \r\n" +
+                        $"Location: {location}"
+                    );
+                    return response;
                 }
             }
             catch (Exception ex)
