@@ -22,29 +22,21 @@ namespace SystemInfoApi.Controllers
             try
             {
                 MachineModel newMachine = await machinesService.CreateMachineTransactionAsync(machine);
+                CreatedAtActionResult response = CreatedAtAction(nameof(GetById), new { machineId = newMachine.Id }, newMachine);
+                RouteValueDictionary? routeValues = response.RouteValues;
+                string? location = Url.Action(nameof(GetById), new { machineId = routeValues["machineId"] });
 
-                if (newMachine.Id == 0)
-                {
-                    return StatusCode(500, "An error occured creating the new machine. Machine ID is null.");
-                }
-                else
-                {
-                    CreatedAtActionResult response = CreatedAtAction(nameof(GetById), new { machineId = newMachine.Id }, newMachine);
-                    RouteValueDictionary? routeValues = response.RouteValues;
-                    string? location = Url.Action(nameof(GetById), new { machineId = routeValues["machineId"] });
-
-                    Console.WriteLine(
-                        "\r\n" +
-                        "A new machine has been created in the database. \r\n" +
-                        $"Time: {DateTime.Now} \r\n" +
-                        $"Customer ID: {newMachine.CustomerId} \r\n" +
-                        $"Machine ID: {newMachine.Id} \r\n" +
-                        $"Machine name: {newMachine.Name} \r\n" +
-                        $"Drives amount: {newMachine.Drives.Count} \r\n" +
-                        $"Location: {location}"
-                    );
-                    return response;
-                }
+                Console.WriteLine(
+                    "\r\n" +
+                    "A new machine has been created in the database. \r\n" +
+                    $"Time: {DateTime.Now} \r\n" +
+                    $"Customer ID: {newMachine.CustomerId} \r\n" +
+                    $"Machine ID: {newMachine.Id} \r\n" +
+                    $"Machine name: {newMachine.Name} \r\n" +
+                    $"Drives amount: {newMachine.Drives.Count} \r\n" +
+                    $"Location: {location}"
+                );
+                return response;
             }
             catch (ArgumentException ex)
             {

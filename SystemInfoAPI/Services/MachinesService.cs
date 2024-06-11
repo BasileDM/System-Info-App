@@ -28,7 +28,7 @@ namespace SystemInfoApi.Services
             catch (ArgumentException ex)
             {
                 await transaction.RollbackAsync();
-                throw new ArgumentException(ex.Message);
+                throw new ArgumentException("Error finalising the transaction with the database. Rolling back...", ex.Message);
             }
             catch (Exception ex)
             {
