@@ -1,5 +1,4 @@
 ﻿using System.Data.SqlClient;
-using System.Reflection.Metadata.Ecma335;
 
 namespace SystemInfoApi.Classes
 {
@@ -48,7 +47,7 @@ namespace SystemInfoApi.Classes
 
         }
 
-        private static bool DoTablesExist(SqlConnection connection )
+        private static bool DoTablesExist(SqlConnection connection)
         {
             try
             {

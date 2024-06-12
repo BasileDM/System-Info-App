@@ -182,6 +182,6 @@ namespace SystemInfoApi.Repositories
                 throw new ApplicationException("Could not retrieve data from the database", ex);
             }
             return machine;
-}
+        }
     }
 }
