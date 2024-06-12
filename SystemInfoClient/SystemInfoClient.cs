@@ -13,8 +13,8 @@ namespace SystemInfoClient
     {
         public static async Task Main()
         {
-            //Read config file to get customer_id
-            Settings settings = LoadConfig();
+            //Load config file to get customer ID
+            SettingsModel settings = LoadConfig();
             int customerId = Convert.ToInt32(settings.CustomerId);
 
             if (customerId == 0 || customerId < 0)
@@ -31,7 +31,6 @@ namespace SystemInfoClient
 
             //Serialize and send object to POST API route
             await PostMachineInfo(machine);
-
         }
 
         private static async Task PostMachineInfo(MachineClass machine)
@@ -69,7 +68,7 @@ namespace SystemInfoClient
             }
         }
 
-        private static Settings LoadConfig()
+        private static SettingsModel LoadConfig()
         {
             string path = AppDomain.CurrentDomain.BaseDirectory + "settings.json";
             string jsonSettings;
@@ -81,9 +80,9 @@ namespace SystemInfoClient
                     jsonSettings = reader.ReadToEnd();
                 }
 
-                Settings? settings = JsonSerializer.Deserialize<Settings>(jsonSettings);
-
+                SettingsModel? settings = JsonSerializer.Deserialize<SettingsModel>(jsonSettings);
                 return settings;
+
             }
             catch (FileNotFoundException ex)
             {
