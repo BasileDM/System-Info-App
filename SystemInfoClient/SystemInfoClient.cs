@@ -23,8 +23,9 @@ namespace SystemInfoClient
             }
 
             // Instantiate object with machine info and customer ID from settings file
-            MachineClass machine = new(){ CustomerId = customerId };
+            MachineClass machine = new() { CustomerId = customerId };
 
+            // Log information
             machine.LogInfo();
             ApplicationsService.LogExeInfo(settings.Applications["AnyDesk"]);
 
