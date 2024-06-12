@@ -128,29 +128,39 @@ namespace SystemInfoApi.Classes
             await using SqlConnection connection = GetConnection();
             await connection.OpenAsync();
             var transaction = connection.BeginTransaction();
+            Console.WriteLine("\r\nNew database transaction initiated.");
+            var currentColor = Console.ForegroundColor;
 
             try
             {
                 T result = await operation(connection, transaction);
                 await transaction.CommitAsync();
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.WriteLine("Database transaction successful.");
+                Console.ForegroundColor = currentColor;
                 return result;
             }
             catch (ArgumentException ex)
             {
                 await transaction.RollbackAsync();
+                Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine("Transaction rolled back due to an argument error: " + ex.Message);
+                Console.ForegroundColor = currentColor;
                 throw new ArgumentException("Error finalising the transaction with the database. Rolling back...", ex.Message);
             }
             catch (Exception ex)
             {
                 await transaction.RollbackAsync();
+                Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine("Transaction rolled back due to an unexpected error: " + ex.Message);
+                Console.ForegroundColor = currentColor;
                 throw new ApplicationException("Error finalising the transaction with the database. Rolling back...", ex);
             }
             finally
             {
                 await transaction.DisposeAsync();
                 await connection.CloseAsync();
+                Console.WriteLine("Freeing up ressources...");
             }
         }
     }
