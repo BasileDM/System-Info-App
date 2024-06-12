@@ -6,32 +6,34 @@ namespace SystemInfoApi.Classes
 
     public class Database
     {
-        protected readonly IConfiguration _Configuration;
         protected readonly string? _ConnectionString;
+        protected readonly IConfigurationSection _DbConfig;
 
         public Database(IConfiguration configuration, IWebHostEnvironment env)
         {
-            _Configuration = configuration;
-
             _ConnectionString = env.IsDevelopment() ?
-                _Configuration.GetSection("ConnectionStrings")["SystemInfoDbDev"] :
-                _Configuration.GetSection("ConnectionStrings")["SysteminfoDb"];
+                configuration.GetSection("ConnectionStrings")["SystemInfoDbDev"] :
+                configuration.GetSection("ConnectionStrings")["SysteminfoDb"];
+
+            _DbConfig = configuration.GetSection("DatabaseConfig");
         }
 
-        public static void Init(WebApplication app)
+        protected SqlConnection GetConnection()
         {
-            string? connectionString = app.Environment.IsDevelopment() ?
-                app.Configuration.GetConnectionString("SystemInfoDbDev") :
-                app.Configuration.GetConnectionString("SysteminfoDb");
-
-            using (SqlConnection connection = new(connectionString))
-            {
-                TryConnection(connection);
-                if (!DoTablesExist(connection)) { CreateTables(connection, app); }
-            };
+            return new SqlConnection(_ConnectionString);
         }
 
-        private static void TryConnection(SqlConnection connection)
+        public void Init()
+        {
+            using SqlConnection connection = GetConnection();
+            TryOpenConnection(connection);
+            if (!DoTablesExist(connection))
+            {
+                CreateTables(connection);
+            }
+        }
+
+        private static void TryOpenConnection(SqlConnection connection)
         {
             try
             {
@@ -40,8 +42,7 @@ namespace SystemInfoApi.Classes
             }
             catch (Exception ex)
             {
-                throw new Exception(
-                    "Error connecting to the database, please check your appsettings.json configuration file.", ex);
+                throw new Exception("Error connecting to the database, please check your appsettings.json configuration file.", ex);
             }
 
         }
@@ -51,9 +52,9 @@ namespace SystemInfoApi.Classes
             try
             {
                 string checkTablesSql = @"
-                SELECT COUNT(*) 
-                FROM information_schema.tables 
-                WHERE table_name = 'Client_Machine'";
+                    SELECT COUNT(*) 
+                    FROM information_schema.tables 
+                    WHERE table_name = 'Client_Machine'";
 
                 using SqlCommand cmd = new(checkTablesSql, connection);
                 int? tableCount = (int?)cmd.ExecuteScalar();
@@ -61,12 +62,11 @@ namespace SystemInfoApi.Classes
             }
             catch (Exception ex)
             {
-                throw new Exception(
-                    "Error verifying database tables.", ex);
+                throw new Exception("Error verifying database tables.", ex);
             }
         }
 
-        private static void CreateTables(SqlConnection connection, WebApplication app)
+        private void CreateTables(SqlConnection connection)
         {
             try
             {
@@ -83,29 +83,28 @@ namespace SystemInfoApi.Classes
                     Console.WriteLine("Creating tables...\r\n");
 
                     string migrationPath = AppDomain.CurrentDomain.BaseDirectory + "/Migrations/SysteminfoDb.sql";
-
                     string script = File.ReadAllText(migrationPath);
+
+                    if (_DbConfig["CustomersTableName"] != null)
+                    {
+                        script = script.Replace("Client", _DbConfig["CustomersTableName"]);
+                    }
 
                     using SqlCommand cmd = new(script, connection);
                     cmd.ExecuteNonQuery();
                 }
                 else if (answer == "n")
                 {
-                    Console.WriteLine("Aborting table creation. The app will shut down.\r\n");
-                    app.StopAsync();
+                    throw new Exception("Table creation has been aborted, the app will shut down.\r\n");
                 }
             }
             catch (Exception ex)
             {
                 throw new Exception(
-                    "Error executing SQL migration script. Failed to create necessary tables.", ex);
+                    $"Error during tables creation. {ex.Message}");
             }
         }
 
-        protected SqlConnection GetConnection()
-        {
-            return new SqlConnection(_ConnectionString);
-        }
 
         /// <summary>
         /// Handles <see cref="SqlConnection"/> and <see cref="SqlTransaction"/> management for a specified operation.

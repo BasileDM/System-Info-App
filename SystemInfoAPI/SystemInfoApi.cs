@@ -12,7 +12,7 @@ namespace SystemInfoApi
             var builder = WebApplication.CreateBuilder(args);
 
             // Add services to the container.
-            builder.Services.AddControllers(); 
+            builder.Services.AddControllers();
             builder.Services.AddScoped<MachinesService>();
             builder.Services.AddScoped<MachinesRepository>();
             builder.Services.AddScoped<DrivesRepository>();
@@ -40,7 +40,18 @@ namespace SystemInfoApi
             app.UseMiddleware<NotAcceptableMiddleware>();
 
             // Try establishing a connection to the database and check if tables exist
-            Database.Init(app);
+            Database db = new(app.Configuration, app.Environment);
+
+            try
+            {
+                db.Init();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Database initialization failed:\r\n{ex.Message}");
+                app.StopAsync().Wait();
+                return;
+            }
 
             app.MapControllers();
 
