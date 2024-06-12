@@ -12,7 +12,6 @@ namespace SystemInfoApi
             var builder = WebApplication.CreateBuilder(args);
 
             // Add services to the container.
-
             builder.Services.AddControllers(); 
             builder.Services.AddScoped<MachinesService>();
             builder.Services.AddScoped<MachinesRepository>();
@@ -25,7 +24,6 @@ namespace SystemInfoApi
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
-
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();

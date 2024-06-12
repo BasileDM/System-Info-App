@@ -1,5 +1,4 @@
 ﻿using System.Data.SqlClient;
-using SystemInfoApi.Classes;
 using SystemInfoApi.Models;
 
 namespace SystemInfoApi.Repositories
@@ -23,16 +22,14 @@ namespace SystemInfoApi.Repositories
 
                     SELECT SCOPE_IDENTITY();";
 
-                using (SqlCommand cmd = new(machineSql, connection, transaction))
-                {
-                    cmd.Parameters.AddWithValue("@customerId", machine.CustomerId);
-                    cmd.Parameters.AddWithValue("@machineName", machine.Name);
+                using SqlCommand cmd = new(machineSql, connection, transaction);
+                cmd.Parameters.AddWithValue("@customerId", machine.CustomerId);
+                cmd.Parameters.AddWithValue("@machineName", machine.Name);
 
-                    var newMachineId = await cmd.ExecuteScalarAsync();
+                var newMachineId = await cmd.ExecuteScalarAsync();
 
-                    machine.Id = Convert.ToInt32(newMachineId);
-                    return machine;
-                }
+                machine.Id = Convert.ToInt32(newMachineId);
+                return machine;
             }
             catch (SqlException ex) when (ex.Number == 547) // Foreign key violation error number
             {

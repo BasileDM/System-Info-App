@@ -2,6 +2,8 @@
 
 namespace SystemInfoApi.Classes
 {
+    public delegate Task<T> TransactionOperation<T>(SqlConnection connection, SqlTransaction transaction);
+
     public class Database
     {
         protected readonly IConfiguration _Configuration;
@@ -14,11 +16,6 @@ namespace SystemInfoApi.Classes
             _ConnectionString = env.IsDevelopment() ?
                 _Configuration.GetSection("ConnectionStrings")["SystemInfoDbDev"] :
                 _Configuration.GetSection("ConnectionStrings")["SysteminfoDb"];
-        }
-
-        public SqlConnection GetConnection()
-        {
-            return new SqlConnection(_ConnectionString);
         }
 
         public static void Init(WebApplication app)
@@ -92,7 +89,7 @@ namespace SystemInfoApi.Classes
                     using SqlCommand cmd = new(script, connection);
                     cmd.ExecuteNonQuery();
                 }
-                else if (answer == "n") 
+                else if (answer == "n")
                 {
                     Console.WriteLine("Aborting table creation. The app will shut down.\r\n");
                     app.StopAsync();
@@ -102,6 +99,58 @@ namespace SystemInfoApi.Classes
             {
                 throw new Exception(
                     "Error executing SQL migration script. Failed to create necessary tables.", ex);
+            }
+        }
+
+        protected SqlConnection GetConnection()
+        {
+            return new SqlConnection(_ConnectionString);
+        }
+
+        /// <summary>
+        /// Handles <see cref="SqlConnection"/> and <see cref="SqlTransaction"/> management for a specified operation.
+        /// This method opens a connection, begins a transaction, executes the provided operation,
+        /// and then commits or rolls back the transaction based on the success or failure of the operation.
+        /// </summary>
+        /// <typeparam name="T">The type of the result returned by the transaction operation.</typeparam>
+        /// <param name="operation">
+        /// A delegate that represents the operation to be executed within the transaction.
+        /// The operation receives a <see cref="SqlConnection"/> and a <see cref="SqlTransaction"/> as parameters.
+        /// </param>
+        /// <returns>
+        ///   A task that represents the asynchronous operation. The task result contains the result of the executed operation.
+        /// </returns>
+        /// <remarks>
+        /// This method ensures that the transaction is committed if the operation succeeds and rolled back if any error occurs.
+        /// </remarks>
+        protected async Task<T> MakeTransactionAsync<T>(TransactionOperation<T> operation)
+        {
+            await using SqlConnection connection = GetConnection();
+            await connection.OpenAsync();
+            var transaction = connection.BeginTransaction();
+
+            try
+            {
+                T result = await operation(connection, transaction);
+                await transaction.CommitAsync();
+                return result;
+            }
+            catch (ArgumentException ex)
+            {
+                await transaction.RollbackAsync();
+                Console.WriteLine("Transaction rolled back due to an argument error: " + ex.Message);
+                throw new ArgumentException("Error finalising the transaction with the database. Rolling back...", ex.Message);
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                Console.WriteLine("Transaction rolled back due to an unexpected error: " + ex.Message);
+                throw new ApplicationException("Error finalising the transaction with the database. Rolling back...", ex);
+            }
+            finally
+            {
+                await transaction.DisposeAsync();
+                await connection.CloseAsync();
             }
         }
     }

@@ -21,7 +21,7 @@ namespace SystemInfoApi.Controllers
 
             try
             {
-                MachineModel newMachine = await machinesService.CreateMachineTransactionAsync(machine);
+                MachineModel newMachine = await machinesService.InsertFullMachineAsync(machine);
                 CreatedAtActionResult response = CreatedAtAction(nameof(GetById), new { machineId = newMachine.Id }, newMachine);
                 RouteValueDictionary? routeValues = response.RouteValues;
                 string? location = Url.Action(nameof(GetById), new { machineId = routeValues["machineId"] });
@@ -41,7 +41,7 @@ namespace SystemInfoApi.Controllers
             catch (ArgumentException ex)
             {
                 Console.WriteLine(ex.Message);
-                return BadRequest("Invalid request, check API logs for more information.");
+                return BadRequest("Invalid request, check API console for more information.");
             }
             catch (Exception ex)
             {
@@ -82,6 +82,7 @@ namespace SystemInfoApi.Controllers
             }
         }
 
+        // To implement later
         [HttpGet("{machineName}")]
         public string GetByName(string machineName)
         {
