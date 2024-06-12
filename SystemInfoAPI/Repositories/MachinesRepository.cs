@@ -1,13 +1,14 @@
 ﻿using System.Data.SqlClient;
-using SystemInfoApi.Classes;
 using SystemInfoApi.Models;
 
 namespace SystemInfoApi.Repositories
 {
-    public class MachinesRepository(IConfiguration config) : Database(config)
+    public class MachinesRepository
     {
         /// <summary>Asynchronously inserts a new machine entry in the database.</summary>
         /// <param name="machine">The <see cref="MachineModel"/> to add to the DB.</param>
+        /// <param name="connection">The <see cref="SqlConnection"/> to use.</param>
+        /// <param name="transaction">The <see cref="SqlTransaction"/> to use.</param>
         /// <returns>
         ///     The <see cref="MachineModel"/> with the newly created ID from the database.
         /// </returns>
@@ -21,16 +22,18 @@ namespace SystemInfoApi.Repositories
 
                     SELECT SCOPE_IDENTITY();";
 
-                using (SqlCommand cmd = new(machineSql, connection, transaction))
-                {
-                    cmd.Parameters.AddWithValue("@customerId", machine.CustomerId);
-                    cmd.Parameters.AddWithValue("@machineName", machine.Name);
+                using SqlCommand cmd = new(machineSql, connection, transaction);
+                cmd.Parameters.AddWithValue("@customerId", machine.CustomerId);
+                cmd.Parameters.AddWithValue("@machineName", machine.Name);
 
-                    var newMachineId = await cmd.ExecuteScalarAsync();
-                    machine.Id = Convert.ToInt32(newMachineId);
-                }
+                var newMachineId = await cmd.ExecuteScalarAsync();
+
+                machine.Id = Convert.ToInt32(newMachineId);
                 return machine;
-
+            }
+            catch (SqlException ex) when (ex.Number == 547) // Foreign key violation error number
+            {
+                throw new ArgumentException("The provided customer ID is invalid or does not exist in the database.");
             }
             catch (Exception ex)
             {
@@ -42,13 +45,12 @@ namespace SystemInfoApi.Repositories
         /// <returns>
         ///   A <see cref="List{MachineModel}"/> of instantiated <see cref="MachineModel"/>.
         /// </returns>
-        public async Task<List<MachineModel>> GetAllAsync()
+        public async Task<List<MachineModel>> GetAllAsync(SqlConnection connection)
         {
             List<MachineModel> machinesList = [];
 
             try
             {
-                await using SqlConnection connection = GetConnection();
                 await connection.OpenAsync();
 
                 const string sqlRequest =
@@ -84,14 +86,13 @@ namespace SystemInfoApi.Repositories
         /// <returns>
         ///   A <see cref="MachineModel"/> instantiated from the data from the DB.
         /// </returns>
-        public async Task<MachineModel> GetByIdAsync(int id)
+        public async Task<MachineModel> GetByIdAsync(int id, SqlConnection connection)
         {
             MachineModel machine = new();
             List<DriveModel> drivesList = [];
 
             try
             {
-                await using SqlConnection connection = GetConnection();
                 await connection.OpenAsync();
 
                 const string sqlRequest = @"

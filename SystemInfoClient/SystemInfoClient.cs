@@ -13,24 +13,24 @@ namespace SystemInfoClient
     {
         public static async Task Main()
         {
-            //Read config file to get customer_id
-            Settings settings = LoadConfig();
+            //Load config file to get customer ID
+            SettingsModel settings = LoadConfig();
             int customerId = Convert.ToInt32(settings.CustomerId);
 
             if (customerId == 0 || customerId < 0)
             {
-                throw new Exception("Customer ID is invalid, please provide a valid one in the settings.json file");
+                throw new Exception("Invalid customer ID, please provide a valid one in the settings.json file");
             }
 
             // Instantiate object with machine info and customer ID from settings file
-            MachineClass machine = new(){ CustomerId = customerId };
+            MachineClass machine = new() { CustomerId = customerId };
 
+            // Log information
             machine.LogInfo();
             ApplicationsService.LogExeInfo(settings.Applications["AnyDesk"]);
 
             //Serialize and send object to POST API route
             await PostMachineInfo(machine);
-
         }
 
         private static async Task PostMachineInfo(MachineClass machine)
@@ -62,11 +62,13 @@ namespace SystemInfoClient
             }
             else
             {
-                Console.WriteLine($"Post request failed: {response.StatusCode}");
+                var errorContent = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"\r\n" +
+                    $"{response.ReasonPhrase}: {errorContent}");
             }
         }
 
-        private static Settings LoadConfig()
+        private static SettingsModel LoadConfig()
         {
             string path = AppDomain.CurrentDomain.BaseDirectory + "settings.json";
             string jsonSettings;
@@ -78,9 +80,9 @@ namespace SystemInfoClient
                     jsonSettings = reader.ReadToEnd();
                 }
 
-                Settings? settings = JsonSerializer.Deserialize<Settings>(jsonSettings);
-
+                SettingsModel? settings = JsonSerializer.Deserialize<SettingsModel>(jsonSettings);
                 return settings;
+
             }
             catch (FileNotFoundException ex)
             {

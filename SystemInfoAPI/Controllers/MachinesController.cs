@@ -9,7 +9,6 @@ namespace SystemInfoApi.Controllers
     public class MachinesController(MachinesService machinesService) : ControllerBase
     {
         // POST: api/<Machines>/Create
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         [Consumes("application/json")]
         public async Task<ActionResult<MachineModel>> Create([FromBody] MachineModel machine)
@@ -22,35 +21,31 @@ namespace SystemInfoApi.Controllers
 
             try
             {
-                MachineModel newMachine = await machinesService.CreateMachineTransactionAsync(machine);
+                MachineModel newMachine = await machinesService.InsertFullMachineAsync(machine);
+                CreatedAtActionResult response = CreatedAtAction(nameof(GetById), new { machineId = newMachine.Id }, newMachine);
+                RouteValueDictionary? routeValues = response.RouteValues;
+                string? location = Url.Action(nameof(GetById), new { machineId = routeValues["machineId"] });
 
-                if (newMachine.Id == 0)
-                {
-                    return StatusCode(500, "An error occured creating the new machine. Machine ID is null.");
-                }
-                else
-                {
-                    CreatedAtActionResult response = CreatedAtAction(nameof(GetById), new { machineId = newMachine.Id }, newMachine);
-                    RouteValueDictionary? routeValues = response.RouteValues;
-                    string? location = Url.Action(nameof(GetById), new { machineId = routeValues["machineId"] });
-
-                    Console.WriteLine(
-                        "\r\n" +
-                        "A new machine has been created in the database. \r\n" +
-                        $"Time: {DateTime.Now} \r\n" +
-                        $"Customer ID: {newMachine.CustomerId} \r\n" +
-                        $"Machine ID: {newMachine.Id} \r\n" +
-                        $"Machine name: {newMachine.Name} \r\n" +
-                        $"Drives amount: {newMachine.Drives.Count} \r\n" +
-                        $"Location: {location}"
-                    );
-                    return response;
-                }
+                Console.WriteLine(
+                    "\r\n" +
+                    "A new machine has been created in the database. \r\n" +
+                    $"Time: {DateTime.Now} \r\n" +
+                    $"Customer ID: {newMachine.CustomerId} \r\n" +
+                    $"Machine ID: {newMachine.Id} \r\n" +
+                    $"Machine name: {newMachine.Name} \r\n" +
+                    $"Drives amount: {newMachine.Drives.Count} \r\n" +
+                    $"Location: {location}"
+                );
+                return response;
+            }
+            catch (ArgumentException)
+            {
+                return BadRequest("Invalid request, check API console for more information.");
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex);
-                return StatusCode(500, "Internal server error.");
+                Console.WriteLine(ex.Message);
+                return StatusCode(500, $"Internal error. An unexepected error has occured, check API logs for more information.");
             }
         }
 
@@ -86,6 +81,7 @@ namespace SystemInfoApi.Controllers
             }
         }
 
+        // To implement later
         [HttpGet("{machineName}")]
         public string GetByName(string machineName)
         {

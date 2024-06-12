@@ -1,3 +1,4 @@
+using SystemInfoApi.Classes;
 using SystemInfoApi.Middleware;
 using SystemInfoApi.Repositories;
 using SystemInfoApi.Services;
@@ -17,7 +18,6 @@ namespace SystemInfoApi
             builder.Services.AddScoped<DrivesRepository>();
             builder.Services.AddScoped<OsRepository>();
 
-            // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
@@ -32,13 +32,17 @@ namespace SystemInfoApi
 
             app.UseHttpsRedirection();
 
-            app.UseAuthorization();
+            app.UseRouting();
 
-            app.UseRouting();  //experimental
-            app.MapControllers(); //experimental
+            app.UseAuthorization();
 
             // Add 406 error code to ensure application/json accept header is present in requests
             app.UseMiddleware<NotAcceptableMiddleware>();
+
+            // Try establishing a connection to the database and check if tables exist
+            Database.Init(app);
+
+            app.MapControllers();
 
             app.Run();
         }
