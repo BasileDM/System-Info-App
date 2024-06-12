@@ -144,7 +144,7 @@ namespace SystemInfoApi.Classes
             {
                 await transaction.RollbackAsync();
                 Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine("Transaction rolled back due to an argument error: " + ex.Message);
+                Console.WriteLine("Rolling back transaction due to an argument error:\r\n" + ex.Message);
                 Console.ForegroundColor = currentColor;
                 throw new ArgumentException("Error finalising the transaction with the database. Rolling back...", ex.Message);
             }
@@ -152,7 +152,7 @@ namespace SystemInfoApi.Classes
             {
                 await transaction.RollbackAsync();
                 Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine("Transaction rolled back due to an unexpected error: " + ex.Message);
+                Console.WriteLine("Rolling back transaction due to an unexpected error:\r\n" + ex.Message);
                 Console.ForegroundColor = currentColor;
                 throw new ApplicationException("Error finalising the transaction with the database. Rolling back...", ex);
             }

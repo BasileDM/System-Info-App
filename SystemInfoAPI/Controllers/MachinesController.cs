@@ -38,15 +38,14 @@ namespace SystemInfoApi.Controllers
                 );
                 return response;
             }
-            catch (ArgumentException ex)
+            catch (ArgumentException)
             {
-                Console.WriteLine(ex.Message);
                 return BadRequest("Invalid request, check API console for more information.");
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
-                return StatusCode(500, $"Internal server error: {ex.Message}");
+                return StatusCode(500, $"Internal error. An unexepected error has occured, check API logs for more information.");
             }
         }
 
