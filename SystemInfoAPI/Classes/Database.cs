@@ -138,11 +138,13 @@ namespace SystemInfoApi.Classes
             catch (ArgumentException ex)
             {
                 await transaction.RollbackAsync();
+                Console.WriteLine("Transaction rolled back due to an argument error: " + ex.Message);
                 throw new ArgumentException("Error finalising the transaction with the database. Rolling back...", ex.Message);
             }
             catch (Exception ex)
             {
                 await transaction.RollbackAsync();
+                Console.WriteLine("Transaction rolled back due to an unexpected error: " + ex.Message);
                 throw new ApplicationException("Error finalising the transaction with the database. Rolling back...", ex);
             }
             finally

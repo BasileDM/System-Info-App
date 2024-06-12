@@ -19,7 +19,7 @@ namespace SystemInfoClient
 
             if (customerId == 0 || customerId < 0)
             {
-                throw new Exception("Customer ID is invalid, please provide a valid one in the settings.json file");
+                throw new Exception("Invalid customer ID, please provide a valid one in the settings.json file");
             }
 
             // Instantiate object with machine info and customer ID from settings file
