@@ -30,7 +30,7 @@ namespace SystemInfoApi.Classes
             TryOpenConnection(connection);
             if (!DoTablesExist(connection))
             {
-                CreateTables();
+                CreateTables(connection);
             }
         }
 
@@ -67,7 +67,7 @@ namespace SystemInfoApi.Classes
             }
         }
 
-        private void CreateTables()
+        private void CreateTables(SqlConnection connection)
         {
             try
             {
@@ -91,7 +91,7 @@ namespace SystemInfoApi.Classes
                         script = script.Replace("Client", _DbConfig["CustomersTableName"]);
                     }
 
-                    using SqlCommand cmd = new(script, GetConnection());
+                    using SqlCommand cmd = new(script, connection);
                     cmd.ExecuteNonQuery();
                 }
                 else if (answer == "n")

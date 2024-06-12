@@ -1,4 +1,5 @@
-﻿using SystemInfoApi.Classes;
+﻿using System.Data.SqlClient;
+using SystemInfoApi.Classes;
 using SystemInfoApi.Models;
 using SystemInfoApi.Repositories;
 
@@ -49,12 +50,14 @@ namespace SystemInfoApi.Services
 
         public async Task<MachineModel> GetByIdAsync(int machineId)
         {
-            return await machinesRepository.GetByIdAsync(machineId, GetConnection());
+            await using SqlConnection connection = GetConnection();
+            return await machinesRepository.GetByIdAsync(machineId, connection);
         }
 
         public async Task<List<MachineModel>> GetAllAsync()
         {
-            return await machinesRepository.GetAllAsync(GetConnection());
+            await using SqlConnection connection = GetConnection();
+            return await machinesRepository.GetAllAsync(connection);
         }
     }
 }

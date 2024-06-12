@@ -48,7 +48,7 @@ namespace SystemInfoApi
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Database initialization failed: {ex.Message}");
+                Console.WriteLine($"Database initialization failed:\r\n{ex.Message}");
                 app.StopAsync().Wait();
                 return;
             }
