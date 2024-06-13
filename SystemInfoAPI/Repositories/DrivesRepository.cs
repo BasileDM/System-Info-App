@@ -16,7 +16,7 @@ namespace SystemInfoApi.Repositories
         {
             try
             {
-                string sqlRequest = @"
+                string query = @"
                     INSERT INTO Client_Machine_Disque 
                         (id_client_machine, Name, Root_Directory, Label, Type, Format, Size, Free_Space, Total_Space, Free_Space_Percentage, Is_System_Drive)
                     VALUES 
@@ -24,7 +24,7 @@ namespace SystemInfoApi.Repositories
 
                     SELECT SCOPE_IDENTITY();";
 
-                using (SqlCommand cmd = new(sqlRequest, connection, transaction))
+                using (SqlCommand cmd = new(query, connection, transaction))
                 {
                     cmd.Parameters.AddWithValue("@machineId", drive.MachineId);
                     cmd.Parameters.AddWithValue("@driveName", drive.Name);

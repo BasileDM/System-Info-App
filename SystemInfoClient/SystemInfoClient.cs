@@ -13,27 +13,35 @@ namespace SystemInfoClient
     {
         public static async Task Main()
         {
-            //Load config file to get customer ID
-            SettingsModel settings = LoadConfig();
-            int customerId = Convert.ToInt32(settings.CustomerId);
-
-            if (customerId == 0 || customerId < 0)
+            try
             {
-                throw new Exception("Invalid customer ID, please provide a valid one in the settings.json file");
+                // Load config file to get customer ID
+                SettingsModel settings = LoadConfig();
+
+                int customerId = Int32.TryParse(settings.CustomerId, out int parsedId) ? parsedId : 0;
+
+                if (customerId <= 0)
+                {
+                    throw new Exception("Invalid customer ID, please provide a valid one in the settings.json file");
+                }
+
+                // Instantiate object with machine info and customer ID from settings file
+                MachineClass machine = new() { CustomerId = customerId };
+
+                // Log information
+                machine.LogInfo();
+                ApplicationsService.LogExeInfo(settings.Applications["AnyDesk"]);
+
+                // Serialize and send object to POST API route
+                await PostMachineInfo(machine, settings.ApiUrl);
             }
-
-            // Instantiate object with machine info and customer ID from settings file
-            MachineClass machine = new() { CustomerId = customerId };
-
-            // Log information
-            machine.LogInfo();
-            ApplicationsService.LogExeInfo(settings.Applications["AnyDesk"]);
-
-            //Serialize and send object to POST API route
-            await PostMachineInfo(machine);
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error: " + ex.Message);
+            }
         }
 
-        private static async Task PostMachineInfo(MachineClass machine)
+        private static async Task PostMachineInfo(MachineClass machine, string? ApiUrl)
         {
             HttpClient client = new();
             client.DefaultRequestHeaders.Accept.Clear();
@@ -41,12 +49,12 @@ namespace SystemInfoClient
                 new MediaTypeWithQualityHeaderValue("application/json"));
             client.DefaultRequestHeaders.Add("User-Agent", "Systeminfo App Client");
 
-            string route = "https://localhost:7056/api/Machines/Create";
-
             JsonSerializerOptions jsonOptions = new() { WriteIndented = true };
             var json = JsonSerializer.Serialize(machine, jsonOptions);
 
             var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            string route = ApiUrl + "api/Machines/Create";
 
             var response = await client.PostAsync(route, content);
 
@@ -86,15 +94,15 @@ namespace SystemInfoClient
             }
             catch (FileNotFoundException ex)
             {
-                throw new FileNotFoundException($"File not found: {ex}");
+                throw new FileNotFoundException($"File not found: {ex.Message}");
             }
             catch (JsonException ex)
             {
-                throw new JsonException($"Could not deserialize JSON: {ex}");
+                throw new JsonException($"Could not deserialize JSON: {ex.Message}");
             }
             catch (Exception ex)
             {
-                throw new Exception($"An unexpected error occurred while trying to read settings file: {ex}");
+                throw new Exception($"An unexpected error occurred while trying to read settings file: {ex.Message}");
             }
         }
     }
