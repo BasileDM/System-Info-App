@@ -8,7 +8,6 @@ namespace SystemInfoApi.Classes
     {
         protected readonly string? _ConnectionString;
         protected readonly IConfigurationSection _DbConfig;
-        protected readonly IConfigurationSection _TablesNames;
 
         public Database(IConfiguration configuration, IWebHostEnvironment env)
         {
@@ -22,8 +21,6 @@ namespace SystemInfoApi.Classes
                 _ConnectionString = configuration.GetSection("ConnectionStrings")["SysteminfoDb"];
                 _DbConfig = configuration.GetSection("DatabaseConfig");
             }
-            _TablesNames = _DbConfig.GetSection("TablesNames");
-
         }
 
         protected SqlConnection CreateConnection()
@@ -71,7 +68,7 @@ namespace SystemInfoApi.Classes
                 string checkTablesSql = @$"
                     SELECT COUNT(*) 
                     FROM information_schema.tables 
-                    WHERE table_name = '{_TablesNames["MachinesTable"]}'";
+                    WHERE table_name = 'Client_Machine'";
 
                 using SqlCommand cmd = new(checkTablesSql, connection);
                 int? tableCount = (int?)cmd.ExecuteScalar();
@@ -112,7 +109,7 @@ namespace SystemInfoApi.Classes
                 string migrationPath = AppDomain.CurrentDomain.BaseDirectory + "/Migrations/SysteminfoDb.sql";
                 string script = File.ReadAllText(migrationPath);
 
-                script = script.Replace("CustomerTableName", _TablesNames["CustomerTableName"]);
+                script = script.Replace("customersTableName", _DbConfig["CustomerTableName"]);
 
                 await using SqlCommand cmd = new(script, connection, transaction);
                 await cmd.ExecuteNonQueryAsync();
@@ -174,7 +171,6 @@ namespace SystemInfoApi.Classes
             {
                 await transaction.DisposeAsync();
                 await connection.CloseAsync();
-                Console.WriteLine("Freeing up ressources...\r\n");
             }
         }
     }

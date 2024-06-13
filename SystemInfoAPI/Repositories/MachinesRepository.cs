@@ -1,4 +1,5 @@
 ﻿using System.Data.SqlClient;
+using SystemInfoApi.Classes;
 using SystemInfoApi.Models;
 
 namespace SystemInfoApi.Repositories
@@ -16,7 +17,7 @@ namespace SystemInfoApi.Repositories
         {
             try
             {
-                string machineSql = @"
+                string machineSql = @$"
                     INSERT INTO Client_Machine (id_client, Name) 
                     VALUES (@customerId, @machineName);
 

@@ -18,6 +18,7 @@ namespace SystemInfoApi
             builder.Services.AddScoped<DrivesRepository>();
             builder.Services.AddScoped<OsRepository>();
 
+
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
