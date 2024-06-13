@@ -70,9 +70,9 @@ CREATE TABLE Relation_Disque_Application
 )
 
 ALTER TABLE Client_Machine
-  ADD CONSTRAINT FK_Client_TO_Client_Machine
+  ADD CONSTRAINT FK_customersTableName_TO_Client_Machine
     FOREIGN KEY (id_client)
-    REFERENCES Client (id_client)
+    REFERENCES customersTableName (id_client)
 
 ALTER TABLE Client_Machine_Disque
   ADD CONSTRAINT FK_Client_Machine_TO_Client_Machine_Disque
