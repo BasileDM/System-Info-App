@@ -23,7 +23,6 @@ namespace SystemInfoApi.Classes
                 _DbConfig = configuration.GetSection("DatabaseConfig");
             }
             _TablesNames = _DbConfig.GetSection("TablesNames");
-            Console.WriteLine(_TablesNames["CustomersTable"]);
 
         }
 
@@ -113,7 +112,7 @@ namespace SystemInfoApi.Classes
                 string migrationPath = AppDomain.CurrentDomain.BaseDirectory + "/Migrations/SysteminfoDb.sql";
                 string script = File.ReadAllText(migrationPath);
 
-                script = script.Replace("customersTableName", _TablesNames["CustomersTable"]);
+                script = script.Replace("CustomerTableName", _TablesNames["CustomerTableName"]);
 
                 await using SqlCommand cmd = new(script, connection, transaction);
                 await cmd.ExecuteNonQueryAsync();
