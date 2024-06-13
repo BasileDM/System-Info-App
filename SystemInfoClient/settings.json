@@ -1,5 +1,5 @@
 {
-  "CustomerId": "2",
+  "CustomerId": "1",
   "ApiUrl": "https://localhost:7056/",
   "Applications": {
     "Visual Studio": "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\Common7\\IDE\\devenv.exe",

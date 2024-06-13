@@ -54,10 +54,10 @@ namespace SystemInfoApi.Repositories
             {
                 await connection.OpenAsync();
 
-                const string sqlRequest =
+                const string query =
                     "SELECT * FROM Client_Machine";
 
-                using (SqlCommand cmd = new(sqlRequest, connection))
+                using (SqlCommand cmd = new(query, connection))
                 {
 
                     using SqlDataReader reader = await cmd.ExecuteReaderAsync();
@@ -96,7 +96,7 @@ namespace SystemInfoApi.Repositories
             {
                 await connection.OpenAsync();
 
-                const string sqlRequest = @"
+                const string query = @"
                     SELECT id_client AS Customer_Id,
                         Machine.id_client_machine AS Machine_Id,
                         Machine.Name AS Machine_Name, 
@@ -126,7 +126,7 @@ namespace SystemInfoApi.Repositories
                     ON Os.id_client_machine_disque = Drive.id_client_machine_disque 
                     WHERE Machine.id_client_machine = @Id";
 
-                using (SqlCommand cmd = new(sqlRequest, connection))
+                using (SqlCommand cmd = new(query, connection))
                 {
                     cmd.Parameters.AddWithValue("@Id", id);
 

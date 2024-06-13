@@ -61,7 +61,7 @@ namespace SystemInfoApi.Classes
 
         }
 
-        private bool DoTablesExist(SqlConnection connection)
+        private static bool DoTablesExist(SqlConnection connection)
         {
             try
             {
