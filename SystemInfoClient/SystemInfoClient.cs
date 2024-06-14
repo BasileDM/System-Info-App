@@ -30,14 +30,22 @@ namespace SystemInfoClient
 
                 // Log information
                 machine.LogInfo();
-                ApplicationsService.LogExeInfo(settings.Applications["AnyDesk"]);
 
-                // Serialize and send object to POST API route
-                await PostMachineInfo(machine, settings.ApiUrl);
+                if (settings != null && settings.ApplicationsList != null)
+                {
+                    ApplicationsService.LogAppListInfo(settings.ApplicationsList);
+
+                    // Serialize and send object to POST API route
+                    //await PostMachineInfo(machine, settings.ApiUrl);
+                }
+                else
+                {
+                    Console.WriteLine("Application settings are null.");
+                }
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error: " + ex.Message);
+                Console.WriteLine(ex.Message);
             }
         }
 
@@ -89,8 +97,14 @@ namespace SystemInfoClient
                 }
 
                 SettingsModel? settings = JsonSerializer.Deserialize<SettingsModel>(jsonSettings);
-                return settings;
-
+                if (settings != null && settings.ApplicationsList != null)
+                {
+                    return settings;
+                }
+                else
+                {
+                    throw new Exception("LoadConfig return value or settings.ApplicationConfig is null.");
+                }
             }
             catch (FileNotFoundException ex)
             {
@@ -102,7 +116,7 @@ namespace SystemInfoClient
             }
             catch (Exception ex)
             {
-                throw new Exception($"An unexpected error occurred while trying to read settings file: {ex.Message}");
+                throw new Exception($"Error while trying to read settings file: {ex.Message}");
             }
         }
     }
