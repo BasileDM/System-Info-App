@@ -16,6 +16,7 @@ namespace SystemInfoClient.Classes
         public int FreeSpacePercentage { get; set; }
         public bool IsSystemDrive { get; set; }
         public OsClass? Os { get; set; }
+        public List<AppClass> AppList { get; set; }
 
         public DriveClass(DriveInfo drive, bool isSystemDrive)
         {
@@ -32,6 +33,9 @@ namespace SystemInfoClient.Classes
                 FreeSpacePercentage = CalculateFreeSpacePercentage(drive.AvailableFreeSpace, drive.TotalSize);
                 IsSystemDrive = isSystemDrive;
                 Os = IsSystemDrive ? new OsClass() : null;
+
+                //AppList = ; // Finish this : pass the app list in parameter from the MachineClass constructor
+
             }
             catch (Exception ex)
             {
@@ -62,7 +66,7 @@ namespace SystemInfoClient.Classes
         {
             if (totalSize <= 0)
             {
-                throw new ArgumentOutOfRangeException($"Error division by 0. Total drive size was null or negative on drive {Name}");
+                throw new ArgumentOutOfRangeException($"Drive data error: Total drive size was null or negative on drive {Name}");
             }
             else
             {

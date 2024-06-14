@@ -1,4 +1,5 @@
 ﻿using System.Runtime.Versioning;
+using SystemInfoClient.Models;
 
 namespace SystemInfoClient.Classes
 {
@@ -11,7 +12,8 @@ namespace SystemInfoClient.Classes
 
         public List<DriveClass> Drives { get; set; }
 
-        public MachineClass() {
+        public MachineClass(Dictionary<string, ApplicationSettings> appList)
+        {
             try
             {
                 Name = Environment.MachineName;
@@ -21,10 +23,26 @@ namespace SystemInfoClient.Classes
 
                 foreach (var drive in DriveInfo.GetDrives())
                 {
+                    List<AppClass> driveAppsList = [];
+
                     if (drive.IsReady)
                     {
-                        bool isSystemDriveBool = drive.Name == systemDrive;
-                        Drives.Add(new DriveClass(drive, isSystemDriveBool));
+                        foreach (var app in appList)
+                        {
+                            if (app.Value.Path != null && app.Value.Path.Contains(drive.RootDirectory.ToString()))
+                            {
+                                Console.WriteLine($"{app.Key} : belongs to drive {drive.Name}");
+                                AppClass appClass = new(app);
+                                driveAppsList.Add(appClass);
+                            }
+
+                            bool isSystemDriveBool = drive.Name == systemDrive;
+                            Drives.Add(new DriveClass(drive, isSystemDriveBool));
+                        }
+                    }
+                    else
+                    {
+                        throw new DriveNotFoundException("Error with drive ready state.");
                     }
                 }
             }
@@ -34,11 +52,13 @@ namespace SystemInfoClient.Classes
             }
         }
 
-        public void LogInfo() {
+        public void LogInfo()
+        {
             Console.WriteLine($"Device name: {Name}");
             Console.WriteLine($"Customer ID: {CustomerId}");
             Console.WriteLine();
-            foreach (var drive in Drives) {
+            foreach (var drive in Drives)
+            {
                 drive.LogInfo();
             }
         }

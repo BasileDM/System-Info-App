@@ -7,7 +7,7 @@
         public Dictionary<string, ApplicationSettings>? ApplicationsList { get; set; }
     }
 
-    internal class ApplicationSettings
+    public class ApplicationSettings
     {
         public string? Id { get; set; }
         public string? Path { get; set; }

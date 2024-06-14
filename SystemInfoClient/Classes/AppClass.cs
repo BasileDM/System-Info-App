@@ -1,6 +1,14 @@
-﻿namespace SystemInfoClient.Classes
+﻿using SystemInfoClient.Models;
+
+namespace SystemInfoClient.Classes
 {
-    internal class AppClass
+    public class AppClass
     {
+        public string Name;
+
+        public AppClass(ApplicationSettings app)
+        {
+            Name = app.; // Finish this !!
+        }
     }
 }
