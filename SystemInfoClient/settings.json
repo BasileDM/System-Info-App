@@ -1,8 +1,14 @@
 {
-  "CustomerId": "1",
+  "CustomerId": "2",
   "ApiUrl": "https://localhost:7056/",
-  "Applications": {
-    "Visual Studio": "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\Common7\\IDE\\devenv.exe",
-    "AnyDesk": "C:\\Program Files (x86)\\AnyDesk\\AnyDesk.exe"
+  "ApplicationsList": {
+    "VisualStudio": {
+      "Id": "1",
+      "Path": "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\Common7\\IDE\\devenv.exe"
+    },
+    "AnyDesk": {
+      "Id": "2",
+      "Path": "C:\\Program Files (x86)\\AnyDesk\\AnyDesk.exe"
+    }
   }
 }
