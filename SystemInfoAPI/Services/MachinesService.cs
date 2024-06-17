@@ -39,12 +39,12 @@ namespace SystemInfoApi.Services
                         drive.Os.DriveId = updatedDrive.Id;
                         OsModel updatedOs = await osRepository.InsertAsync(drive.Os, connection, transaction);
 
-                        //foreach (AppModel app in drive.AppList)
-                        //{
-                        //    Console.WriteLine(app.Name);
-                        //    app.DriveId = updatedDrive.Id;
-                        //    //await appRepository.InsertAsync(app, connection, transaction);
-                        //}
+                        foreach (AppModel app in drive.AppList)
+                        {
+                            Console.WriteLine(app.Name);
+                            app.DriveId = updatedDrive.Id;
+                            await appRepository.InsertAsync(app, connection, transaction);
+                        }
 
                         updatedDrive.Os = updatedOs;
                     }
