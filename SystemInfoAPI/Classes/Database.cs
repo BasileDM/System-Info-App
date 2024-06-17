@@ -14,7 +14,7 @@ namespace SystemInfoApi.Classes
             if (env.IsDevelopment())
             {
                 _ConnectionString = configuration.GetSection("ConnectionStrings")["SystemInfoDbDev"];
-                _DbConfig = configuration.GetSection("DatabaseConfigDev");
+                _DbConfig = configuration.GetSection("DatabaseConfigDev"); // map tables and columns names as properties instead of getting from config
             }
             else
             {

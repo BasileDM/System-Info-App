@@ -1,5 +1,4 @@
 ﻿using System.Data.SqlClient;
-using SystemInfoApi.Classes;
 using SystemInfoApi.Models;
 
 namespace SystemInfoApi.Repositories
