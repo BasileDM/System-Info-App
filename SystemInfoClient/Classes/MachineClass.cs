@@ -6,16 +6,24 @@ namespace SystemInfoClient.Classes
     [SupportedOSPlatform("windows")]
     public class MachineClass
     {
+        public int Id { get; set; }
         public string Name { get; set; }
 
         public int CustomerId { get; set; }
 
         public List<DriveClass> Drives { get; set; }
 
-        public MachineClass(Dictionary<string, ApplicationSettings> appList)
+        public MachineClass(SettingsModel settings)
         {
             try
             {
+                Dictionary<string, ApplicationSettings> appList = settings.ApplicationsList;
+
+                if (Int32.TryParse(settings.MachineId, out int parsedMachineId) && parsedMachineId > 0)
+                {
+                    Id = parsedMachineId;
+                }
+                    ;
                 Name = Environment.MachineName;
                 Drives = [];
 
@@ -52,6 +60,7 @@ namespace SystemInfoClient.Classes
 
         public void LogInfo()
         {
+            Console.WriteLine($"Machine ID : {Id}");
             Console.WriteLine($"Device name: {Name}");
             Console.WriteLine($"Customer ID: {CustomerId}");
             Console.WriteLine();

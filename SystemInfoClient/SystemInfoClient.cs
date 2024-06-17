@@ -28,14 +28,13 @@ namespace SystemInfoClient
                 if (settings != null && settings.ApplicationsList != null)
                 {
                     // Instantiate object with machine info and customer ID from settings file
-                    MachineClass machine = new(settings.ApplicationsList) { CustomerId = customerId };
+                    MachineClass machine = new(settings) { CustomerId = customerId };
 
                     // Log information
                     machine.LogInfo();
-                    //ApplicationsService.LogAppListInfo(settings.ApplicationsList);
 
                     // Serialize and send object to POST API route
-                    //await PostMachineInfo(machine, settings.ApiUrl);
+                    // await PostMachineInfo(machine, settings.ApiUrl);
                 }
                 else
                 {

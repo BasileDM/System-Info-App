@@ -31,9 +31,7 @@ namespace SystemInfoClient.Classes
                 {
                     object? value = property.GetValue(filVersionInfo);
                     FileVersionProperties.Add(property.Name, value);
-                    //Console.WriteLine($"{property.Name} : {value}");
                 }
-                Console.WriteLine();
             }
             else
             {
@@ -44,11 +42,11 @@ namespace SystemInfoClient.Classes
 
         public void LogInfo()
         {
-            Console.WriteLine($"  {Id}");
-            Console.WriteLine($"  {Name}");
+            Console.WriteLine($"    {Id}");
+            Console.WriteLine($"    {Name}");
             foreach (var entry in FileVersionProperties)
             {
-                Console.WriteLine($"  {entry.Key} : {entry.Value}");
+                Console.WriteLine($"    {entry.Key} : {entry.Value}");
             }
             Console.WriteLine();
         }

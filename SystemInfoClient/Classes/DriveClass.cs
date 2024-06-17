@@ -44,28 +44,28 @@ namespace SystemInfoClient.Classes
 
         public void LogInfo()
         {
-            Console.WriteLine($"Drive Name: {Name}");
-            Console.WriteLine($"Drive Label: {Label}");
-            Console.WriteLine($"Drive Type: {Type}");
-            Console.WriteLine($"Drive Format: {Format}");
-            Console.WriteLine($"Total Size: {Size:#,0}");
-            Console.WriteLine($"Available Free Space: {FreeSpace:#,0}");
-            Console.WriteLine($"Total Free Space: {TotalSpace:#,0}");
-            Console.WriteLine($"Free Space Percentage: {FreeSpacePercentage}%");
-            Console.WriteLine($"Is system drive: {IsSystemDrive}");
+            Console.WriteLine($"  Drive Name: {Name}");
+            Console.WriteLine($"  Drive Label: {Label}");
+            Console.WriteLine($"  Drive Type: {Type}");
+            Console.WriteLine($"  Drive Format: {Format}");
+            Console.WriteLine($"  Total Size: {Size:#,0}");
+            Console.WriteLine($"  Available Free Space: {FreeSpace:#,0}");
+            Console.WriteLine($"  Total Free Space: {TotalSpace:#,0}");
+            Console.WriteLine($"  Free Space Percentage: {FreeSpacePercentage}%");
+            Console.WriteLine($"  Is system drive: {IsSystemDrive}");
+            Console.WriteLine();
 
+            Console.WriteLine($"  Operating System: ");
             if (IsSystemDrive)
             {
                 Os?.LogInfo();
             }
 
-            Console.WriteLine($"Applications: ");
+            Console.WriteLine($"  Applications: ");
             foreach (AppClass app in AppList)
             {
                 app.LogInfo();
             }
-
-            Console.WriteLine();
         }
 
         private int CalculateFreeSpacePercentage(long availableFreeSpace, long totalSize)
