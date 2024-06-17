@@ -31,14 +31,12 @@ namespace SystemInfoClient.Classes
                         {
                             if (app.Value.Path != null && app.Value.Path.Contains(drive.RootDirectory.ToString()))
                             {
-                                Console.WriteLine($"{app.Key} : belongs to drive {drive.Name}");
                                 AppClass appClass = new(app);
                                 driveAppsList.Add(appClass);
                             }
-
-                            bool isSystemDriveBool = drive.Name == systemDrive;
-                            Drives.Add(new DriveClass(drive, isSystemDriveBool));
                         }
+                        bool isSystemDriveBool = drive.Name == systemDrive;
+                        Drives.Add(new DriveClass(drive, isSystemDriveBool, driveAppsList));
                     }
                     else
                     {

@@ -32,10 +32,10 @@ namespace SystemInfoClient
 
                     // Log information
                     machine.LogInfo();
-                    ApplicationsService.LogAppListInfo(settings.ApplicationsList);
+                    //ApplicationsService.LogAppListInfo(settings.ApplicationsList);
 
                     // Serialize and send object to POST API route
-                    await PostMachineInfo(machine, settings.ApiUrl);
+                    //await PostMachineInfo(machine, settings.ApiUrl);
                 }
                 else
                 {

@@ -18,7 +18,7 @@ namespace SystemInfoClient.Classes
         public OsClass? Os { get; set; }
         public List<AppClass> AppList { get; set; }
 
-        public DriveClass(DriveInfo drive, bool isSystemDrive)
+        public DriveClass(DriveInfo drive, bool isSystemDrive, List<AppClass> appList)
         {
             try
             {
@@ -33,8 +33,7 @@ namespace SystemInfoClient.Classes
                 FreeSpacePercentage = CalculateFreeSpacePercentage(drive.AvailableFreeSpace, drive.TotalSize);
                 IsSystemDrive = isSystemDrive;
                 Os = IsSystemDrive ? new OsClass() : null;
-
-                //AppList = ; // Finish this : pass the app list in parameter from the MachineClass constructor
+                AppList = appList;
 
             }
             catch (Exception ex)
@@ -59,6 +58,13 @@ namespace SystemInfoClient.Classes
             {
                 Os?.LogInfo();
             }
+
+            Console.WriteLine($"Applications: ");
+            foreach (AppClass app in AppList)
+            {
+                app.LogInfo();
+            }
+
             Console.WriteLine();
         }
 
