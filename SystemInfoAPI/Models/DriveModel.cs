@@ -2,7 +2,6 @@
 
 namespace SystemInfoApi.Models
 {
-
     [Table("Client_Machine_Disque")]
     public class DriveModel
     {

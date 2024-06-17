@@ -41,8 +41,8 @@ namespace SystemInfoApi.Repositories
                     var newDriveId = await cmd.ExecuteScalarAsync();
                     drive.Id = Convert.ToInt32(newDriveId);
                 }
-                return drive;
 
+                return drive;
             }
             catch (Exception ex)
             {

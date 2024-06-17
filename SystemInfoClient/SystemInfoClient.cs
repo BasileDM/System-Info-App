@@ -25,22 +25,20 @@ namespace SystemInfoClient
                     throw new Exception("Invalid customer ID, please provide a valid one in the settings.json file");
                 }
 
-                // Instantiate object with machine info and customer ID from settings file
-                MachineClass machine = new() { CustomerId = customerId };
-
-                // Log information
-                machine.LogInfo();
-
                 if (settings != null && settings.ApplicationsList != null)
                 {
-                    ApplicationsService.LogAppListInfo(settings.ApplicationsList);
+                    // Instantiate object with machine info and customer ID from settings file
+                    MachineClass machine = new(settings) { CustomerId = customerId };
+
+                    // Log information
+                    machine.LogInfo();
 
                     // Serialize and send object to POST API route
-                    //await PostMachineInfo(machine, settings.ApiUrl);
+                    await PostMachineInfo(machine, settings.ApiUrl);
                 }
                 else
                 {
-                    Console.WriteLine("Application settings are null.");
+                    throw new NullReferenceException("Error: Null configuration");
                 }
             }
             catch (Exception ex)
@@ -59,6 +57,8 @@ namespace SystemInfoClient
 
             JsonSerializerOptions jsonOptions = new() { WriteIndented = true };
             var json = JsonSerializer.Serialize(machine, jsonOptions);
+
+            Console.WriteLine(json.ToString());
 
             var content = new StringContent(json, Encoding.UTF8, "application/json");
 
@@ -97,14 +97,23 @@ namespace SystemInfoClient
                 }
 
                 SettingsModel? settings = JsonSerializer.Deserialize<SettingsModel>(jsonSettings);
-                if (settings != null && settings.ApplicationsList != null)
+
+                if (settings == null || settings.ApplicationsList == null)
                 {
-                    return settings;
+                    throw new NullReferenceException("Settings deserialization error, config or applist is null.");
                 }
-                else
+
+                int customerId = Int32.TryParse(settings.CustomerId, out int parsedId) ? parsedId : 0;
+                if (customerId <= 0)
                 {
-                    throw new Exception("LoadConfig return value or settings.ApplicationConfig is null.");
+                    throw new InvalidDataException("Invalid customer ID, please provide a valid one in the settings.json file");
                 }
+
+                return settings;
+            }
+            catch (NullReferenceException ex)
+            {
+                throw new NullReferenceException(ex.Message);
             }
             catch (FileNotFoundException ex)
             {
@@ -114,9 +123,13 @@ namespace SystemInfoClient
             {
                 throw new JsonException($"Could not deserialize JSON: {ex.Message}");
             }
+            catch (InvalidDataException ex)
+            {
+                throw new InvalidDataException(ex.Message);
+            }
             catch (Exception ex)
             {
-                throw new Exception($"Error while trying to read settings file: {ex.Message}");
+                throw new Exception($"Unexpected error while trying to read settings file: {ex.Message}");
             }
         }
     }

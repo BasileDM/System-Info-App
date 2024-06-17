@@ -7,6 +7,7 @@ namespace SystemInfoApi.Models
     {
         [Column("id_client_machine_disque_os")]
         public int Id { get; set; }
+
         public string Directory { get; set; }
 
         public string Architecture { get; set; }

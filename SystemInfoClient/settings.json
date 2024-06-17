@@ -1,4 +1,5 @@
 {
+  "MachineId":  "0",
   "CustomerId": "2",
   "ApiUrl": "https://localhost:7056/",
   "ApplicationsList": {
