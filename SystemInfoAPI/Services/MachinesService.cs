@@ -6,7 +6,7 @@ using SystemInfoApi.Repositories;
 namespace SystemInfoApi.Services
 {
     public class MachinesService(MachinesRepository machinesRepository, DrivesRepository drivesRepository,
-        OsRepository osRepository, IConfiguration config, IWebHostEnvironment env) : Database(config, env)
+        OsRepository osRepository, AppRepository appRepository, IConfiguration config, IWebHostEnvironment env) : Database(config, env)
     {
         /// <summary>
         /// Handles the business logic to create a new full machine in the database.
@@ -38,6 +38,13 @@ namespace SystemInfoApi.Services
                         // Set new driveId on OS and insert
                         drive.Os.DriveId = updatedDrive.Id;
                         OsModel updatedOs = await osRepository.InsertAsync(drive.Os, connection, transaction);
+
+                        //foreach (AppModel app in drive.AppList)
+                        //{
+                        //    Console.WriteLine(app.Name);
+                        //    app.DriveId = updatedDrive.Id;
+                        //    //await appRepository.InsertAsync(app, connection, transaction);
+                        //}
 
                         updatedDrive.Os = updatedOs;
                     }

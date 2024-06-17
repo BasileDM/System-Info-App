@@ -37,7 +37,7 @@ namespace SystemInfoApi.Repositories
             }
             catch (Exception ex)
             {
-                throw new ApplicationException("An error occured inserting the machine into the database.", ex);
+                throw new ApplicationException($"An error occured inserting the machine into the database : {ex}", ex);
             }
         }
 
