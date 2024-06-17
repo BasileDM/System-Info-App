@@ -52,7 +52,6 @@ namespace SystemInfoClient.Classes
             Console.WriteLine($"    Release ID: {ReleaseId}");
             Console.WriteLine($"    Current Build: {CurrentBuild}");
             Console.WriteLine($"    UBR: {Ubr}");
-            Console.WriteLine();
         }
     }
 }

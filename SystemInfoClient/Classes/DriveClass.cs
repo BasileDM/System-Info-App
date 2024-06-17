@@ -53,7 +53,6 @@ namespace SystemInfoClient.Classes
             Console.WriteLine($"  Total Free Space: {TotalSpace:#,0}");
             Console.WriteLine($"  Free Space Percentage: {FreeSpacePercentage}%");
             Console.WriteLine($"  Is system drive: {IsSystemDrive}");
-            Console.WriteLine();
 
             Console.WriteLine($"  Operating System: ");
             if (IsSystemDrive)

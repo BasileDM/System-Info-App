@@ -7,9 +7,8 @@ namespace SystemInfoClient.Classes
     public class MachineClass
     {
         public int Id { get; set; }
-        public string Name { get; set; }
-
         public int CustomerId { get; set; }
+        public string Name { get; set; }
 
         public List<DriveClass> Drives { get; set; }
 
@@ -61,9 +60,9 @@ namespace SystemInfoClient.Classes
         public void LogInfo()
         {
             Console.WriteLine($"Machine ID : {Id}");
-            Console.WriteLine($"Device name: {Name}");
             Console.WriteLine($"Customer ID: {CustomerId}");
-            Console.WriteLine();
+            Console.WriteLine($"Device name: {Name}");
+            Console.WriteLine("Drives: ");
             foreach (var drive in Drives)
             {
                 drive.LogInfo();

@@ -37,7 +37,6 @@ namespace SystemInfoClient.Classes
             {
                 throw new FileNotFoundException($"File not found for {app.Value} with path {app.Value.Path}");
             }
-
         }
 
         public void LogInfo()

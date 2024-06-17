@@ -34,7 +34,7 @@ namespace SystemInfoClient
                     machine.LogInfo();
 
                     // Serialize and send object to POST API route
-                    // await PostMachineInfo(machine, settings.ApiUrl);
+                    await PostMachineInfo(machine, settings.ApiUrl);
                 }
                 else
                 {
@@ -57,6 +57,8 @@ namespace SystemInfoClient
 
             JsonSerializerOptions jsonOptions = new() { WriteIndented = true };
             var json = JsonSerializer.Serialize(machine, jsonOptions);
+
+            Console.WriteLine(json.ToString());
 
             var content = new StringContent(json, Encoding.UTF8, "application/json");
 
