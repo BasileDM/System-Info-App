@@ -30,7 +30,7 @@ namespace SystemInfoApi.Repositories
 
                 using (SqlCommand rCmd = new(query, conection, transaction))
                 {
-                    rCmd.Parameters.AddWithValue("@ProductName", app.FileVersionProperties);
+                    rCmd.Parameters.AddWithValue("@ProductName", app.ProductName);
                 };
             }
             catch (Exception ex) { }
