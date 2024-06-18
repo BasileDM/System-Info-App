@@ -88,15 +88,13 @@ namespace SystemInfoApi.Repositories
         /// </returns>
         public async Task<MachineModel> GetByIdAsync(int id, SqlConnection connection)
         {
-            MachineModel machine = new();
-            List<DriveModel> drivesList = [];
-
             try
             {
-                await connection.OpenAsync();
-
+                MachineModel machine = new();
+                List<DriveModel> drivesList = [];
                 string query = GetQuery();
 
+                await connection.OpenAsync();
                 using (SqlCommand cmd = new(query, connection))
                 {
                     cmd.Parameters.AddWithValue("@Id", id);
