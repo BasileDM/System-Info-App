@@ -14,31 +14,16 @@ namespace SystemInfoClient
         {
             try
             {
-                // Load config file to get customer ID
-                SettingsModel settings = LoadConfig();
+                // Load settings.json and check 'CustomerId' validity
+                SettingsModel settings = LoadSettings();
+                int customerId = GetParsedId(settings.CustomerId);
 
-                int customerId = Int32.TryParse(settings.CustomerId, out int parsedId) ? parsedId : 0;
+                // Create machine with 'CustomerId' + drives, os and apps info
+                MachineClass machine = new(settings) { CustomerId = customerId };
+                machine.LogJson();
 
-                if (customerId <= 0)
-                {
-                    throw new Exception("Invalid customer ID, please provide a valid one in the settings.json file");
-                }
-
-                if (settings != null && settings.ApplicationsList != null)
-                {
-                    // Instantiate object with machine info and customer ID from settings file
-                    MachineClass machine = new(settings) { CustomerId = customerId };
-
-                    // Display JSON format
-                    machine.LogJson();
-
-                    // Serialize and send object to POST API route
-                    await PostMachineInfo(machine, settings.ApiUrl);
-                }
-                else
-                {
-                    throw new NullReferenceException("Error: Invalid configuration, check your settings.json file.");
-                }
+                // POST machine to API route and handle response
+                HandleApiResponse(await PostMachineInfo(machine, settings.ApiUrl));
             }
             catch (Exception ex)
             {
@@ -46,7 +31,48 @@ namespace SystemInfoClient
             }
         }
 
-        private static async Task PostMachineInfo(MachineClass machine, string? ApiUrl)
+        private static SettingsModel LoadSettings()
+        {
+            try
+            {
+                string path = AppDomain.CurrentDomain.BaseDirectory + "settings.json";
+                string jsonSettings;
+
+                using (StreamReader reader = new(path))
+                {
+                    jsonSettings = reader.ReadToEnd();
+                }
+
+                SettingsModel? settings = JsonSerializer.Deserialize<SettingsModel>(jsonSettings);
+
+                if (settings == null || settings.ApplicationsList == null)
+                    throw new NullReferenceException("Settings deserialization error, config or applist is null.");
+
+                return settings;
+            }
+            catch (FileNotFoundException ex)
+            {
+                throw new FileNotFoundException($"File not found: {ex.Message}");
+            }
+            catch (JsonException ex)
+            {
+                throw new JsonException($"Could not deserialize JSON: {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Unexpected error while trying to read settings file: {ex.Message}");
+            }
+        }
+
+        private static int GetParsedId(string? id)
+        {
+            if (Int32.TryParse(id, out int parsedId) && parsedId > 0) return parsedId;
+
+            else throw new InvalidDataException(
+                "Invalid customer ID, please provide a valid one in the settings.json file");
+        }
+
+        private static async Task<HttpResponseMessage> PostMachineInfo(MachineClass machine, string? ApiUrl)
         {
             // Build HTTP Client
             HttpClient client = new();
@@ -55,14 +81,16 @@ namespace SystemInfoClient
                 new MediaTypeWithQualityHeaderValue("application/json"));
             client.DefaultRequestHeaders.Add("User-Agent", "Systeminfo App Client");
 
-            // Serialize machine and build JSON request content
+            // Serialize machine into JSON content and build route string
             var content = new StringContent(machine.JsonSerialize(), Encoding.UTF8, "application/json");
-
-            // Post to API create route
             string route = ApiUrl + "api/Machines/Create";
-            var response = await client.PostAsync(route, content);
 
-            // Handle response
+            // POST to API route and handle the response
+            return await client.PostAsync(route, content);
+        }
+
+        public async static void HandleApiResponse(HttpResponseMessage response)
+        {
             if (response.IsSuccessStatusCode)
             {
                 Console.WriteLine(
@@ -78,55 +106,6 @@ namespace SystemInfoClient
                 var errorContent = await response.Content.ReadAsStringAsync();
                 Console.WriteLine($"\r\n" +
                     $"{response.ReasonPhrase}: {errorContent}");
-            }
-        }
-
-        private static SettingsModel LoadConfig()
-        {
-            string path = AppDomain.CurrentDomain.BaseDirectory + "settings.json";
-            string jsonSettings;
-
-            try
-            {
-                using (StreamReader reader = new(path))
-                {
-                    jsonSettings = reader.ReadToEnd();
-                }
-
-                SettingsModel? settings = JsonSerializer.Deserialize<SettingsModel>(jsonSettings);
-
-                if (settings == null || settings.ApplicationsList == null)
-                {
-                    throw new NullReferenceException("Settings deserialization error, config or applist is null.");
-                }
-
-                int customerId = Int32.TryParse(settings.CustomerId, out int parsedId) ? parsedId : 0;
-                if (customerId <= 0)
-                {
-                    throw new InvalidDataException("Invalid customer ID, please provide a valid one in the settings.json file");
-                }
-
-                return settings;
-            }
-            catch (NullReferenceException ex)
-            {
-                throw new NullReferenceException(ex.Message);
-            }
-            catch (FileNotFoundException ex)
-            {
-                throw new FileNotFoundException($"File not found: {ex.Message}");
-            }
-            catch (JsonException ex)
-            {
-                throw new JsonException($"Could not deserialize JSON: {ex.Message}");
-            }
-            catch (InvalidDataException ex)
-            {
-                throw new InvalidDataException(ex.Message);
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"Unexpected error while trying to read settings file: {ex.Message}");
             }
         }
     }

@@ -6,6 +6,7 @@
         public string? MachineId { get; set; }
         public string? ApiUrl { get; set; }
         public Dictionary<string, ApplicationSettings>? ApplicationsList { get; set; }
+
     }
 
     public class ApplicationSettings
