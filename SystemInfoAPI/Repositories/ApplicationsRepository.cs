@@ -3,9 +3,9 @@ using SystemInfoApi.Models;
 
 namespace SystemInfoApi.Repositories
 {
-    public class AppRepository
+    public class ApplicationsRepository
     {
-        public async Task<int> InsertAsync(AppModel app, SqlConnection conection, SqlTransaction transaction)
+        public async Task<int> InsertAsync(ApplicationModel app, SqlConnection conection, SqlTransaction transaction)
         {
             try
             {

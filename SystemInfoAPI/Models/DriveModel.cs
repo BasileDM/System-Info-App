@@ -15,6 +15,6 @@
         public bool IsSystemDrive { get; set; }
         public int MachineId { get; set; }  // Foreign key
         public OsModel? Os { get; set; }
-        public List<AppModel>? AppList { get; set; }
+        public List<ApplicationModel>? AppList { get; set; }
     }
 }
