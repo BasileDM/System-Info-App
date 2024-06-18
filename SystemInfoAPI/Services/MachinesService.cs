@@ -41,7 +41,6 @@ namespace SystemInfoApi.Services
 
                         foreach (ApplicationModel app in drive.AppList)
                         {
-                            Console.WriteLine(app.Name);
                             app.DriveId = updatedDrive.Id;
                             await appRepository.InsertAsync(app, connection, transaction);
                         }

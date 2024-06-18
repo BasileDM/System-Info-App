@@ -1,5 +1,5 @@
-﻿using System.Runtime.Versioning;
-using SystemInfoClient.Services;
+﻿using Microsoft.Win32;
+using System.Runtime.Versioning;
 
 namespace SystemInfoClient.Classes
 {
@@ -21,19 +21,19 @@ namespace SystemInfoClient.Classes
                 Architecture = Environment.Is64BitOperatingSystem ? "x64 - 64bits" : "x86 - 32bits";
                 Version = Environment.OSVersion.ToString();
 
-                ProductName = RegistryService.GetRegistryValue(
+                ProductName = GetRegistryValue(
                     @"SOFTWARE\Microsoft\Windows NT\CurrentVersion",
                     "ProductName",
                     "Unknown Product");
-                ReleaseId = RegistryService.GetRegistryValue(
+                ReleaseId = GetRegistryValue(
                     @"SOFTWARE\Microsoft\Windows NT\CurrentVersion",
                     "ReleaseId",
                     "Unknown Release");
-                CurrentBuild = RegistryService.GetRegistryValue(
+                CurrentBuild = GetRegistryValue(
                     @"SOFTWARE\Microsoft\Windows NT\CurrentVersion",
                     "CurrentBuild",
                     "Unknown Build");
-                Ubr = RegistryService.GetRegistryValue(
+                Ubr = GetRegistryValue(
                     @"SOFTWARE\Microsoft\Windows NT\CurrentVersion",
                     "UBR",
                     "Unknown UBR");
@@ -52,6 +52,27 @@ namespace SystemInfoClient.Classes
             Console.WriteLine($"    Release ID: {ReleaseId}");
             Console.WriteLine($"    Current Build: {CurrentBuild}");
             Console.WriteLine($"    UBR: {Ubr}");
+        }
+
+        /// <summary>Gets the registry value with a path and name.</summary>
+        /// <param name="keyPath">The key path.</param>
+        /// <param name="valueName">Name of the value.</param>
+        /// <returns>
+        ///   A <see cref="string"/> of the registry value or the default value if an error occured.
+        /// </returns>
+        [SupportedOSPlatform("windows")]
+        public static string? GetRegistryValue(string keyPath, string valueName, string defaultValue)
+        {
+            try
+            {
+                RegistryKey? key = Registry.LocalMachine.OpenSubKey(keyPath);
+                return key?.GetValue(valueName)?.ToString();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error reading registry: {ex.Message}");
+                return defaultValue;
+            }
         }
     }
 }
