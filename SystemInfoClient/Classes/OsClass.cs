@@ -54,13 +54,13 @@ namespace SystemInfoClient.Classes
             Console.WriteLine($"    UBR: {Ubr}");
         }
 
+        [SupportedOSPlatform("windows")]
         /// <summary>Gets the registry value with a path and name.</summary>
         /// <param name="keyPath">The key path.</param>
         /// <param name="valueName">Name of the value.</param>
         /// <returns>
         ///   A <see cref="string"/> of the registry value or the default value if an error occured.
         /// </returns>
-        [SupportedOSPlatform("windows")]
         public static string? GetRegistryValue(string keyPath, string valueName, string defaultValue)
         {
             try

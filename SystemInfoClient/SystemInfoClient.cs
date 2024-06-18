@@ -31,14 +31,18 @@ namespace SystemInfoClient
             }
         }
 
+        private static string GetSettingsPath()
+        {
+            return AppDomain.CurrentDomain.BaseDirectory + "settings.json";
+        }
+
         private static SettingsModel LoadSettings()
         {
             try
             {
-                string path = AppDomain.CurrentDomain.BaseDirectory + "settings.json";
                 string jsonSettings;
 
-                using (StreamReader reader = new(path))
+                using (StreamReader reader = new(GetSettingsPath()))
                 {
                     jsonSettings = reader.ReadToEnd();
                 }
@@ -91,21 +95,53 @@ namespace SystemInfoClient
 
         public async static void HandleApiResponse(HttpResponseMessage response)
         {
-            if (response.IsSuccessStatusCode)
+            if (response.IsSuccessStatusCode && response.Headers.Location != null)
             {
+                // Display console info
                 Console.WriteLine(
                     $"\r\n" +
                     $"Machine data sent successfully.\r\n" +
                     $"Code: {response.StatusCode}.\r\n" +
                     $"Time: {response.Headers.Date}\r\n" +
-                    $"Location: {response.Headers.Location}"
+                    $"Location: {response.Headers.Location}\r\n"
                 );
+
+                // Get machine ID by parsing the last element of the Location header
+                string machineId = response.Headers.Location.Segments.Last();
+                if (Int32.TryParse(machineId, out int parsedMachineId) 
+                    && parsedMachineId >0)
+                {
+                    RewriteMachineIdSettings(machineId); // Insert it in the settings.json
+                }
+                else
+                {
+                    throw new InvalidDataException("The machine ID sent by the API was invalid.");
+                }
             }
             else
             {
                 var errorContent = await response.Content.ReadAsStringAsync();
                 Console.WriteLine($"\r\n" +
                     $"{response.ReasonPhrase}: {errorContent}");
+            }
+        }
+
+        public static void RewriteMachineIdSettings(string machineId)
+        {
+            try
+            {
+                string json = File.ReadAllText(GetSettingsPath());
+                SettingsModel settings = JsonSerializer.Deserialize<SettingsModel>(json);
+                settings.MachineId = machineId;
+                string newJson = settings.json; // add the write indented and refactor to avoid having to create settings again hen we have in in main, pass the argument from the main method maybe ?
+                string path = GetSettingsPath();
+                File.WriteAllText(path, newJson);
+                Console.WriteLine($"New machien id: {machineId}, path {path} newjson : \r\n{newJson}");
+            }
+            catch (Exception ex)
+            {
+
+                Console.WriteLine($"{ex.Message} + {ex}");
             }
         }
     }
