@@ -1,4 +1,5 @@
 ﻿using System.Runtime.Versioning;
+using System.Text.Json;
 using SystemInfoClient.Models;
 
 namespace SystemInfoClient.Classes
@@ -10,11 +11,13 @@ namespace SystemInfoClient.Classes
         public int CustomerId { get; set; }
         public string Name { get; set; }
         public List<DriveClass> Drives { get; set; }
+        private JsonSerializerOptions SerializerOptions { get; set; }
 
         public MachineClass(SettingsModel settings)
         {
             try
             {
+                SerializerOptions = new() { WriteIndented = true };
                 Dictionary<string, ApplicationSettings> appList = settings.ApplicationsList;
 
                 if (Int32.TryParse(settings.MachineId, out int parsedMachineId) && parsedMachineId > 0)
@@ -66,6 +69,16 @@ namespace SystemInfoClient.Classes
             {
                 drive.LogInfo();
             }
+        }
+
+        public string JsonSerialize()
+        {
+            return JsonSerializer.Serialize(this, SerializerOptions);
+        }
+
+        public void LogJson()
+        {
+            Console.WriteLine(JsonSerialize());
         }
     }
 }

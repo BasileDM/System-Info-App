@@ -29,15 +29,15 @@ namespace SystemInfoClient
                     // Instantiate object with machine info and customer ID from settings file
                     MachineClass machine = new(settings) { CustomerId = customerId };
 
-                    // Log information
-                    machine.LogInfo();
+                    // Display JSON format
+                    machine.LogJson();
 
                     // Serialize and send object to POST API route
                     await PostMachineInfo(machine, settings.ApiUrl);
                 }
                 else
                 {
-                    throw new NullReferenceException("Error: Null configuration");
+                    throw new NullReferenceException("Error: Invalid configuration, check your settings.json file.");
                 }
             }
             catch (Exception ex)
@@ -48,23 +48,21 @@ namespace SystemInfoClient
 
         private static async Task PostMachineInfo(MachineClass machine, string? ApiUrl)
         {
+            // Build HTTP Client
             HttpClient client = new();
             client.DefaultRequestHeaders.Accept.Clear();
             client.DefaultRequestHeaders.Accept.Add(
                 new MediaTypeWithQualityHeaderValue("application/json"));
             client.DefaultRequestHeaders.Add("User-Agent", "Systeminfo App Client");
 
-            JsonSerializerOptions jsonOptions = new() { WriteIndented = true };
-            var json = JsonSerializer.Serialize(machine, jsonOptions);
+            // Serialize machine and build JSON request content
+            var content = new StringContent(machine.JsonSerialize(), Encoding.UTF8, "application/json");
 
-            Console.WriteLine(json.ToString());
-
-            var content = new StringContent(json, Encoding.UTF8, "application/json");
-
+            // Post to API create route
             string route = ApiUrl + "api/Machines/Create";
-
             var response = await client.PostAsync(route, content);
 
+            // Handle response
             if (response.IsSuccessStatusCode)
             {
                 Console.WriteLine(
