@@ -45,13 +45,13 @@ namespace SystemInfoClient.Classes
         }
 
         public void LogInfo() {
-            Console.WriteLine($"  OS System Directory: {Directory}");
-            Console.WriteLine($"  OS Architecture: {Architecture}");
-            Console.WriteLine($"  OS Version: {Version}");
-            Console.WriteLine($"  Product Name: {ProductName}");
-            Console.WriteLine($"  Release ID: {ReleaseId}");
-            Console.WriteLine($"  Current Build: {CurrentBuild}");
-            Console.WriteLine($"  UBR: {Ubr}");
+            Console.WriteLine($"    OS System Directory: {Directory}");
+            Console.WriteLine($"    OS Architecture: {Architecture}");
+            Console.WriteLine($"    OS Version: {Version}");
+            Console.WriteLine($"    Product Name: {ProductName}");
+            Console.WriteLine($"    Release ID: {ReleaseId}");
+            Console.WriteLine($"    Current Build: {CurrentBuild}");
+            Console.WriteLine($"    UBR: {Ubr}");
         }
     }
 }

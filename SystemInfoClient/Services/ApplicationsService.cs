@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Reflection;
+using SystemInfoClient.Models;
 
 namespace SystemInfoClient.Services
 {
@@ -35,20 +36,25 @@ namespace SystemInfoClient.Services
             return exeInfo;
         }
 
-        public static void LogExeInfo(string path)
+        public static void LogAppListInfo(Dictionary<string, ApplicationSettings> appList)
         {
-            if (File.Exists(path))
+            foreach(KeyValuePair<string, ApplicationSettings> applicationConfig in appList)
             {
-                FileVersionInfo fileVersionInfo = FileVersionInfo.GetVersionInfo(path);
-                foreach (PropertyInfo property in typeof(FileVersionInfo).GetProperties())
+                if (File.Exists(applicationConfig.Value.Path))
                 {
-                    object? value = property.GetValue(fileVersionInfo);
-                    Console.WriteLine($"{property.Name} : {value}");
+                    FileVersionInfo fileVersionInfo = FileVersionInfo.GetVersionInfo(applicationConfig.Value.Path);
+                    Console.WriteLine(applicationConfig.Key);
+                    foreach (PropertyInfo property in typeof(FileVersionInfo).GetProperties())
+                    {
+                        object? value = property.GetValue(fileVersionInfo);
+                        Console.WriteLine($"{property.Name} : {value}");
+                    }
+                    Console.WriteLine();
                 }
-            }
-            else
-            {
-                Console.WriteLine("File not found.");
+                else
+                {
+                    Console.WriteLine("File not found.");
+                }
             }
         }
     }

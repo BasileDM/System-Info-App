@@ -11,25 +11,39 @@ namespace SystemInfoApi.Classes
 
         public Database(IConfiguration configuration, IWebHostEnvironment env)
         {
-            _ConnectionString = env.IsDevelopment() ?
-                configuration.GetSection("ConnectionStrings")["SystemInfoDbDev"] :
-                configuration.GetSection("ConnectionStrings")["SysteminfoDb"];
-
-            _DbConfig = configuration.GetSection("DatabaseConfig");
+            if (env.IsDevelopment())
+            {
+                _ConnectionString = configuration.GetSection("ConnectionStrings")["SystemInfoDbDev"];
+                _DbConfig = configuration.GetSection("DatabaseConfigDev"); // map tables and columns names as properties instead of getting from config
+            }
+            else
+            {
+                _ConnectionString = configuration.GetSection("ConnectionStrings")["SysteminfoDb"];
+                _DbConfig = configuration.GetSection("DatabaseConfig");
+            }
         }
 
-        protected SqlConnection GetConnection()
+        protected SqlConnection CreateConnection()
         {
             return new SqlConnection(_ConnectionString);
         }
 
-        public void Init()
+        public void Init(WebApplication app)
         {
-            using SqlConnection connection = GetConnection();
-            TryOpenConnection(connection);
-            if (!DoTablesExist(connection))
+            try
             {
-                CreateTables(connection);
+                using SqlConnection connection = CreateConnection();
+                TryOpenConnection(connection);
+                if (!DoTablesExist(connection))
+                {
+                    PromptTablesCreation();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Database initialization failed:\r\n{ex.Message}\r\n");
+                app.StopAsync();
+                return;
             }
         }
 
@@ -51,7 +65,7 @@ namespace SystemInfoApi.Classes
         {
             try
             {
-                string checkTablesSql = @"
+                string checkTablesSql = @$"
                     SELECT COUNT(*) 
                     FROM information_schema.tables 
                     WHERE table_name = 'Client_Machine'";
@@ -62,69 +76,67 @@ namespace SystemInfoApi.Classes
             }
             catch (Exception ex)
             {
-                throw new Exception("Error verifying database tables.", ex);
+                throw new Exception($"Error verifying database tables: {ex.Message}");
             }
         }
 
-        private void CreateTables(SqlConnection connection)
+        private void PromptTablesCreation()
         {
-            try
+            string? answer;
+            do
             {
-                string? answer;
-                do
-                {
-                    Console.WriteLine("Database tables not detected. Do you want to create them ? y/n \r\n");
-                    answer = Console.ReadLine()?.ToLower();
+                Console.WriteLine("Database tables not detected. Do you want to create them ? y/n ");
+                answer = Console.ReadLine()?.ToLower();
 
-                } while (answer != "y" && answer != "n");
+            } while (answer != "y" && answer != "n");
 
-                if (answer == "y")
-                {
-                    Console.WriteLine("Creating tables...\r\n");
-
-                    string migrationPath = AppDomain.CurrentDomain.BaseDirectory + "/Migrations/SysteminfoDb.sql";
-                    string script = File.ReadAllText(migrationPath);
-
-                    if (_DbConfig["CustomersTableName"] != null)
-                    {
-                        script = script.Replace("Client", _DbConfig["CustomersTableName"]);
-                    }
-
-                    using SqlCommand cmd = new(script, connection);
-                    cmd.ExecuteNonQuery();
-                }
-                else if (answer == "n")
-                {
-                    throw new Exception("Table creation has been aborted, the app will shut down.\r\n");
-                }
-            }
-            catch (Exception ex)
+            if (answer == "y")
             {
-                throw new Exception(
-                    $"Error during tables creation. {ex.Message}");
+                CreateTablesAsync().Wait();
             }
+            else if (answer == "n")
+            {
+                throw new Exception("Table creation has been aborted, the app will shut down.");
+            }
+        }
+
+        private async Task<bool> CreateTablesAsync()
+        {
+            return await MakeTransactionAsync(async (connection, transaction) =>
+            {
+                Console.WriteLine("Creating tables...");
+
+                string migrationPath = AppDomain.CurrentDomain.BaseDirectory + "/Migrations/SysteminfoDb.sql";
+                string script = File.ReadAllText(migrationPath);
+
+                script = script.Replace("customersTableName", _DbConfig["CustomerTableName"]);
+
+                await using SqlCommand cmd = new(script, connection, transaction);
+                await cmd.ExecuteNonQueryAsync();
+                return true;
+            });
         }
 
 
         /// <summary>
-        /// Handles <see cref="SqlConnection"/> and <see cref="SqlTransaction"/> management for a specified operation.
-        /// This method opens a connection, begins a transaction, executes the provided operation,
-        /// and then commits or rolls back the transaction based on the success or failure of the operation.
+        ///     This method is a transaction wrapper for a database operation that contains multiple commands.
+        ///     It handles <see cref="SqlConnection"/> and <see cref="SqlTransaction"/> management for a specified operation.
         /// </summary>
         /// <typeparam name="T">The type of the result returned by the transaction operation.</typeparam>
         /// <param name="operation">
-        /// A delegate that represents the operation to be executed within the transaction.
-        /// The operation receives a <see cref="SqlConnection"/> and a <see cref="SqlTransaction"/> as parameters.
+        ///     A delegate: <see cref="TransactionOperation{T}"/> that represents the operation to be executed within the transaction.
+        ///     The operation receives a <see cref="SqlConnection"/> and a <see cref="SqlTransaction"/> as parameters.
         /// </param>
         /// <returns>
-        ///   A task that represents the asynchronous operation. The task result contains the result of the executed operation.
+        ///     A <see cref="Task"/> that represents the asynchronous operation. The task result contains the result of the executed operation.
         /// </returns>
         /// <remarks>
-        /// This method ensures that the transaction is committed if the operation succeeds and rolled back if any error occurs.
+        ///     This method opens a connection, begins a transaction, executes the provided <see cref="TransactionOperation{T}"/>,
+        ///     and then commits or rolls back the transaction based on the success or failure of the operation.
         /// </remarks>
         protected async Task<T> MakeTransactionAsync<T>(TransactionOperation<T> operation)
         {
-            await using SqlConnection connection = GetConnection();
+            await using SqlConnection connection = CreateConnection();
             await connection.OpenAsync();
             var transaction = connection.BeginTransaction();
             Console.WriteLine("\r\nNew database transaction initiated.");
@@ -145,7 +157,7 @@ namespace SystemInfoApi.Classes
                 Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine("Rolling back transaction due to an argument error:\r\n" + ex.Message);
                 Console.ForegroundColor = currentColor;
-                throw new ArgumentException("Error finalising the transaction with the database. Rolling back...", ex.Message);
+                throw new ArgumentException("Error finalising the transaction with the database.", ex.Message);
             }
             catch (Exception ex)
             {
@@ -153,13 +165,12 @@ namespace SystemInfoApi.Classes
                 Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine("Rolling back transaction due to an unexpected error:\r\n" + ex.Message);
                 Console.ForegroundColor = currentColor;
-                throw new ApplicationException("Error finalising the transaction with the database. Rolling back...", ex);
+                throw new ApplicationException("Error finalising the transaction with the database.", ex);
             }
             finally
             {
                 await transaction.DisposeAsync();
                 await connection.CloseAsync();
-                Console.WriteLine("Freeing up ressources...");
             }
         }
     }

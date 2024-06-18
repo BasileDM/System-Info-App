@@ -16,8 +16,9 @@ namespace SystemInfoClient.Classes
         public int FreeSpacePercentage { get; set; }
         public bool IsSystemDrive { get; set; }
         public OsClass? Os { get; set; }
+        public List<AppClass> AppList { get; set; }
 
-        public DriveClass(DriveInfo drive, bool isSystemDrive)
+        public DriveClass(DriveInfo drive, bool isSystemDrive, List<AppClass> appList)
         {
             try
             {
@@ -32,6 +33,8 @@ namespace SystemInfoClient.Classes
                 FreeSpacePercentage = CalculateFreeSpacePercentage(drive.AvailableFreeSpace, drive.TotalSize);
                 IsSystemDrive = isSystemDrive;
                 Os = IsSystemDrive ? new OsClass() : null;
+                AppList = appList;
+
             }
             catch (Exception ex)
             {
@@ -41,28 +44,34 @@ namespace SystemInfoClient.Classes
 
         public void LogInfo()
         {
-            Console.WriteLine($"Drive Name: {Name}");
-            Console.WriteLine($"Drive Label: {Label}");
-            Console.WriteLine($"Drive Type: {Type}");
-            Console.WriteLine($"Drive Format: {Format}");
-            Console.WriteLine($"Total Size: {Size:#,0}");
-            Console.WriteLine($"Available Free Space: {FreeSpace:#,0}");
-            Console.WriteLine($"Total Free Space: {TotalSpace:#,0}");
-            Console.WriteLine($"Free Space Percentage: {FreeSpacePercentage}%");
-            Console.WriteLine($"Is system drive: {IsSystemDrive}");
+            Console.WriteLine($"  Drive Name: {Name}");
+            Console.WriteLine($"  Drive Label: {Label}");
+            Console.WriteLine($"  Drive Type: {Type}");
+            Console.WriteLine($"  Drive Format: {Format}");
+            Console.WriteLine($"  Total Size: {Size:#,0}");
+            Console.WriteLine($"  Available Free Space: {FreeSpace:#,0}");
+            Console.WriteLine($"  Total Free Space: {TotalSpace:#,0}");
+            Console.WriteLine($"  Free Space Percentage: {FreeSpacePercentage}%");
+            Console.WriteLine($"  Is system drive: {IsSystemDrive}");
 
+            Console.WriteLine($"  Operating System: ");
             if (IsSystemDrive)
             {
                 Os?.LogInfo();
             }
-            Console.WriteLine();
+
+            Console.WriteLine($"  Applications: ");
+            foreach (AppClass app in AppList)
+            {
+                app.LogInfo();
+            }
         }
 
         private int CalculateFreeSpacePercentage(long availableFreeSpace, long totalSize)
         {
             if (totalSize <= 0)
             {
-                throw new ArgumentOutOfRangeException($"Error division by 0. Total drive size was null or negative on drive {Name}");
+                throw new ArgumentOutOfRangeException($"Drive data error: Total drive size was null or negative on drive {Name}");
             }
             else
             {

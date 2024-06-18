@@ -17,6 +17,8 @@ namespace SystemInfoApi
             builder.Services.AddScoped<MachinesRepository>();
             builder.Services.AddScoped<DrivesRepository>();
             builder.Services.AddScoped<OsRepository>();
+            builder.Services.AddScoped<ApplicationsRepository>();
+
 
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
@@ -41,17 +43,7 @@ namespace SystemInfoApi
 
             // Try establishing a connection to the database and check if tables exist
             Database db = new(app.Configuration, app.Environment);
-
-            try
-            {
-                db.Init();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Database initialization failed:\r\n{ex.Message}");
-                app.StopAsync().Wait();
-                return;
-            }
+            db.Init(app);
 
             app.MapControllers();
 
