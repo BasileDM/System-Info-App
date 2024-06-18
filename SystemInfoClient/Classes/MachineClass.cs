@@ -9,7 +9,6 @@ namespace SystemInfoClient.Classes
         public int Id { get; set; }
         public int CustomerId { get; set; }
         public string Name { get; set; }
-
         public List<DriveClass> Drives { get; set; }
 
         public MachineClass(SettingsModel settings)

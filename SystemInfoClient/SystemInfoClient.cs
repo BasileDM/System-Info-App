@@ -4,7 +4,6 @@ using System.Text;
 using System.Text.Json;
 using SystemInfoClient.Classes;
 using SystemInfoClient.Models;
-using SystemInfoClient.Services;
 
 namespace SystemInfoClient
 {

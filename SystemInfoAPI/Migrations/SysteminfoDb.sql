@@ -1,4 +1,14 @@
 
+CREATE TABLE Client
+(
+  id_client int          NOT NULL IDENTITY(1,1),
+  Name      varchar(255) NOT NULL,
+  CONSTRAINT PK_Client PRIMARY KEY (id_client)
+)
+
+ALTER TABLE Client
+  ADD CONSTRAINT UQ_id_client UNIQUE (id_client)
+
 CREATE TABLE Client_Machine
 (
   id_client_machine int          NOT NULL IDENTITY(1,1),
@@ -59,20 +69,42 @@ ALTER TABLE Client_Machine_Disque_Os
 
 CREATE TABLE Relation_Disque_Application
 (
-  id_client_machine_disque     int          NOT NULL,
-  id_client_machine_disque_app int          NOT NULL,
-  Product_Name                 varchar(255),
-  Path                         varchar(255) NOT NULL,
-  Description                  varchar(255),
-  File_Version                 varchar(255),
-  Product_Version              varchar(255),
-  Type                         varchar(255)
+  id_client_machine_disque     int           NOT NULL,
+  id_client_machine_disque_app int           NOT NULL,
+  Comments                     NVARCHAR(255),
+  Company_Name                 NVARCHAR(255),
+  File_Build_Part              INT           NOT NULL,
+  File_Description             NVARCHAR(255),
+  File_Major_Part              INT           NOT NULL,
+  File_Minor_Part              INT           NOT NULL,
+  File_Name                    NVARCHAR(255),
+  File_Private_Part            INT           NOT NULL,
+  File_Version                 NVARCHAR(50) ,
+  Internal_Name                NVARCHAR(255),
+  Is_Debug                     BIT           NOT NULL,
+  Is_Patched                   BIT           NOT NULL,
+  Is_Pre_Release               BIT           NOT NULL,
+  Is_Private_Build             BIT           NOT NULL,
+  Is_Special_Build             BIT           NOT NULL,
+  Language                     NVARCHAR(50) ,
+  Legal_Copyright              NVARCHAR(255),
+  Legal_Trademarks             NVARCHAR(255),
+  Original_Filename            NVARCHAR(255),
+  Private_Build                NVARCHAR(255),
+  Product_Build_Part           INT           NOT NULL,
+  Product_Major_Part           INT           NOT NULL,
+  Product_Minor_Part           INT           NOT NULL,
+  Product_Name                 NVARCHAR(255),
+  Product_Private_Part         INT           NOT NULL,
+  Product_Version              NVARCHAR(50) ,
+  Special_Build                NVARCHAR(255),
+  PRIMARY KEY (id_client_machine_disque, id_client_machine_disque_app)  
 )
 
 ALTER TABLE Client_Machine
-  ADD CONSTRAINT FK_customersTableName_TO_Client_Machine
+  ADD CONSTRAINT FK_Client_TO_Client_Machine
     FOREIGN KEY (id_client)
-    REFERENCES customersTableName (id_client)
+    REFERENCES Client (id_client)
 
 ALTER TABLE Client_Machine_Disque
   ADD CONSTRAINT FK_Client_Machine_TO_Client_Machine_Disque

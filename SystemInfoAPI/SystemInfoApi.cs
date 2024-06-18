@@ -17,6 +17,7 @@ namespace SystemInfoApi
             builder.Services.AddScoped<MachinesRepository>();
             builder.Services.AddScoped<DrivesRepository>();
             builder.Services.AddScoped<OsRepository>();
+            builder.Services.AddScoped<ApplicationsRepository>();
 
 
             builder.Services.AddEndpointsApiExplorer();
