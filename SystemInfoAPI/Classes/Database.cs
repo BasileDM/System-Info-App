@@ -7,20 +7,11 @@ namespace SystemInfoApi.Classes
     public class Database
     {
         protected readonly string? _ConnectionString;
-        protected readonly IConfigurationSection _DbConfig;
 
         public Database(IConfiguration configuration, IWebHostEnvironment env)
         {
-            if (env.IsDevelopment())
-            {
-                _ConnectionString = configuration.GetSection("ConnectionStrings")["SystemInfoDbDev"];
-                _DbConfig = configuration.GetSection("DatabaseConfigDev"); // map tables and columns names as properties instead of getting from config
-            }
-            else
-            {
-                _ConnectionString = configuration.GetSection("ConnectionStrings")["SysteminfoDb"];
-                _DbConfig = configuration.GetSection("DatabaseConfig");
-            }
+            string coStrValue = env.IsDevelopment() ? "SystemInfoDbDev" : "SysteminfoDb";
+            _ConnectionString = configuration.GetSection("ConnectionStrings")[coStrValue];
         }
 
         protected SqlConnection CreateConnection()
@@ -108,8 +99,6 @@ namespace SystemInfoApi.Classes
 
                 string migrationPath = AppDomain.CurrentDomain.BaseDirectory + "/Migrations/SysteminfoDb.sql";
                 string script = File.ReadAllText(migrationPath);
-
-                script = script.Replace("customersTableName", _DbConfig["CustomerTableName"]);
 
                 await using SqlCommand cmd = new(script, connection, transaction);
                 await cmd.ExecuteNonQueryAsync();
