@@ -17,11 +17,11 @@ namespace SystemInfoApi.Repositories
         {
             try
             {
-                var dt = db.DrivesTableNames;
+                var dtn = db.DrivesTableNames;
 
                 string query = @$"
-                    INSERT INTO {dt.TableName} 
-                        ({dt.MachineId}, {dt.DriveName}, {dt.RootDirectory}, {dt.Label}, {dt.Type}, {dt.Format}, {dt.Size}, {dt.FreeSpace}, {dt.TotalSpace}, {dt.FreeSpacePercentage}, {dt.IsSystemDrive})
+                    INSERT INTO {dtn.TableName} 
+                        ({dtn.MachineId}, {dtn.DriveName}, {dtn.RootDirectory}, {dtn.Label}, {dtn.Type}, {dtn.Format}, {dtn.Size}, {dtn.FreeSpace}, {dtn.TotalSpace}, {dtn.FreeSpacePercentage}, {dtn.IsSystemDrive})
                     VALUES 
                         (@machineId, @driveName, @rootDir, @label, @type, @format, @size, @freeSpace, @totalSpace, @freeSpacePer, @isSystemDrive);
 

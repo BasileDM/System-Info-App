@@ -19,12 +19,7 @@ namespace SystemInfoClient.Classes
             {
                 SerializerOptions = new() { WriteIndented = true };
                 Dictionary<string, ApplicationSettings> appList = settings.ApplicationsList;
-
-                if (Int32.TryParse(settings.MachineId, out int parsedMachineId) && parsedMachineId > 0)
-                {
-                    Id = parsedMachineId;
-                }
-                    ;
+                Id = settings.ParsedMachineId;
                 Name = Environment.MachineName;
                 Drives = [];
 

@@ -17,11 +17,11 @@ namespace SystemInfoApi.Repositories
         {
             try
             {
-                var osTable = db.OsTableNames;
+                var otn = db.OsTableNames;
 
                 string query = @$"
-                    INSERT INTO {osTable.TableName}
-                        ({osTable.DriveId}, {osTable.Directory}, {osTable.Architecture}, {osTable.Version}, {osTable.ProductName}, {osTable.ReleaseId}, {osTable.CurrentBuild}, {osTable.Ubr})
+                    INSERT INTO {otn.TableName}
+                        ({otn.DriveId}, {otn.Directory}, {otn.Architecture}, {otn.Version}, {otn.ProductName}, {otn.ReleaseId}, {otn.CurrentBuild}, {otn.Ubr})
                     VALUES 
                         (@driveId, @directory, @architecture, @version, @productName, @releaseId, @currentBuild, @ubr);
 

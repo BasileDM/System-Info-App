@@ -16,14 +16,13 @@ namespace SystemInfoClient
             {
                 // Load settings.json and check 'CustomerId' validity
                 SettingsModel settings = LoadSettings();
-                int customerId = GetParsedId(settings.CustomerId);
 
                 // Create machine with 'CustomerId' + drives, os and apps info
-                MachineClass machine = new(settings) { CustomerId = customerId };
+                MachineClass machine = new(settings) { CustomerId = settings.ParsedCustomerId };
                 machine.LogJson();
 
                 // POST machine to API route and handle response
-                HandleApiResponse(await PostMachineInfo(machine, settings.ApiUrl));
+                //HandleApiResponse(await PostMachineInfo(machine, settings.ApiUrl));
             }
             catch (Exception ex)
             {
@@ -49,8 +48,8 @@ namespace SystemInfoClient
 
                 SettingsModel? settings = JsonSerializer.Deserialize<SettingsModel>(jsonSettings);
 
-                if (settings == null || settings.ApplicationsList == null)
-                    throw new NullReferenceException("Settings deserialization error, config or applist is null.");
+                if (settings == null)
+                    throw new NullReferenceException("Settings deserialization error, config is null.");
 
                 return settings;
             }
@@ -66,14 +65,6 @@ namespace SystemInfoClient
             {
                 throw new Exception($"Unexpected error while trying to read settings file: {ex.Message}");
             }
-        }
-
-        private static int GetParsedId(string? id)
-        {
-            if (Int32.TryParse(id, out int parsedId) && parsedId > 0) return parsedId;
-
-            else throw new InvalidDataException(
-                "Invalid customer ID, please provide a valid one in the settings.json file");
         }
 
         private static async Task<HttpResponseMessage> PostMachineInfo(MachineClass machine, string? ApiUrl)
