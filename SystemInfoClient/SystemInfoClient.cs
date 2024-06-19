@@ -133,8 +133,10 @@ namespace SystemInfoClient
                 string json = File.ReadAllText(GetSettingsPath());
                 SettingsModel settings = JsonSerializer.Deserialize<SettingsModel>(json);
                 settings.MachineId = machineId;
-                string newJson = settings.json; // add the write indented and refactor to avoid having to create settings again hen we have in in main, pass the argument from the main method maybe ?
+
+                string newJson = JsonSerializer.Serialize(settings); // add the write indented and refactor to avoid having to create settings again when we have in in main, pass the argument from the main method maybe ?
                 string path = GetSettingsPath();
+
                 File.WriteAllText(path, newJson);
                 Console.WriteLine($"New machien id: {machineId}, path {path} newjson : \r\n{newJson}");
             }

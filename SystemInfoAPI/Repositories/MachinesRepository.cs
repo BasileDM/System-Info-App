@@ -1,9 +1,10 @@
 ﻿using System.Data.SqlClient;
 using SystemInfoApi.Models;
+using SystemInfoApi.Classes;
 
 namespace SystemInfoApi.Repositories
 {
-    public class MachinesRepository
+    public class MachinesRepository(Database db)
     {
         /// <summary>Asynchronously inserts a new machine entry in the database.</summary>
         /// <param name="machine">The <see cref="MachineModel"/> to add to the DB.</param>
@@ -16,8 +17,10 @@ namespace SystemInfoApi.Repositories
         {
             try
             {
+                var mt = db.MachinesTable;
+
                 string machineSql = @$"
-                    INSERT INTO Client_Machine (id_client, Name) 
+                    INSERT INTO {mt.TableName} ({mt.CustomerId}, {mt.MachineName}) 
                     VALUES (@customerId, @machineName);
 
                     SELECT SCOPE_IDENTITY();";

@@ -1,9 +1,10 @@
 ﻿using System.Data.SqlClient;
+using SystemInfoApi.Classes;
 using SystemInfoApi.Models;
 
 namespace SystemInfoApi.Repositories
 {
-    public class DrivesRepository
+    public class DrivesRepository(Database db)
     {
         /// <summary>Asynchronously inserts a new drive entry in the database.</summary>
         /// <param name="drive">The <see cref="DriveModel"/> to add to the DB.</param>
@@ -16,9 +17,11 @@ namespace SystemInfoApi.Repositories
         {
             try
             {
-                string query = @"
-                    INSERT INTO Client_Machine_Disque 
-                        (id_client_machine, Name, Root_Directory, Label, Type, Format, Size, Free_Space, Total_Space, Free_Space_Percentage, Is_System_Drive)
+                var dt = db.DrivesTable;
+
+                string query = @$"
+                    INSERT INTO {dt.TableName} 
+                        ({dt.MachineId}, {dt.DriveName}, {dt.RootDirectory}, {dt.Label}, {dt.Type}, {dt.Format}, {dt.Size}, {dt.FreeSpace}, {dt.TotalSpace}, {dt.FreeSpacePercentage}, {dt.IsSystemDrive})
                     VALUES 
                         (@machineId, @driveName, @rootDir, @label, @type, @format, @size, @freeSpace, @totalSpace, @freeSpacePer, @isSystemDrive);
 

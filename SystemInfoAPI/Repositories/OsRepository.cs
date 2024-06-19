@@ -1,9 +1,10 @@
 ﻿using System.Data.SqlClient;
+using SystemInfoApi.Classes;
 using SystemInfoApi.Models;
 
 namespace SystemInfoApi.Repositories
 {
-    public class OsRepository
+    public class OsRepository(Database db)
     {
         /// <summary>Asynchronously inserts a new Operating System entry in the database.</summary>
         /// <param name="os">The <see cref="OsModel"/> to add to the DB.</param>
@@ -16,9 +17,11 @@ namespace SystemInfoApi.Repositories
         {
             try
             {
-                string query = @"
-                    INSERT INTO Client_Machine_Disque_Os
-                        (id_client_machine_disque, Directory, Architecture, Version, Product_Name, Release_Id, Current_Build, Ubr)
+                var ost = db.OsTable;
+
+                string query = @$"
+                    INSERT INTO {ost.TableName}
+                        ({ost.DriveId}, {ost.Directory}, {ost.Architecture}, {ost.Version}, {ost.ProductName}, {ost.ReleaseId}, {ost.CurrentBuild}, {ost.Ubr})
                     VALUES 
                         (@driveId, @directory, @architecture, @version, @productName, @releaseId, @currentBuild, @ubr);
 
@@ -43,7 +46,7 @@ namespace SystemInfoApi.Repositories
             }
             catch (Exception ex)
             {
-                throw new ApplicationException("An error occured inserting the OS into the database.", ex);
+                throw new ApplicationException($"An error occured inserting the OS into the database: {ex}", ex);
             }
         }
     }
