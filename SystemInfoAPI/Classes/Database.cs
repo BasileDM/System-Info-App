@@ -260,7 +260,7 @@ namespace SystemInfoApi.Classes
     public class ApplicationsTable
     {
         public string TableName { get; } = "Client_Machine_Disque_Application";
-        public string AppId { get; } = "id_client_machine_disque_app";
+        public string Id { get; } = "id_client_machine_disque_app";
         public string AppName { get; } = "Nom_Application";
     }
 }
