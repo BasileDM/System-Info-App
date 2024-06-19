@@ -10,7 +10,7 @@ namespace SystemInfoApi.Repositories
         {
             try
             {
-                var appsDrivesRTable = db.AppsDrivesRelationTable;
+                var appsDrivesRTable = db.AppsDrivesRelationTableNames;
 
                 string query = @$"
                     INSERT INTO {appsDrivesRTable.TableName}

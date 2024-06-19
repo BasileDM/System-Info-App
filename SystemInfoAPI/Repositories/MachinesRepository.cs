@@ -6,11 +6,11 @@ namespace SystemInfoApi.Repositories
 {
     public class MachinesRepository(Database db)
     {
-        private readonly MachinesTable _machinesTable = db.MachinesTable;
-        private readonly DrivesTable _drivesTable = db.DrivesTable;
-        private readonly OsTable _osTable = db.OsTable;
-        private readonly AppsDrivesRelationTable _appsDrivesRTable = db.AppsDrivesRelationTable;
-        private readonly ApplicationsTable _appsTable = db.ApplicationsTable;
+        private readonly MachinesTableNames _machinesTable = db.MachinesTableNames;
+        private readonly DrivesTableNames _drivesTable = db.DrivesTableNames;
+        private readonly OsTableNames _osTable = db.OsTableNames;
+        private readonly AppsDrivesRelationTableNames _appsDrivesRTable = db.AppsDrivesRelationTableNames;
+        private readonly ApplicationsTableNames _appsTable = db.ApplicationsTableNames;
 
         /// <summary>Asynchronously inserts a new machine entry in the database.</summary>
         /// <param name="machine">The <see cref="MachineModel"/> to add to the DB.</param>

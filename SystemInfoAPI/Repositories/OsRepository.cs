@@ -17,7 +17,7 @@ namespace SystemInfoApi.Repositories
         {
             try
             {
-                var osTable = db.OsTable;
+                var osTable = db.OsTableNames;
 
                 string query = @$"
                     INSERT INTO {osTable.TableName}

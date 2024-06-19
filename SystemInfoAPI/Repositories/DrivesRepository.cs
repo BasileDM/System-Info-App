@@ -17,7 +17,7 @@ namespace SystemInfoApi.Repositories
         {
             try
             {
-                var dt = db.DrivesTable;
+                var dt = db.DrivesTableNames;
 
                 string query = @$"
                     INSERT INTO {dt.TableName} 

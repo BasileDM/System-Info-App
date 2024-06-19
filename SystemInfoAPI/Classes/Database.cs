@@ -7,24 +7,24 @@ namespace SystemInfoApi.Classes
     public class Database
     {
         protected readonly string? _ConnectionString;
-        public readonly CustomersTable CustomersTable;
-        public readonly MachinesTable MachinesTable;
-        public readonly DrivesTable DrivesTable;
-        public readonly OsTable OsTable;
-        public readonly AppsDrivesRelationTable AppsDrivesRelationTable;
-        public readonly ApplicationsTable ApplicationsTable;
+        public readonly CustomersTableNames CustomersTableNames;
+        public readonly MachinesTableNames MachinesTableNames;
+        public readonly DrivesTableNames DrivesTableNames;
+        public readonly OsTableNames OsTableNames;
+        public readonly AppsDrivesRelationTableNames AppsDrivesRelationTableNames;
+        public readonly ApplicationsTableNames ApplicationsTableNames;
 
         public Database(IConfiguration configuration, IWebHostEnvironment env)
         {
             string coStrValue = env.IsDevelopment() ? "SystemInfoDbDev" : "SysteminfoDb";
             _ConnectionString = configuration.GetSection("ConnectionStrings")[coStrValue];
 
-            CustomersTable = new();
-            MachinesTable = new();
-            DrivesTable = new();
-            OsTable = new();
-            AppsDrivesRelationTable = new();
-            ApplicationsTable = new();
+            CustomersTableNames = new();
+            MachinesTableNames = new();
+            DrivesTableNames = new();
+            OsTableNames = new();
+            AppsDrivesRelationTableNames = new();
+            ApplicationsTableNames = new();
         }
 
         protected SqlConnection CreateConnection()
@@ -72,7 +72,7 @@ namespace SystemInfoApi.Classes
                 string checkTablesSql = @$"
                     SELECT COUNT(*) 
                     FROM information_schema.tables 
-                    WHERE table_name = '{MachinesTable.TableName}'";
+                    WHERE table_name = '{MachinesTableNames.TableName}'";
 
                 using SqlCommand cmd = new(checkTablesSql, connection);
                 int? tableCount = (int?)cmd.ExecuteScalar();
@@ -177,14 +177,14 @@ namespace SystemInfoApi.Classes
         }
     }
 
-    public class CustomersTable
+    public class CustomersTableNames
     {
         public string TableName { get; } = "Client";
         public string Id { get; } = "id_client";
         public string Name { get; } = "Nom_Client";
     }
 
-    public class MachinesTable
+    public class MachinesTableNames
     {
         public string TableName { get; } = "Client_machine";
         public string Id { get; } = "id_client_machine";
@@ -192,7 +192,7 @@ namespace SystemInfoApi.Classes
         public string MachineName { get; } = "Nom_Machine";
     }
 
-    public class DrivesTable
+    public class DrivesTableNames
     {
         public string TableName { get; } = "Client_Machine_Disque";
         public string Id { get; } = "id_client_machine_disque";
@@ -209,7 +209,7 @@ namespace SystemInfoApi.Classes
         public string IsSystemDrive { get; } = "Is_System_Drive";
     }
 
-    public class OsTable
+    public class OsTableNames
     {
         public string TableName { get; } = "Client_Machine_Disque_Os";
         public string Id { get; } = "id_client_machine_disque_os";
@@ -223,7 +223,7 @@ namespace SystemInfoApi.Classes
         public string Ubr { get; } = "Update_Build_Revision";
     }
 
-    public class AppsDrivesRelationTable
+    public class AppsDrivesRelationTableNames
     {
         public string TableName { get; } = "Relation_Disque_Application";
         public string DriveId { get; } = "id_client_machine_disque";
@@ -257,7 +257,7 @@ namespace SystemInfoApi.Classes
         public string SpecialBuild { get; } = "Build_Special";
     }
 
-    public class ApplicationsTable
+    public class ApplicationsTableNames
     {
         public string TableName { get; } = "Client_Machine_Disque_Application";
         public string Id { get; } = "id_client_machine_disque_app";
