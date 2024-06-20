@@ -17,12 +17,13 @@ namespace SystemInfoClient.Classes
         {
             try
             {
-                SerializerOptions = new() { WriteIndented = true };
-                Dictionary<string, ApplicationSettings> appList = settings.ApplicationsList;
                 Id = settings.ParsedMachineId;
+                CustomerId = settings.ParsedCustomerId;
                 Name = Environment.MachineName;
                 Drives = [];
+                SerializerOptions = new() { WriteIndented = true };
 
+                Dictionary<string, ApplicationSettings> appList = settings.ApplicationsList;
                 string? systemDrive = Path.GetPathRoot(Environment.SystemDirectory);
 
                 foreach (var drive in DriveInfo.GetDrives())
@@ -65,12 +66,10 @@ namespace SystemInfoClient.Classes
                 drive.LogInfo();
             }
         }
-
         public string JsonSerialize()
         {
             return JsonSerializer.Serialize(this, SerializerOptions);
         }
-
         public void LogJson()
         {
             Console.WriteLine(JsonSerialize());

@@ -183,7 +183,6 @@ namespace SystemInfoApi.Classes
         public string Id { get; } = "id_client";
         public string Name { get; } = "Nom_Client";
     }
-
     public class MachinesTableNames
     {
         public string TableName { get; } = "Client_machine";
@@ -191,7 +190,6 @@ namespace SystemInfoApi.Classes
         public string CustomerId { get; } = "id_client";
         public string MachineName { get; } = "Nom_Machine";
     }
-
     public class DrivesTableNames
     {
         public string TableName { get; } = "Client_Machine_Disque";
@@ -208,7 +206,6 @@ namespace SystemInfoApi.Classes
         public string FreeSpacePercentage { get; } = "Espace_Disponible_Pourcent";
         public string IsSystemDrive { get; } = "Is_System_Drive";
     }
-
     public class OsTableNames
     {
         public string TableName { get; } = "Client_Machine_Disque_Os";
@@ -222,7 +219,6 @@ namespace SystemInfoApi.Classes
         public string CurrentBuild { get; } = "Build_Actuel";
         public string Ubr { get; } = "Update_Build_Revision";
     }
-
     public class AppsDrivesRelationTableNames
     {
         public string TableName { get; } = "Relation_Disque_Application";
@@ -256,7 +252,6 @@ namespace SystemInfoApi.Classes
         public string ProductVersion { get; } = "Version_Produit";
         public string SpecialBuild { get; } = "Build_Special";
     }
-
     public class ApplicationsTableNames
     {
         public string TableName { get; } = "Client_Machine_Disque_Application";

@@ -1,7 +1,6 @@
 ﻿using System.Net.Http.Headers;
 using System.Runtime.Versioning;
 using System.Text;
-using System.Text.Json;
 using SystemInfoClient.Classes;
 using SystemInfoClient.Models;
 
@@ -14,56 +13,28 @@ namespace SystemInfoClient
         {
             try
             {
-                // Load settings.json and check 'CustomerId' validity
-                SettingsModel settings = LoadSettings();
+                // Load settings.json from its factory method
+                SettingsModel settings = SettingsModel.GetInstance();
 
                 // Create machine with 'CustomerId' + drives, os and apps info
-                MachineClass machine = new(settings) { CustomerId = settings.ParsedCustomerId };
+                MachineClass machine = new(settings);
                 machine.LogJson();
 
-                // POST machine to API route and handle response
-                //HandleApiResponse(await PostMachineInfo(machine, settings.ApiUrl));
+                // POST machine to API route
+                HttpResponseMessage response = await PostMachineInfo(machine, settings.ApiUrl);
+
+                // Handle API response
+                if (await IsResponseOk(response))
+                {
+                    string newMachineId = GetMachineIdFromResponse(response);
+
+                    if (newMachineId != settings.ParsedMachineId.ToString()) 
+                        settings.RewriteFileWithId(newMachineId);
+                }
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
-            }
-        }
-
-        private static string GetSettingsPath()
-        {
-            return AppDomain.CurrentDomain.BaseDirectory + "settings.json";
-        }
-
-        private static SettingsModel LoadSettings()
-        {
-            try
-            {
-                string jsonSettings;
-
-                using (StreamReader reader = new(GetSettingsPath()))
-                {
-                    jsonSettings = reader.ReadToEnd();
-                }
-
-                SettingsModel? settings = JsonSerializer.Deserialize<SettingsModel>(jsonSettings);
-
-                if (settings == null)
-                    throw new NullReferenceException("Settings deserialization error, config is null.");
-
-                return settings;
-            }
-            catch (FileNotFoundException ex)
-            {
-                throw new FileNotFoundException($"File not found: {ex.Message}");
-            }
-            catch (JsonException ex)
-            {
-                throw new JsonException($"Could not deserialize JSON: {ex.Message}");
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"Unexpected error while trying to read settings file: {ex.Message}");
             }
         }
 
@@ -83,12 +54,11 @@ namespace SystemInfoClient
             // POST to API route and handle the response
             return await client.PostAsync(route, content);
         }
-
-        public async static void HandleApiResponse(HttpResponseMessage response)
+        public async static Task<bool> IsResponseOk(HttpResponseMessage response)
         {
             if (response.IsSuccessStatusCode && response.Headers.Location != null)
             {
-                // Display console info
+                // Display response data 
                 Console.WriteLine(
                     $"\r\n" +
                     $"Machine data sent successfully.\r\n" +
@@ -97,44 +67,28 @@ namespace SystemInfoClient
                     $"Location: {response.Headers.Location}\r\n"
                 );
 
-                // Get machine ID by parsing the last element of the Location header
-                string machineId = response.Headers.Location.Segments.Last();
-                if (Int32.TryParse(machineId, out int parsedMachineId) 
-                    && parsedMachineId >0)
-                {
-                    RewriteMachineIdSettings(machineId); // Insert it in the settings.json
-                }
-                else
-                {
-                    throw new InvalidDataException("The machine ID sent by the API was invalid.");
-                }
+                return true;
             }
             else
             {
                 var errorContent = await response.Content.ReadAsStringAsync();
                 Console.WriteLine($"\r\n" +
                     $"{response.ReasonPhrase}: {errorContent}");
+
+                return false;
             }
         }
-
-        public static void RewriteMachineIdSettings(string machineId)
+        private static string GetMachineIdFromResponse(HttpResponseMessage response)
         {
-            try
+            // Parse the last element of the Location header in the response to get the new machine ID
+            string machineId = response.Headers.Location.Segments.Last();
+            if (Int32.TryParse(machineId, out int parsedMachineId) && parsedMachineId > 0)
             {
-                string json = File.ReadAllText(GetSettingsPath());
-                SettingsModel settings = JsonSerializer.Deserialize<SettingsModel>(json);
-                settings.MachineId = machineId;
-
-                string newJson = JsonSerializer.Serialize(settings); // add the write indented and refactor to avoid having to create settings again when we have in in main, pass the argument from the main method maybe ?
-                string path = GetSettingsPath();
-
-                File.WriteAllText(path, newJson);
-                Console.WriteLine($"New machien id: {machineId}, path {path} newjson : \r\n{newJson}");
+                return machineId;
             }
-            catch (Exception ex)
+            else
             {
-
-                Console.WriteLine($"{ex.Message} + {ex}");
+                throw new InvalidDataException("The machine ID sent by the API was invalid.");
             }
         }
     }
