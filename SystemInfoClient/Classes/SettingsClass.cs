@@ -17,9 +17,9 @@ namespace SystemInfoClient.Classes
         [JsonIgnore]
         private JsonSerializerOptions SerializerOptions { get; set; } = new() { WriteIndented = true };
 
-        private SettingsClass() { } // Private constructor to avoid direct instantiation without factory method
+        private SettingsClass() { } // Private constructor to avoid direct instantiation without using factory method
 
-        [JsonConstructor]
+        [JsonConstructor] // Public constructor for the JsonSerializer
         public SettingsClass(string? machineId, string? customerId, string? apiUrl, Dictionary<string, ApplicationSettings>? applicationsList)
         {
             MachineId = machineId;
@@ -34,7 +34,7 @@ namespace SystemInfoClient.Classes
         /// <summary>Factory method that returns an instance of <see cref="SettingsClass"/>.</summary>
         /// <remarks>The instance will have its properties populated by deserializing the settings.json file</remarks>
         /// <returns>
-        ///     The <see cref="SettingsClass"/> created by <see cref="JsonSerializer"/>.
+        ///     A <see cref="SettingsClass"/> instance created by <see cref="JsonSerializer"/>.
         /// </returns>
         public static SettingsClass GetInstance()
         {
@@ -65,20 +65,20 @@ namespace SystemInfoClient.Classes
                 throw new Exception($"Unexpected error while trying to read settings file: {ex.Message}");
             }
         }
-        private static int GetParsedId(string? id, string idOwnerName)
+        private static int GetParsedId(string? id, string idOwner)
         {
             if (int.TryParse(id, out int parsedId) && parsedId > 0)
             {
                 return parsedId;
             }
-            else if (parsedId == 0 && idOwnerName == "machine")
+            else if (parsedId == 0 && idOwner == "machine")
             {
                 return parsedId;
             }
             else
             {
                 throw new InvalidDataException(
-                    $"Invalid {idOwnerName} ID, please provide a valid one in the settings.json file");
+                    $"Invalid {idOwner} ID, please provide a valid one in the settings.json file");
             }
         }
         public void RewriteFileWithId(string newMachineId)

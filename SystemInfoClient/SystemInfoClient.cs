@@ -12,10 +12,10 @@ namespace SystemInfoClient
         {
             try
             {
-                // Load settings.json from its factory method
+                // Load settings.json from SettingsClass factory method
                 SettingsClass settings = SettingsClass.GetInstance();
 
-                // Create machine with 'CustomerId' + drives, os and apps info
+                // Create full machine with CustomerId, drives, os and apps info
                 MachineClass machine = new(settings);
                 machine.LogJson();
 
@@ -50,7 +50,7 @@ namespace SystemInfoClient
             var content = new StringContent(machine.JsonSerialize(), Encoding.UTF8, "application/json");
             string route = ApiUrl + "api/Machines/Create";
 
-            // POST to API route and handle the response
+            // POST to API route
             return await client.PostAsync(route, content);
         }
         public async static Task<bool> IsResponseOk(HttpResponseMessage response)
@@ -70,6 +70,7 @@ namespace SystemInfoClient
             }
             else
             {
+                // Display response's error content
                 var errorContent = await response.Content.ReadAsStringAsync();
                 Console.WriteLine($"\r\n" +
                     $"{response.ReasonPhrase}: {errorContent}");
@@ -80,7 +81,16 @@ namespace SystemInfoClient
         private static string GetMachineIdFromResponse(HttpResponseMessage response)
         {
             // Parse the last element of the Location header in the response to get the new machine ID
-            string machineId = response.Headers.Location.Segments.Last();
+            string machineId;
+            if (response.Headers.Location != null)
+            {
+                machineId = response.Headers.Location.Segments.Last(); 
+            }
+            else
+            {
+                throw new InvalidDataException("Invalid API response's location header");
+            }
+
             if (Int32.TryParse(machineId, out int parsedMachineId) && parsedMachineId > 0)
             {
                 return machineId;

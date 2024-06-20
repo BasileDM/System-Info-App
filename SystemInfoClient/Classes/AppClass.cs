@@ -1,5 +1,4 @@
-﻿using System;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 
 namespace SystemInfoClient.Classes
 {
@@ -73,7 +72,7 @@ namespace SystemInfoClient.Classes
             }
             else
             {
-                throw new FileNotFoundException($"File not found for {appSettings.Value} with path {appSettings.Value.Path}");
+                throw new FileNotFoundException($"File not found for application: {appSettings.Value}, with path: {appSettings.Value.Path}");
             }
         }
 

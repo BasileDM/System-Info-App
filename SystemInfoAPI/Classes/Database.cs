@@ -31,7 +31,6 @@ namespace SystemInfoApi.Classes
         {
             return new SqlConnection(_ConnectionString);
         }
-
         public void Init(WebApplication app)
         {
             try
@@ -50,7 +49,6 @@ namespace SystemInfoApi.Classes
                 return;
             }
         }
-
         private static void TryOpenConnection(SqlConnection connection)
         {
             try
@@ -64,7 +62,6 @@ namespace SystemInfoApi.Classes
             }
 
         }
-
         private bool DoTablesExist(SqlConnection connection)
         {
             try
@@ -83,7 +80,6 @@ namespace SystemInfoApi.Classes
                 throw new Exception($"Error verifying database tables: {ex.Message}");
             }
         }
-
         private void PromptTablesCreation()
         {
             string? answer;
@@ -103,7 +99,6 @@ namespace SystemInfoApi.Classes
                 throw new Exception("Table creation has been aborted, the app will shut down.");
             }
         }
-
         private async Task<bool> CreateTablesAsync()
         {
             return await MakeTransactionAsync(async (connection, transaction) =>
@@ -118,7 +113,6 @@ namespace SystemInfoApi.Classes
                 return true;
             });
         }
-
 
         /// <summary>
         ///     This method is a transaction wrapper for a database operation that contains multiple commands.
