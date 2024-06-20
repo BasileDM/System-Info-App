@@ -1,6 +1,5 @@
 ﻿using System.Runtime.Versioning;
 using System.Text.Json;
-using SystemInfoClient.Models;
 
 namespace SystemInfoClient.Classes
 {
@@ -13,7 +12,7 @@ namespace SystemInfoClient.Classes
         public List<DriveClass> Drives { get; set; }
         private JsonSerializerOptions SerializerOptions { get; set; }
 
-        public MachineClass(SettingsModel settings)
+        public MachineClass(SettingsClass settings)
         {
             try
             {
@@ -23,7 +22,6 @@ namespace SystemInfoClient.Classes
                 Drives = [];
                 SerializerOptions = new() { WriteIndented = true };
 
-                Dictionary<string, ApplicationSettings> appList = settings.ApplicationsList;
                 string? systemDrive = Path.GetPathRoot(Environment.SystemDirectory);
 
                 foreach (var drive in DriveInfo.GetDrives())
@@ -32,13 +30,16 @@ namespace SystemInfoClient.Classes
 
                     if (drive.IsReady)
                     {
-                        foreach (var app in appList)
+                        if (settings.ApplicationsList != null)
                         {
-                            if (app.Value.Path != null && app.Value.Path.Contains(drive.RootDirectory.ToString()))
+                            foreach (var appSettings in settings.ApplicationsList)
                             {
-                                AppClass appClass = new(app);
-                                driveAppsList.Add(appClass);
-                            }
+                                if (appSettings.Value.Path != null && appSettings.Value.Path.Contains(drive.RootDirectory.ToString()))
+                                {
+                                    AppClass appClass = new(appSettings);
+                                    driveAppsList.Add(appClass);
+                                }
+                            } 
                         }
                         bool isSystemDriveBool = drive.Name == systemDrive;
                         Drives.Add(new DriveClass(drive, isSystemDriveBool, driveAppsList));

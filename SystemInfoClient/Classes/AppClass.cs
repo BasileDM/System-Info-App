@@ -1,5 +1,5 @@
-﻿using System.Diagnostics;
-using SystemInfoClient.Models;
+﻿using System;
+using System.Diagnostics;
 
 namespace SystemInfoClient.Classes
 {
@@ -35,22 +35,14 @@ namespace SystemInfoClient.Classes
         public string? ProductVersion { get; set; }
         public string? SpecialBuild { get; set; }
 
-        public AppClass(KeyValuePair<string, ApplicationSettings> app)
+        public AppClass(KeyValuePair<string, ApplicationSettings> appSettings)
         {
-            if (Int32.TryParse(app.Value.Id, out int parsedId) && parsedId >= 0)
-            {
-                Id = parsedId;
-            }
-            else
-            {
-                throw new InvalidOperationException($"Invalid configuration for {app.Value}'s ID in settings.json.");
-            }
+            Id = appSettings.Value.ParsedId;
+            Name = appSettings.Key;
 
-            Name = app.Key;
-
-            if (File.Exists(app.Value.Path) && app.Value.Path != null)
+            if (appSettings.Value.Path != null && File.Exists(appSettings.Value.Path))
             {
-                FileVersionInfo fileVersionInfo = FileVersionInfo.GetVersionInfo(app.Value.Path);
+                FileVersionInfo fileVersionInfo = FileVersionInfo.GetVersionInfo(appSettings.Value.Path);
                 Comments = fileVersionInfo.Comments;
                 CompanyName = fileVersionInfo.CompanyName;
                 FileBuildPart = fileVersionInfo.FileBuildPart;
@@ -81,7 +73,7 @@ namespace SystemInfoClient.Classes
             }
             else
             {
-                throw new FileNotFoundException($"File not found for {app.Value} with path {app.Value.Path}");
+                throw new FileNotFoundException($"File not found for {appSettings.Value} with path {appSettings.Value.Path}");
             }
         }
 

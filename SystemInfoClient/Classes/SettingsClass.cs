@@ -1,9 +1,9 @@
 ﻿using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace SystemInfoClient.Models
+namespace SystemInfoClient.Classes
 {
-    public class SettingsModel
+    public class SettingsClass
     {
         public string? MachineId { get; set; }
         public string? CustomerId { get; set; }
@@ -17,10 +17,10 @@ namespace SystemInfoClient.Models
         [JsonIgnore]
         private JsonSerializerOptions SerializerOptions { get; set; } = new() { WriteIndented = true };
 
-        private SettingsModel(){} // Private constructor to avoid direct instantiation without factory method
+        private SettingsClass() { } // Private constructor to avoid direct instantiation without factory method
 
         [JsonConstructor]
-        public SettingsModel(string? machineId, string? customerId, string? apiUrl, Dictionary<string, ApplicationSettings>? applicationsList)
+        public SettingsClass(string? machineId, string? customerId, string? apiUrl, Dictionary<string, ApplicationSettings>? applicationsList)
         {
             MachineId = machineId;
             CustomerId = customerId;
@@ -31,12 +31,12 @@ namespace SystemInfoClient.Models
             ParsedMachineId = GetParsedId(MachineId, "machine");
         }
 
-        /// <summary>Factory method that returns an instance of <see cref="SettingsModel"/>.</summary>
+        /// <summary>Factory method that returns an instance of <see cref="SettingsClass"/>.</summary>
         /// <remarks>The instance will have its properties populated by deserializing the settings.json file</remarks>
         /// <returns>
-        ///     The <see cref="SettingsModel"/> created by <see cref="JsonSerializer"/>.
+        ///     The <see cref="SettingsClass"/> created by <see cref="JsonSerializer"/>.
         /// </returns>
-        public static SettingsModel GetInstance()
+        public static SettingsClass GetInstance()
         {
             try
             {
@@ -47,7 +47,7 @@ namespace SystemInfoClient.Models
                     jsonSettings = reader.ReadToEnd();
                 }
 
-                SettingsModel settings = JsonSerializer.Deserialize<SettingsModel>(jsonSettings) ??
+                SettingsClass settings = JsonSerializer.Deserialize<SettingsClass>(jsonSettings) ??
                     throw new InvalidDataException("Deserialization of settings.json failed: null settings.");
 
                 return settings;
@@ -67,7 +67,7 @@ namespace SystemInfoClient.Models
         }
         private static int GetParsedId(string? id, string idOwnerName)
         {
-            if (Int32.TryParse(id, out int parsedId) && parsedId > 0)
+            if (int.TryParse(id, out int parsedId) && parsedId > 0)
             {
                 return parsedId;
             }
@@ -87,13 +87,13 @@ namespace SystemInfoClient.Models
             {
                 string path = GetFilePath();
                 string json = File.ReadAllText(path);
-                SettingsModel settings = GetInstance();
+                SettingsClass settings = GetInstance();
                 settings.MachineId = newMachineId;
 
-                string newJson = JsonSerializer.Serialize(settings, SerializerOptions); // add the write indented and refactor to avoid having to create settings again when we have in in main, pass the argument from the main method maybe ?
+                string newJson = JsonSerializer.Serialize(settings, SerializerOptions);
 
                 File.WriteAllText(path, newJson);
-                Console.WriteLine($"New machine id: {newMachineId}, path {path} newjson : \r\n{newJson}");
+                Console.WriteLine($"New machine id: {newMachineId}\r\n New settings.json content:\r\n{newJson}");
             }
             catch (Exception ex)
             {
@@ -111,12 +111,17 @@ namespace SystemInfoClient.Models
     {
         public string? Id { get; set; }
         public string? Path { get; set; }
+
+        [JsonIgnore]
         public int ParsedId { get; set; }
 
         public ApplicationSettings(string? id, string? path)
         {
             Id = id;
             Path = path;
+
+            ParsedId = Int32.TryParse(id, out int parsedId) && parsedId >= 0 ? parsedId :
+                throw new InvalidOperationException($"An application has an invalid ID of: {id} in the settings.json file.");
         }
     }
 }

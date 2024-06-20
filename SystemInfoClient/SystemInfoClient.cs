@@ -2,7 +2,6 @@
 using System.Runtime.Versioning;
 using System.Text;
 using SystemInfoClient.Classes;
-using SystemInfoClient.Models;
 
 namespace SystemInfoClient
 {
@@ -14,7 +13,7 @@ namespace SystemInfoClient
             try
             {
                 // Load settings.json from its factory method
-                SettingsModel settings = SettingsModel.GetInstance();
+                SettingsClass settings = SettingsClass.GetInstance();
 
                 // Create machine with 'CustomerId' + drives, os and apps info
                 MachineClass machine = new(settings);
