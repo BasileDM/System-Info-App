@@ -52,5 +52,53 @@ namespace SystemInfoApi.Repositories
                 throw new ApplicationException("An error occured inserting the drive into the database.", ex);
             }
         }
+
+        public async Task<DriveModel> UpdateAsync(DriveModel drive, SqlConnection connection, SqlTransaction transaction)
+        {
+            try
+            {
+                var dtn = db.DrivesTableNames;
+
+                string query = @$"
+                    UPDATE {dtn.TableName}
+                    SET 
+                        {dtn.MachineId} = @machineId, 
+                        {dtn.DriveName} = @driveName, 
+                        {dtn.RootDirectory} = @rootDir, 
+                        {dtn.Label} = @label, 
+                        {dtn.Type} = @type, 
+                        {dtn.Format} = @format, 
+                        {dtn.Size} = @size, 
+                        {dtn.FreeSpace} = @freeSpace, 
+                        {dtn.TotalSpace} = @totalSpace, 
+                        {dtn.FreeSpacePercentage} = @freeSpacePer, 
+                        {dtn.IsSystemDrive} = @isSystemDrive
+                    WHERE {dtn.Id} = @driveId";
+
+                using (SqlCommand cmd = new(query, connection, transaction))
+                {
+                    cmd.Parameters.AddWithValue("@machineId", drive.MachineId);
+                    cmd.Parameters.AddWithValue("@driveName", drive.Name);
+                    cmd.Parameters.AddWithValue("@rootDir", drive.RootDirectory);
+                    cmd.Parameters.AddWithValue("@label", drive.Label);
+                    cmd.Parameters.AddWithValue("@type", drive.Type);
+                    cmd.Parameters.AddWithValue("@format", drive.Format);
+                    cmd.Parameters.AddWithValue("@size", drive.Size);
+                    cmd.Parameters.AddWithValue("@freeSpace", drive.FreeSpace);
+                    cmd.Parameters.AddWithValue("@totalSpace", drive.TotalSpace);
+                    cmd.Parameters.AddWithValue("@freeSpacePer", drive.FreeSpacePercentage);
+                    cmd.Parameters.AddWithValue("@isSystemDrive", drive.IsSystemDrive);
+                    cmd.Parameters.AddWithValue("@driveId", drive.Id);
+
+                    await cmd.ExecuteNonQueryAsync();
+                }
+
+                return drive;
+            }
+            catch (Exception ex)
+            {
+                throw new ApplicationException("An error occured inserting the drive into the database.", ex);
+            }
+        }
     }
 }

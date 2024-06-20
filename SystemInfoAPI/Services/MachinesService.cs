@@ -38,16 +38,49 @@ namespace SystemInfoApi.Services
                         // Set new driveId on OS and insert
                         drive.Os.DriveId = updatedDrive.Id;
                         OsModel updatedOs = await osRepository.InsertAsync(drive.Os, connection, transaction);
-
-                        foreach (ApplicationModel app in drive.AppList)
-                        {
-                            app.DriveId = updatedDrive.Id;
-                            await appRepository.InsertAsync(app, connection, transaction);
-                        }
-
                         updatedDrive.Os = updatedOs;
                     }
+
+                    foreach (ApplicationModel app in drive.AppList)
+                    {
+                        app.DriveId = updatedDrive.Id;
+                        await appRepository.InsertAsync(app, connection, transaction);
+                    }
+
                     updatedDrivesList.Add(updatedDrive);
+                }
+                updatedMachine.Drives = updatedDrivesList;
+                return updatedMachine;
+            });
+        }
+
+        public async Task<MachineModel> UpdateFullMachineAsync(MachineModel machine)
+        {
+            return await MakeTransactionAsync(async (connection, transaction) =>
+            {
+                MachineModel updatedMachine = await machinesRepository.UpdateAsync(machine, connection, transaction) ?? 
+                    throw new InvalidOperationException("The machine does not exist.");
+
+                List<DriveModel> updatedDrivesList = [];
+
+                foreach(DriveModel drive in machine.Drives)
+                {
+                    drive.MachineId = updatedMachine.Id;
+                    DriveModel updatedDrive = await drivesRepository.UpdateAsync(drive, connection, transaction);
+
+                    if (drive.IsSystemDrive && drive.Os != null) 
+                    {
+                        drive.Os.DriveId = updatedDrive.Id;
+                        OsModel updatedOs = await osRepository.UpdateAsync(drive.Os, connection, transaction);
+                        updatedDrive.Os = updatedOs;
+                    }
+
+                    foreach(ApplicationModel app in drive.AppList)
+                    {
+                        app.DriveId = updatedDrive.Id;
+                        await appRepository.UpdateAsync(app, connection, transaction);
+                    }
+                    updatedDrivesList.Add(drive);
                 }
                 updatedMachine.Drives = updatedDrivesList;
                 return updatedMachine;

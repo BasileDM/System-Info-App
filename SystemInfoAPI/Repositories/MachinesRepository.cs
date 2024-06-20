@@ -48,6 +48,33 @@ namespace SystemInfoApi.Repositories
             }
         }
 
+        public async Task<MachineModel> UpdateAsync(MachineModel machine, SqlConnection connection, SqlTransaction transaction)
+        {
+            try
+            {
+                string machineSql = @$"
+                    UPDATE {_machinesTable.TableName} 
+                    SET {_machinesTable.CustomerId} = @customerID, {_machinesTable.MachineName} = @machineName) 
+                    WHERE {_machinesTable.Id} = @machineId;";
+
+                using SqlCommand cmd = new(machineSql, connection, transaction);
+                cmd.Parameters.AddWithValue("@customerId", machine.CustomerId);
+                cmd.Parameters.AddWithValue("@machineName", machine.Name);
+                cmd.Parameters.AddWithValue("@machineId", machine.Id);
+                await cmd.ExecuteNonQueryAsync();
+
+                return machine;
+            }
+            catch (SqlException ex) when (ex.Number == 547) // Foreign key violation error number
+            {
+                throw new ArgumentException("The provided customer ID is invalid or does not exist in the database.");
+            }
+            catch (Exception ex)
+            {
+                throw new ApplicationException($"An error occured inserting the machine into the database : {ex}", ex);
+            }
+        }
+
         /// <summary>Gets all the machines without details (embedded models).</summary>
         /// <returns>
         ///   A <see cref="List{MachineModel}"/> of instantiated <see cref="MachineModel"/>.
