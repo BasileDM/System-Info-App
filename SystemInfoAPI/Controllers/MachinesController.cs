@@ -80,18 +80,5 @@ namespace SystemInfoApi.Controllers
                 return NotFound();
             }
         }
-
-        // To implement later
-        [HttpGet("{machineName}")]
-        public string GetByName(string machineName)
-        {
-            return $"Name is : {machineName}";
-        }
-
-        [HttpGet("{customerId:int:min(0)}")]
-        public string GetByCustomerId(int customerId)
-        {
-            return $"Customer Id is : {customerId}";
-        }
     }
 }

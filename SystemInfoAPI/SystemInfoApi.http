@@ -1,6 +1,0 @@
-# For more info on HTTP files go to https://aka.ms/vs/httpfile
-@SystemInfoApi_HostAddress = https://localhost:7056
-
-GET {{SystemInfoApi_HostAddress}}/machines/Get
-
-###

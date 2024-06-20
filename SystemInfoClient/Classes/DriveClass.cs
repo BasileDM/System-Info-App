@@ -66,7 +66,6 @@ namespace SystemInfoClient.Classes
                 app.LogInfo();
             }
         }
-
         private int CalculateFreeSpacePercentage(long availableFreeSpace, long totalSize)
         {
             if (totalSize <= 0)

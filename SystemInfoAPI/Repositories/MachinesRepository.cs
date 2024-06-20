@@ -1,10 +1,17 @@
 ﻿using System.Data.SqlClient;
 using SystemInfoApi.Models;
+using SystemInfoApi.Classes;
 
 namespace SystemInfoApi.Repositories
 {
-    public class MachinesRepository
+    public class MachinesRepository(Database db)
     {
+        private readonly MachinesTableNames _machinesTable = db.MachinesTableNames;
+        private readonly DrivesTableNames _drivesTable = db.DrivesTableNames;
+        private readonly OsTableNames _osTable = db.OsTableNames;
+        private readonly AppsDrivesRelationTableNames _appsDrivesRTable = db.AppsDrivesRelationTableNames;
+        private readonly ApplicationsTableNames _appsTable = db.ApplicationsTableNames;
+
         /// <summary>Asynchronously inserts a new machine entry in the database.</summary>
         /// <param name="machine">The <see cref="MachineModel"/> to add to the DB.</param>
         /// <param name="connection">The <see cref="SqlConnection"/> to use.</param>
@@ -17,7 +24,7 @@ namespace SystemInfoApi.Repositories
             try
             {
                 string machineSql = @$"
-                    INSERT INTO Client_Machine (id_client, Name) 
+                    INSERT INTO {_machinesTable.TableName} ({_machinesTable.CustomerId}, {_machinesTable.MachineName}) 
                     VALUES (@customerId, @machineName);
 
                     SELECT SCOPE_IDENTITY();";
@@ -53,8 +60,8 @@ namespace SystemInfoApi.Repositories
             {
                 await connection.OpenAsync();
 
-                const string query =
-                    "SELECT * FROM Client_Machine";
+                string query =
+                    $"SELECT * FROM {_machinesTable.TableName}";
 
                 using (SqlCommand cmd = new(query, connection))
                 {
@@ -64,9 +71,9 @@ namespace SystemInfoApi.Repositories
                     {
                         machinesList.Add(new MachineModel
                         {
-                            Id = Convert.ToInt32(reader["id_client_machine"]), // (reader.GetOrdinal("id_client_machine") ?
-                            Name = Convert.ToString((string)reader["Name"]),
-                            CustomerId = Convert.ToInt32(reader["id_client"]),
+                            Id = Convert.ToInt32(reader[$"{_machinesTable.Id}"]), // (reader.GetOrdinal("id_client_machine") ?
+                            Name = Convert.ToString((string)reader[$"{_machinesTable.MachineName}"]),
+                            CustomerId = Convert.ToInt32(reader[$"{_machinesTable.CustomerId}"]),
                         });
                     }
                 }
@@ -148,139 +155,145 @@ namespace SystemInfoApi.Repositories
                 await connection.CloseAsync();
             }
 
-            static string GetQuery()
+            string GetQuery()
             {
-                 const string query = @"
-                    SELECT id_client AS Customer_Id,
-                        Machine.id_client_machine AS Machine_Id,
-                        Machine.Name AS Machine_Name, 
-                        Drive.id_client_machine_disque AS Drive_Id, 
-                        Drive.Name AS Drive_Name, 
-                        Root_Directory, 
-                        Label, 
-                        Type, 
-                        Format, 
-                        Size, 
-                        Free_Space, 
-                        Total_Space, 
-                        Free_Space_Percentage, 
-                        Is_System_Drive, 
-                        id_client_machine_disque_os AS Os_Id, 
-                        Directory, 
-                        Architecture, 
-                        Version, 
-                        Os.Product_Name AS Os_Product_Name, 
-                        Release_Id,  
-                        Current_Build, 
-                        Ubr,
-	                    App.id_client_machine_disque_app AS Application_Id,
-	                    App.Name AS Application_Name,
-	                    Comments,
-	                    Company_Name,
-	                    File_Build_Part,
-	                    File_Description,
-	                    File_Major_Part,
-	                    File_Minor_Part,
-	                    File_Name,
-	                    File_Private_Part,
-	                    File_Version,
-	                    Internal_Name,
-	                    Is_Debug,
-	                    Is_Patched,
-	                    Is_Pre_Release,
-	                    Is_Private_Build,
-	                    Is_Special_Build,
-	                    Language,
-	                    Legal_Copyright,
-	                    Legal_Trademarks,
-	                    Original_Filename,
-	                    Private_Build,
-	                    Product_Build_Part,
-	                    Product_Major_Part,
-	                    Product_Minor_Part,
-	                    AppRelation.Product_Name AS App_Product_Name,
-	                    Product_Private_Part,
-	                    Product_Version,
-	                    Special_Build
-                    FROM Client_Machine AS Machine
-                    LEFT OUTER JOIN Client_Machine_Disque AS Drive
-                    ON Machine.id_client_machine = Drive.id_client_machine
-                    LEFT OUTER JOIN Client_Machine_Disque_Os AS Os
-                    ON Os.id_client_machine_disque = Drive.id_client_machine_disque
-                    LEFT OUTER JOIN Relation_Disque_Application AS AppRelation
-                    ON AppRelation.id_client_machine_disque = Drive.id_client_machine_disque
-                    LEFT OUTER JOIN Client_Machine_Disque_Application AS App
-                    ON App.id_client_machine_disque_app = AppRelation.id_client_machine_disque_app
-                    WHERE Machine.id_client_machine = @Id";
+                string machinesTableName = _machinesTable.TableName;
+                string drivesTableName = _drivesTable.TableName;
+                string osTableName = _osTable.TableName;
+                string appsDrivesRTableName = _appsDrivesRTable.TableName;
+                string appsTableName = _appsTable.TableName;
+
+                 string query = @$"
+                    SELECT Machine.{_machinesTable.Id} AS Customer_Id,
+                        Machine.{_machinesTable.Id} AS Machine_Id,
+                        Machine.{_machinesTable.MachineName} AS Machine_Name, 
+                        Drive.{_drivesTable.Id} AS Drive_Id, 
+                        Drive.{_drivesTable.DriveName} AS Drive_Name, 
+                        {_drivesTable.RootDirectory}, 
+                        {_drivesTable.Label}, 
+                        {_drivesTable.Type}, 
+                        {_drivesTable.Format}, 
+                        {_drivesTable.Size}, 
+                        {_drivesTable.FreeSpace}, 
+                        {_drivesTable.TotalSpace}, 
+                        {_drivesTable.FreeSpacePercentage}, 
+                        {_drivesTable.IsSystemDrive}, 
+                        {_osTable.Id} AS Os_Id, 
+                        {_osTable.Directory}, 
+                        {_osTable.Architecture}, 
+                        {_osTable.Version}, 
+                        Os.{_osTable.ProductName} AS Os_Product_Name, 
+                        {_osTable.ReleaseId}, 
+                        {_osTable.CurrentBuild}, 
+                        {_osTable.Ubr},
+	                    App.{_appsTable.Id} AS Application_Id,
+	                    App.{_appsTable.AppName} AS Application_Name,
+	                    {_appsDrivesRTable.Comments},
+	                    {_appsDrivesRTable.CompanyName},
+	                    {_appsDrivesRTable.FileBuildPart},
+	                    {_appsDrivesRTable.FileDescription},
+	                    {_appsDrivesRTable.FileMajorPart},
+	                    {_appsDrivesRTable.FileMinorPart},
+	                    {_appsDrivesRTable.FileName},
+	                    {_appsDrivesRTable.FilePrivatePart},
+	                    {_appsDrivesRTable.FileVersion},
+	                    {_appsDrivesRTable.InternalName},
+	                    {_appsDrivesRTable.IsDebug},
+	                    {_appsDrivesRTable.IsPatched},
+	                    {_appsDrivesRTable.IsPreRelease},
+	                    {_appsDrivesRTable.IsPrivateBuild},
+	                    {_appsDrivesRTable.IsSpecialBuild},
+	                    {_appsDrivesRTable.Language},
+	                    {_appsDrivesRTable.Copyright},
+	                    {_appsDrivesRTable.Trademarks},
+	                    {_appsDrivesRTable.OriginalFilename},
+	                    {_appsDrivesRTable.PrivateBuild},
+	                    {_appsDrivesRTable.ProductBuildPart},
+	                    {_appsDrivesRTable.ProductMajorPart},
+	                    {_appsDrivesRTable.ProductMinorPart},
+	                    AppRelation.{_appsDrivesRTable.ProductName} AS App_Product_Name,
+	                    {_appsDrivesRTable.ProductPrivatePart},
+	                    {_appsDrivesRTable.ProductVersion},
+	                    {_appsDrivesRTable.SpecialBuild}
+                    FROM {machinesTableName} AS Machine
+                    LEFT OUTER JOIN {drivesTableName} AS Drive
+                    ON Machine.{_machinesTable.Id} = Drive.{_drivesTable.MachineId}
+                    LEFT OUTER JOIN {osTableName} AS Os
+                    ON Os.{_osTable.DriveId} = Drive.{_drivesTable.Id}
+                    LEFT OUTER JOIN {appsDrivesRTableName} AS AppRelation
+                    ON AppRelation.{_appsDrivesRTable.DriveId} = Drive.{_drivesTable.Id}
+                    LEFT OUTER JOIN {appsTableName} AS App
+                    ON App.{_appsTable.Id} = AppRelation.{_appsDrivesRTable.AppId}
+                    WHERE Machine.{_machinesTable.Id} = @Id";
                 return query;
             }
-            static DriveModel CreateDriveFromReader(SqlDataReader reader)
+            DriveModel CreateDriveFromReader(SqlDataReader reader)
             {
                 return new DriveModel()
                 {
                     Id = Convert.ToInt32(reader["Drive_Id"]),
                     Name = (string)reader["Drive_Name"],
-                    RootDirectory = (string)reader["Root_Directory"],
-                    Label = (string)reader["Label"],
-                    Type = (string)reader["Type"],
-                    Format = (string)reader["Format"],
-                    Size = Convert.ToInt64(reader["Size"]),
-                    FreeSpace = Convert.ToInt64(reader["Free_Space"]),
-                    TotalSpace = Convert.ToInt64(reader["Total_Space"]),
-                    FreeSpacePercentage = Convert.ToInt32(reader["Free_Space_Percentage"]),
-                    IsSystemDrive = Convert.ToBoolean(reader["Is_System_Drive"]),
+                    RootDirectory = (string)reader[$"{_drivesTable.RootDirectory}"],
+                    Label = (string)reader[$"{_drivesTable.Label}"],
+                    Type = (string)reader[$"{_drivesTable.Type}"],
+                    Format = (string)reader[$"{_drivesTable.Format}"],
+                    Size = Convert.ToInt64(reader[$"{_drivesTable.Size}"]),
+                    FreeSpace = Convert.ToInt64(reader[$"{_drivesTable.FreeSpace}"]),
+                    TotalSpace = Convert.ToInt64(reader[$"{_drivesTable.TotalSpace}"]),
+                    FreeSpacePercentage = Convert.ToInt32(reader[$"{_drivesTable.FreeSpacePercentage}"]),
+                    IsSystemDrive = Convert.ToBoolean(reader[$"{_drivesTable.IsSystemDrive}"]),
                     MachineId = Convert.ToInt32(reader["Machine_Id"]),
                     AppList = []
                 };
             }
-            static OsModel CreateOsFromReader(SqlDataReader reader)
+            OsModel CreateOsFromReader(SqlDataReader reader)
             {
                 return new OsModel()
                 {
                     Id = Convert.ToInt32(reader["Os_Id"]),
-                    Directory = (string)(reader["Directory"]),
-                    Architecture = (string)(reader["Architecture"]),
-                    Version = (string)(reader["Version"]),
+                    Directory = (string)(reader[$"{_osTable.Directory}"]),
+                    Architecture = (string)(reader[$"{_osTable.Architecture}"]),
+                    Version = (string)(reader[$"{_osTable.Version}"]),
                     ProductName = (string)(reader["Os_Product_Name"]),
-                    ReleaseId = (string)(reader["Release_Id"]),
-                    CurrentBuild = (string)(reader["Current_Build"]),
-                    Ubr = (string)(reader["Ubr"]),
+                    ReleaseId = (string)(reader[$"{_osTable.ReleaseId}"]),
+                    CurrentBuild = (string)(reader[$"{_osTable.CurrentBuild}"]),
+                    Ubr = (string)(reader[$"{_osTable.Ubr}"]),
                     DriveId = Convert.ToInt32(reader["Drive_Id"])
                 };
             }
-            static ApplicationModel CreateApplicationFromReader(SqlDataReader reader)
+            ApplicationModel CreateApplicationFromReader(SqlDataReader reader)
             {
                 return new ApplicationModel()
                 {
                     Id = Convert.ToInt32(reader["Application_Id"]),
                     Name = (string)reader["Application_Name"],
-                    Comments = (string)reader["Comments"],
-                    CompanyName = (string)reader["Company_Name"],
-                    FileBuildPart = Convert.ToInt32(reader["File_Build_Part"]),
-                    FileDescription = (string)reader["File_Description"],
-                    FileMajorPart = Convert.ToInt32(reader["File_Major_Part"]),
-                    FileMinorPart = Convert.ToInt32(reader["File_Minor_Part"]),
-                    FileName = (string)reader["File_Name"],
-                    FilePrivatePart = Convert.ToInt32(reader["File_Private_Part"]),
-                    FileVersion = (string)reader["File_Version"],
-                    InternalName = (string)reader["Internal_Name"],
-                    IsDebug = Convert.ToBoolean(reader["Is_Debug"]),
-                    IsPatched = Convert.ToBoolean(reader["Is_Patched"]),
-                    IsPreRelease = Convert.ToBoolean(reader["Is_Pre_Release"]),
-                    IsPrivateBuild = Convert.ToBoolean(reader["Is_Private_Build"]),
-                    IsSpecialBuild = Convert.ToBoolean(reader["Is_Special_Build"]),
-                    Language = (string)reader["Language"],
-                    LegalCopyright = (string)reader["Legal_Copyright"],
-                    LegalTrademarks = (string)reader["Legal_Trademarks"],
-                    OriginalFilename = (string)reader["Original_Filename"],
-                    PrivateBuild = (string)reader["Private_Build"],
-                    ProductBuildPart = Convert.ToInt32(reader["Product_Build_Part"]),
-                    ProductMajorPart = Convert.ToInt32(reader["Product_Major_Part"]),
-                    ProductMinorPart = Convert.ToInt32(reader["Product_Minor_Part"]),
-                    ProductName = (string)reader["App_Product_Name"],
-                    ProductPrivatePart = Convert.ToInt32(reader["Product_Private_Part"]),
-                    ProductVersion = (string)reader["Product_Version"],
-                    SpecialBuild = (string)reader["Special_Build"],
+                    Comments = (string)reader[$"{_appsDrivesRTable.Comments}"],
+                    CompanyName = (string)reader[$"{_appsDrivesRTable.CompanyName}"],
+                    FileBuildPart = Convert.ToInt32(reader[$"{_appsDrivesRTable.FileBuildPart}"]),
+                    FileDescription = (string)reader[$"{_appsDrivesRTable.FileDescription}"],
+                    FileMajorPart = Convert.ToInt32(reader[$"{_appsDrivesRTable.FileMajorPart}"]),
+                    FileMinorPart = Convert.ToInt32(reader[$"{_appsDrivesRTable.FileMinorPart}"]),
+                    FileName = (string)reader[$"{_appsDrivesRTable.FileName}"],
+                    FilePrivatePart = Convert.ToInt32(reader[$"{_appsDrivesRTable.FilePrivatePart}"]),
+                    FileVersion = (string)reader[$"{_appsDrivesRTable.FileVersion}"],
+                    InternalName = (string)reader[$"{_appsDrivesRTable.InternalName}"],
+                    IsDebug = Convert.ToBoolean(reader[$"{_appsDrivesRTable.IsDebug}"]),
+                    IsPatched = Convert.ToBoolean(reader[$"{_appsDrivesRTable.IsPatched}"]),
+                    IsPreRelease = Convert.ToBoolean(reader[$"{_appsDrivesRTable.IsPreRelease}"]),
+                    IsPrivateBuild = Convert.ToBoolean(reader[$"{_appsDrivesRTable.IsPrivateBuild}"]),
+                    IsSpecialBuild = Convert.ToBoolean(reader[$"{_appsDrivesRTable.IsSpecialBuild}"]),
+                    Language = (string)reader[$"{_appsDrivesRTable.Language}"],
+                    LegalCopyright = (string)reader[$"{_appsDrivesRTable.Copyright}"],
+                    LegalTrademarks = (string)reader[$"{_appsDrivesRTable.Trademarks}"],
+                    OriginalFilename = (string)reader[$"{_appsDrivesRTable.OriginalFilename}"],
+                    PrivateBuild = (string)reader[$"{_appsDrivesRTable.PrivateBuild}"],
+                    ProductBuildPart = Convert.ToInt32(reader[$"{_appsDrivesRTable.ProductBuildPart}"]),
+                    ProductMajorPart = Convert.ToInt32(reader[$"{_appsDrivesRTable.ProductMajorPart}"]),
+                    ProductMinorPart = Convert.ToInt32(reader[$"{_appsDrivesRTable.ProductMinorPart}"]),
+                    ProductName = (string)reader[$"App_Product_Name"],
+                    ProductPrivatePart = Convert.ToInt32(reader[$"{_appsDrivesRTable.ProductPrivatePart}"]),
+                    ProductVersion = (string)reader[$"{_appsDrivesRTable.ProductVersion}"],
+                    SpecialBuild = (string)reader[$"{_appsDrivesRTable.SpecialBuild}"],
                     DriveId = Convert.ToInt32(reader["Drive_Id"]),
                 };
             }

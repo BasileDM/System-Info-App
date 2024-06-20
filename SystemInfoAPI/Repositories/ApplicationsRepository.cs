@@ -1,45 +1,48 @@
 ﻿using System.Data.SqlClient;
+using SystemInfoApi.Classes;
 using SystemInfoApi.Models;
 
 namespace SystemInfoApi.Repositories
 {
-    public class ApplicationsRepository
+    public class ApplicationsRepository(Database db)
     {
         public async Task<int> InsertAsync(ApplicationModel app, SqlConnection conection, SqlTransaction transaction)
         {
             try
             {
-                string query = @"
-                    INSERT INTO Relation_Disque_Application
-                        (id_client_machine_disque,
-                         id_client_machine_disque_app,
-                         Comments,
-                         Company_Name,
-                         File_Build_Part,
-                         File_Description,
-                         File_Major_Part,
-                         File_Minor_Part,
-                         File_Name,
-                         File_Private_Part,
-                         File_Version,
-                         Internal_Name,
-                         Is_Debug,
-                         Is_Patched,
-                         Is_Pre_Release,
-                         Is_Private_Build,
-                         Is_Special_Build,
-                         Language,
-                         Legal_Copyright,
-                         Legal_Trademarks,
-                         Original_Filename,
-                         Private_Build,
-                         Product_Build_Part,
-                         Product_Major_Part,
-                         Product_Minor_Part,
-                         Product_Name,
-                         Product_Private_Part,
-                         Product_Version,
-                         Special_Build)
+                var appsDrivesRTable = db.AppsDrivesRelationTableNames;
+
+                string query = @$"
+                    INSERT INTO {appsDrivesRTable.TableName}
+                        ({appsDrivesRTable.DriveId},
+                         {appsDrivesRTable.AppId},
+                         {appsDrivesRTable.Comments},
+                         {appsDrivesRTable.CompanyName},
+                         {appsDrivesRTable.FileBuildPart},
+                         {appsDrivesRTable.FileDescription},
+                         {appsDrivesRTable.FileMajorPart},
+                         {appsDrivesRTable.FileMinorPart},
+                         {appsDrivesRTable.FileName},
+                         {appsDrivesRTable.FilePrivatePart},
+                         {appsDrivesRTable.FileVersion},
+                         {appsDrivesRTable.InternalName},
+                         {appsDrivesRTable.IsDebug},
+                         {appsDrivesRTable.IsPatched},
+                         {appsDrivesRTable.IsPreRelease},
+                         {appsDrivesRTable.IsPrivateBuild},
+                         {appsDrivesRTable.IsSpecialBuild},
+                         {appsDrivesRTable.Language},
+                         {appsDrivesRTable.Copyright},
+                         {appsDrivesRTable.Trademarks},
+                         {appsDrivesRTable.OriginalFilename},
+                         {appsDrivesRTable.PrivateBuild},
+                         {appsDrivesRTable.ProductBuildPart},
+                         {appsDrivesRTable.ProductMajorPart},
+                         {appsDrivesRTable.ProductMinorPart},
+                         {appsDrivesRTable.ProductName},
+                         {appsDrivesRTable.ProductPrivatePart},
+                         {appsDrivesRTable.ProductVersion},
+                         {appsDrivesRTable.SpecialBuild})
                     VALUES 
                         (@id_client_machine_disque,
                          @id_client_machine_disque_app,

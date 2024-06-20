@@ -13,6 +13,7 @@ namespace SystemInfoApi
 
             // Add services to the container.
             builder.Services.AddControllers();
+            builder.Services.AddScoped<Database>();
             builder.Services.AddScoped<MachinesService>();
             builder.Services.AddScoped<MachinesRepository>();
             builder.Services.AddScoped<DrivesRepository>();
