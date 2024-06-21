@@ -18,6 +18,10 @@
     "WinRAR": {
       "Id": "4",
       "Path": "D:\\Program Files\\WinRAR\\WinRAR.exe"
+    },
+    "IE": {
+      "Id": "5",
+      "Path": "C:\\Program Files\\Internet Explorer\\iexplore.exe"
     }
   }
 }

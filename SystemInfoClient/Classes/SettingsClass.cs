@@ -124,7 +124,7 @@ namespace SystemInfoClient.Classes
             Id = id;
             Path = path;
 
-            ParsedId = Int32.TryParse(id, out int parsedId) && parsedId >= 0 ? parsedId :
+            ParsedId = Int32.TryParse(id, out int parsedId) && parsedId > 0 ? parsedId :
                 throw new InvalidDataException($"An application has an invalid ID of: {id} in the settings.json file.");
         }
     }

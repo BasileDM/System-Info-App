@@ -53,7 +53,6 @@ namespace SystemInfoClient
             // If the machine ID is 0, then it is a new machine
             if (machine.Id == 0)
             {
-
                 string route = ApiUrl + "api/Machines/Create";
                 return await client.PostAsync(route, content);
             }
