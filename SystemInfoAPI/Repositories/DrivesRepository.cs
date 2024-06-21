@@ -53,7 +53,7 @@ namespace SystemInfoApi.Repositories
             }
         }
 
-        public async Task<DriveModel> UpdateAsync(DriveModel drive, SqlConnection connection, SqlTransaction transaction)
+        public async Task<int> UpdateAsync(DriveModel drive, SqlConnection connection, SqlTransaction transaction)
         {
             try
             {
@@ -73,31 +73,37 @@ namespace SystemInfoApi.Repositories
                         {dtn.TotalSpace} = @totalSpace, 
                         {dtn.FreeSpacePercentage} = @freeSpacePer, 
                         {dtn.IsSystemDrive} = @isSystemDrive
-                    WHERE {dtn.Id} = @driveId";
+                    WHERE {dtn.MachineId} = @machineId
+                    AND {dtn.DriveName} = @driveName
+
+                    SELECT {dtn.Id} 
+                    FROM {dtn.TableName}
+                    WHERE {dtn.MachineId} = @machineId AND {dtn.DriveName} = @driveName";
 
                 using (SqlCommand cmd = new(query, connection, transaction))
                 {
                     cmd.Parameters.AddWithValue("@machineId", drive.MachineId);
                     cmd.Parameters.AddWithValue("@driveName", drive.Name);
-                    cmd.Parameters.AddWithValue("@rootDir", drive.RootDirectory);
-                    cmd.Parameters.AddWithValue("@label", drive.Label);
-                    cmd.Parameters.AddWithValue("@type", drive.Type);
-                    cmd.Parameters.AddWithValue("@format", drive.Format);
+                    cmd.Parameters.AddWithValue("@rootDir", drive.RootDirectory ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@label", drive.Label ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@type", drive.Type ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@format", drive.Format ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@size", drive.Size);
                     cmd.Parameters.AddWithValue("@freeSpace", drive.FreeSpace);
                     cmd.Parameters.AddWithValue("@totalSpace", drive.TotalSpace);
                     cmd.Parameters.AddWithValue("@freeSpacePer", drive.FreeSpacePercentage);
                     cmd.Parameters.AddWithValue("@isSystemDrive", drive.IsSystemDrive);
-                    cmd.Parameters.AddWithValue("@driveId", drive.Id);
 
-                    await cmd.ExecuteNonQueryAsync();
+                    var driveObj = await cmd.ExecuteScalarAsync() ??
+                        throw new ArgumentException("Drive not found.");
+
+                    drive.Id = Convert.ToInt32(driveObj);
                 }
-
-                return drive;
+                return drive.Id;
             }
             catch (Exception ex)
             {
-                throw new ApplicationException("An error occured inserting the drive into the database.", ex);
+                throw new ApplicationException($"An error occured inserting the drive into the database: {ex.Message}", ex);
             }
         }
     }

@@ -60,6 +60,10 @@ namespace SystemInfoClient.Classes
             {
                 throw new JsonException($"Could not deserialize JSON: {ex.Message}");
             }
+            catch (InvalidDataException ex)
+            {
+                throw new JsonException($"Settings.json file error: {ex.Message}");
+            }
             catch (Exception ex)
             {
                 throw new Exception($"Unexpected error while trying to read settings file: {ex.Message}");
@@ -67,18 +71,18 @@ namespace SystemInfoClient.Classes
         }
         private static int GetParsedId(string? id, string idOwner)
         {
-            if (int.TryParse(id, out int parsedId) && parsedId > 0)
+            if (Int32.TryParse(id, out int parsedId) && parsedId > 0)
             {
                 return parsedId;
             }
-            else if (parsedId == 0 && idOwner == "machine")
+            else if (idOwner == "machine" && (id == string.Empty || id == "0" || id == null))
             {
                 return parsedId;
             }
             else
             {
                 throw new InvalidDataException(
-                    $"Invalid {idOwner} ID, please provide a valid one in the settings.json file");
+                    $"Invalid '{idOwner}' ID, please provide a valid one in the settings.json file");
             }
         }
         public void RewriteFileWithId(string newMachineId)
@@ -121,7 +125,7 @@ namespace SystemInfoClient.Classes
             Path = path;
 
             ParsedId = Int32.TryParse(id, out int parsedId) && parsedId >= 0 ? parsedId :
-                throw new InvalidOperationException($"An application has an invalid ID of: {id} in the settings.json file.");
+                throw new InvalidDataException($"An application has an invalid ID of: {id} in the settings.json file.");
         }
     }
 }

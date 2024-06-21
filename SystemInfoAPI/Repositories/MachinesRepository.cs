@@ -48,22 +48,21 @@ namespace SystemInfoApi.Repositories
             }
         }
 
-        public async Task<MachineModel> UpdateAsync(MachineModel machine, SqlConnection connection, SqlTransaction transaction)
+        public async Task UpdateAsync(MachineModel machine, SqlConnection connection, SqlTransaction transaction)
         {
             try
             {
-                string machineSql = @$"
+                string query = @$"
                     UPDATE {_machinesTable.TableName} 
-                    SET {_machinesTable.CustomerId} = @customerID, {_machinesTable.MachineName} = @machineName) 
+                    SET {_machinesTable.CustomerId} = @customerID, {_machinesTable.MachineName} = @machineName
                     WHERE {_machinesTable.Id} = @machineId;";
 
-                using SqlCommand cmd = new(machineSql, connection, transaction);
+                using SqlCommand cmd = new(query, connection, transaction);
                 cmd.Parameters.AddWithValue("@customerId", machine.CustomerId);
                 cmd.Parameters.AddWithValue("@machineName", machine.Name);
                 cmd.Parameters.AddWithValue("@machineId", machine.Id);
-                await cmd.ExecuteNonQueryAsync();
 
-                return machine;
+                await cmd.ExecuteNonQueryAsync();
             }
             catch (SqlException ex) when (ex.Number == 547) // Foreign key violation error number
             {
@@ -191,7 +190,7 @@ namespace SystemInfoApi.Repositories
                 string appsTableName = _appsTable.TableName;
 
                  string query = @$"
-                    SELECT Machine.{_machinesTable.Id} AS Customer_Id,
+                    SELECT Machine.{_machinesTable.CustomerId} AS Customer_Id,
                         Machine.{_machinesTable.Id} AS Machine_Id,
                         Machine.{_machinesTable.MachineName} AS Machine_Name, 
                         Drive.{_drivesTable.Id} AS Drive_Id, 

@@ -58,32 +58,33 @@ namespace SystemInfoApi.Services
         {
             return await MakeTransactionAsync(async (connection, transaction) =>
             {
-                MachineModel updatedMachine = await machinesRepository.UpdateAsync(machine, connection, transaction) ?? 
-                    throw new InvalidOperationException("The machine does not exist.");
+                await machinesRepository.UpdateAsync(machine, connection, transaction);
 
                 List<DriveModel> updatedDrivesList = [];
 
                 foreach(DriveModel drive in machine.Drives)
                 {
-                    drive.MachineId = updatedMachine.Id;
-                    DriveModel updatedDrive = await drivesRepository.UpdateAsync(drive, connection, transaction);
+                    drive.MachineId = machine.Id;
+                    int updatedDriveId = await drivesRepository.UpdateAsync(drive, connection, transaction);
+                    drive.Id = updatedDriveId;
 
                     if (drive.IsSystemDrive && drive.Os != null) 
                     {
-                        drive.Os.DriveId = updatedDrive.Id;
-                        OsModel updatedOs = await osRepository.UpdateAsync(drive.Os, connection, transaction);
-                        updatedDrive.Os = updatedOs;
+                        drive.Os.DriveId = drive.Id;
+                        int updatedOsId = await osRepository.UpdateAsync(drive.Os, connection, transaction);
+                        drive.Os.Id = updatedOsId;
                     }
 
                     foreach(ApplicationModel app in drive.AppList)
                     {
-                        app.DriveId = updatedDrive.Id;
-                        await appRepository.UpdateAsync(app, connection, transaction);
+                        app.DriveId = drive.Id;
+                        int updatedAppId = await appRepository.UpdateAsync(app, connection, transaction);
+                        app.Id = updatedAppId;
                     }
                     updatedDrivesList.Add(drive);
                 }
-                updatedMachine.Drives = updatedDrivesList;
-                return updatedMachine;
+                machine.Drives = updatedDrivesList;
+                return machine;
             });
         }
 

@@ -62,14 +62,13 @@ namespace SystemInfoApi.Controllers
 
             if (machineId != machine.Id)
             {
-                Console.WriteLine($"Machine Id mismatch. Route was /{machineId}, but machine id was {machine.Id}");
+                Console.WriteLine($"Machine Id mismatch. Route was Update/{machineId}, but machine id was {machine.Id}");
                 return BadRequest("Machine Id mismatch.");
             }
 
             try
             {
                 MachineModel updatedMachine = await machinesService.UpdateFullMachineAsync(machine);
-
 
                 if (updatedMachine == null)
                 {
