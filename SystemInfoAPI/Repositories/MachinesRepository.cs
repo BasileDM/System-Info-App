@@ -48,7 +48,7 @@ namespace SystemInfoApi.Repositories
             }
         }
 
-        public async Task UpdateAsync(MachineModel machine, SqlConnection connection, SqlTransaction transaction)
+        public async Task<MachineModel> UpdateAsync(MachineModel machine, SqlConnection connection, SqlTransaction transaction)
         {
             try
             {
@@ -62,7 +62,13 @@ namespace SystemInfoApi.Repositories
                 cmd.Parameters.AddWithValue("@machineName", machine.Name);
                 cmd.Parameters.AddWithValue("@machineId", machine.Id);
 
-                await cmd.ExecuteNonQueryAsync();
+                int rowsAffected = await cmd.ExecuteNonQueryAsync();
+                if (rowsAffected <= 0)
+                {
+                    throw new ArgumentException("Failed updating the machine in the database. 0 rows affected.");
+                }
+
+                return machine;
             }
             catch (SqlException ex) when (ex.Number == 547) // Foreign key violation error number
             {

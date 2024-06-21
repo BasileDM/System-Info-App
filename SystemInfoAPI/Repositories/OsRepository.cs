@@ -67,8 +67,11 @@ namespace SystemInfoApi.Repositories
                         {otn.ReleaseId} = @releaseId, 
                         {otn.CurrentBuild} = @currentBuild, 
                         {otn.Ubr} = @ubr
+                    WHERE {otn.Id} = @osId
 
-                    WHERE {otn.Id} = @osId";
+                    SELECT {otn.Id} 
+                    FROM {otn.TableName}
+                    WHERE {otn.DriveId} = @driveId";
 
                 using (SqlCommand cmd = new(query, connection, transaction))
                 {
@@ -82,10 +85,13 @@ namespace SystemInfoApi.Repositories
                     cmd.Parameters.AddWithValue("@ubr", os.Ubr);
                     cmd.Parameters.AddWithValue("@osId", os.Id);
 
-                    await cmd.ExecuteNonQueryAsync();
-                }
-                return os;
+                    var obj = await cmd.ExecuteScalarAsync() ??
+                        throw new ArgumentException("OS not found.");
 
+                    os.Id = Convert.ToInt32(obj);
+                }
+
+                return os;
             }
             catch (Exception ex)
             {

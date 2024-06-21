@@ -6,7 +6,7 @@ namespace SystemInfoApi.Repositories
 {
     public class ApplicationsRepository(Database db)
     {
-        public async Task<int> InsertAsync(ApplicationModel app, SqlConnection conection, SqlTransaction transaction)
+        public async Task<ApplicationModel> InsertAsync(ApplicationModel app, SqlConnection conection, SqlTransaction transaction)
         {
             try
             {
@@ -106,8 +106,14 @@ namespace SystemInfoApi.Repositories
                     cmd.Parameters.AddWithValue("@Product_Version", app.ProductVersion ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@Special_Build", app.SpecialBuild ?? (object)DBNull.Value);
 
-                    return await cmd.ExecuteNonQueryAsync();
+                    await cmd.ExecuteScalarAsync();
+
+                    return app;
                 };
+            }
+            catch (SqlException ex) when (ex.Number == 547) // Foreign key violation error number
+            {
+                throw new ArgumentException($"Error for app {app.Name}. App Id {app.Id} is invalid or does not exist in the database.");
             }
             catch (Exception ex) 
             {
@@ -115,8 +121,14 @@ namespace SystemInfoApi.Repositories
             }
         }
 
-        public async Task<int> UpdateAsync(ApplicationModel app, SqlConnection connection, SqlTransaction transaction)
+        public async Task<ApplicationModel> UpdateAsync(ApplicationModel app, SqlConnection connection, SqlTransaction transaction)
         {
+            if (!await DoesAppDriveRelationExist(app.Id, app.DriveId, connection, transaction))
+            {
+                Console.WriteLine($"App {app.Name} with id n°{app.Id} is new on drive {app.DriveId}. Inserting a new relation.");
+                return await InsertAsync(app, connection, transaction);
+            }
+
             try
             {
                 var appsDrivesRTable = db.AppsDrivesRelationTableNames;
@@ -151,7 +163,8 @@ namespace SystemInfoApi.Repositories
                         {appsDrivesRTable.ProductPrivatePart} = @Product_Private_Part,
                         {appsDrivesRTable.ProductVersion} = @Product_Version,
                         {appsDrivesRTable.SpecialBuild} = @Special_Build
-                    WHERE {appsDrivesRTable.DriveId} = @id_client_machine_disque AND {appsDrivesRTable.AppId} = @id_client_machine_disque_app;";
+                    WHERE {appsDrivesRTable.DriveId} = @id_client_machine_disque 
+                    AND {appsDrivesRTable.AppId} = @id_client_machine_disque_app;";
 
                 using (SqlCommand cmd = new(query, connection, transaction))
                 {
@@ -185,13 +198,44 @@ namespace SystemInfoApi.Repositories
                     cmd.Parameters.AddWithValue("@Product_Version", app.ProductVersion ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@Special_Build", app.SpecialBuild ?? (object)DBNull.Value);
 
-                    return await cmd.ExecuteNonQueryAsync();
+                    int rowsAffected = await cmd.ExecuteNonQueryAsync();
+                    if (rowsAffected <= 0)
+                    {
+                        throw new ArgumentException(
+                            $"Failed updating the application {app.Name} with id {app.Id} in the database. 0 rows affected.");
+                    }
+
+                    return app;
                 };
             }
             catch (Exception ex)
             {
                 throw new Exception(ex.Message, ex);
             }
+        }
+
+        public async Task<bool> DoesAppDriveRelationExist(int appId, int driveId, SqlConnection connection, SqlTransaction transaction)
+        {
+            AppsDrivesRelationTableNames appsDrivesRTable = db.AppsDrivesRelationTableNames;
+
+            string query = @$"
+                SELECT COUNT(1)
+                FROM {appsDrivesRTable.TableName}
+                WHERE {appsDrivesRTable.DriveId} = @driveId
+                AND {appsDrivesRTable.AppId} = @appId;";
+
+            using SqlCommand cmd = new(query, connection, transaction);
+            cmd.Parameters.AddWithValue("@driveId", driveId);
+            cmd.Parameters.AddWithValue("@appId", appId);
+
+            int relationExists = (int)await cmd.ExecuteScalarAsync();
+
+            if (relationExists == 0)
+            {
+                return false;
+            }
+
+            return true;
         }
     }
 }

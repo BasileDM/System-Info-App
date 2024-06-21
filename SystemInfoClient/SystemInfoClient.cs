@@ -49,22 +49,18 @@ namespace SystemInfoClient
             // Serialize machine into JSON content and build route string
             var content = new StringContent(machine.JsonSerialize(), Encoding.UTF8, "application/json");
 
-            Console.WriteLine($"=========== Machine ID before posting {machine.Id}");
-
-            // POST to API route
+            // Send to API
             // If the machine ID is 0, then it is a new machine
             if (machine.Id == 0)
             {
 
                 string route = ApiUrl + "api/Machines/Create";
-                Console.WriteLine($"Posting new machine {machine.Id} to: {route}");
                 return await client.PostAsync(route, content);
             }
             // If the machine already has an ID, use the update route
             else if (machine.Id > 0)
             {
                 string route = ApiUrl + "api/Machines/Update/" + machine.Id;
-                Console.WriteLine($"Putting update machine {machine.Id} to: {route}");
                 return await client.PutAsync(route, content);
             }
             else

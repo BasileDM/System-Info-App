@@ -1,6 +1,6 @@
 {
-  "MachineId":  "2",
-  "CustomerId": "2",
+  "MachineId":  "8",
+  "CustomerId": "1",
   "ApiUrl": "https://localhost:7056/",
   "ApplicationsList": {
     "VisualStudio": {
@@ -10,6 +10,14 @@
     "AnyDesk": {
       "Id": "2",
       "Path": "C:\\Program Files (x86)\\AnyDesk\\AnyDesk.exe"
+    },
+    "Chrome": {
+      "Id": "3",
+      "Path": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"
+    },
+    "WinRAR": {
+      "Id": "4",
+      "Path": "D:\\Program Files\\WinRAR\\WinRAR.exe"
     }
   }
 }

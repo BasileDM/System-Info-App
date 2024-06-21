@@ -53,7 +53,7 @@ namespace SystemInfoApi.Repositories
             }
         }
 
-        public async Task<int> UpdateAsync(DriveModel drive, SqlConnection connection, SqlTransaction transaction)
+        public async Task<DriveModel> UpdateAsync(DriveModel drive, SqlConnection connection, SqlTransaction transaction)
         {
             try
             {
@@ -78,7 +78,8 @@ namespace SystemInfoApi.Repositories
 
                     SELECT {dtn.Id} 
                     FROM {dtn.TableName}
-                    WHERE {dtn.MachineId} = @machineId AND {dtn.DriveName} = @driveName";
+                    WHERE {dtn.MachineId} = @machineId 
+                    AND {dtn.DriveName} = @driveName";
 
                 using (SqlCommand cmd = new(query, connection, transaction))
                 {
@@ -94,12 +95,12 @@ namespace SystemInfoApi.Repositories
                     cmd.Parameters.AddWithValue("@freeSpacePer", drive.FreeSpacePercentage);
                     cmd.Parameters.AddWithValue("@isSystemDrive", drive.IsSystemDrive);
 
-                    var driveObj = await cmd.ExecuteScalarAsync() ??
+                    var obj = await cmd.ExecuteScalarAsync() ??
                         throw new ArgumentException("Drive not found.");
 
-                    drive.Id = Convert.ToInt32(driveObj);
+                    drive.Id = Convert.ToInt32(obj);
                 }
-                return drive.Id;
+                return drive;
             }
             catch (Exception ex)
             {

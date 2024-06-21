@@ -60,26 +60,31 @@ namespace SystemInfoApi.Services
             {
                 await machinesRepository.UpdateAsync(machine, connection, transaction);
 
+                // Update machine's drives list
                 List<DriveModel> updatedDrivesList = [];
-
                 foreach(DriveModel drive in machine.Drives)
                 {
+                    // Update drive with machine Id and drive Id
                     drive.MachineId = machine.Id;
-                    int updatedDriveId = await drivesRepository.UpdateAsync(drive, connection, transaction);
-                    drive.Id = updatedDriveId;
+                    DriveModel updatedDrive = await drivesRepository.UpdateAsync(drive, connection, transaction);
+                    drive.Id = updatedDrive.Id;
 
+                    // Update drive's OS with drive ID and OS Id
                     if (drive.IsSystemDrive && drive.Os != null) 
                     {
                         drive.Os.DriveId = drive.Id;
-                        int updatedOsId = await osRepository.UpdateAsync(drive.Os, connection, transaction);
-                        drive.Os.Id = updatedOsId;
+                        OsModel updatedOs = await osRepository.UpdateAsync(drive.Os, connection, transaction);
+                        drive.Os.Id = updatedOs.Id;
                     }
 
-                    foreach(ApplicationModel app in drive.AppList)
+                    // Update each drive's app with drive Id
+                    if (drive.AppList != null)
                     {
-                        app.DriveId = drive.Id;
-                        int updatedAppId = await appRepository.UpdateAsync(app, connection, transaction);
-                        app.Id = updatedAppId;
+                        foreach (ApplicationModel app in drive.AppList)
+                        {
+                            app.DriveId = drive.Id;
+                            ApplicationModel updatedApp = await appRepository.UpdateAsync(app, connection, transaction);
+                        } 
                     }
                     updatedDrivesList.Add(drive);
                 }
