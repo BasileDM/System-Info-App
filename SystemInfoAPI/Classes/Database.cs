@@ -1,4 +1,5 @@
-﻿using System.Data.SqlClient;
+﻿using System.Collections;
+using System.Data.SqlClient;
 
 namespace SystemInfoApi.Classes
 {
@@ -148,13 +149,16 @@ namespace SystemInfoApi.Classes
             await using SqlConnection connection = CreateConnection();
             await connection.OpenAsync();
             var transaction = connection.BeginTransaction();
+            connection.StatisticsEnabled = true;
             Console.WriteLine("\r\nNew database transaction initiated.");
+
             var currentColor = Console.ForegroundColor;
 
             try
             {
                 T result = await operation(connection, transaction);
                 await transaction.CommitAsync();
+
                 Console.ForegroundColor = ConsoleColor.Green;
                 Console.WriteLine("Database transaction successful.");
                 Console.ForegroundColor = currentColor;
@@ -163,6 +167,7 @@ namespace SystemInfoApi.Classes
             catch (ArgumentException ex)
             {
                 await transaction.RollbackAsync();
+
                 Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine("Rolling back transaction due to an argument error:\r\n" + ex.Message);
                 Console.ForegroundColor = currentColor;
@@ -171,6 +176,7 @@ namespace SystemInfoApi.Classes
             catch (Exception ex)
             {
                 await transaction.RollbackAsync();
+
                 Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine("Rolling back transaction due to an unexpected error:\r\n" + ex.Message);
                 Console.ForegroundColor = currentColor;
@@ -180,6 +186,13 @@ namespace SystemInfoApi.Classes
             {
                 await transaction.DisposeAsync();
                 await connection.CloseAsync();
+
+                // Display connection stats
+                var stats = connection.RetrieveStatistics();
+                foreach (DictionaryEntry stat in stats)
+                {
+                    Console.WriteLine($"{stat.Key} : {stat.Value}");
+                }
             }
         }
     }

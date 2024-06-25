@@ -1,7 +1,10 @@
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using SystemInfoApi.Classes;
 using SystemInfoApi.Middleware;
 using SystemInfoApi.Repositories;
 using SystemInfoApi.Services;
+using System.Text;
 
 namespace SystemInfoApi
 {
@@ -11,6 +14,25 @@ namespace SystemInfoApi
         {
             var builder = WebApplication.CreateBuilder(args);
 
+            // JWT authentication setup
+            string jwtKey = builder.Configuration.GetSection("Jwt:Key").Value ??
+                throw new Exception("Invalid secret key in appsettings.json.");
+
+            builder.Services
+                .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddJwtBearer(options =>
+                {
+                    options.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
+                        ValidateIssuerSigningKey = true,
+                        ValidateIssuer = true,
+                        ValidIssuer = builder.Configuration.GetSection("Jwt:Issuer").Value,
+                        ValidateLifetime = true,
+                        ValidateAudience = false,
+                    };
+                });
+
             // Add services to the container.
             builder.Services.AddControllers();
             builder.Services.AddScoped<Database>();
@@ -19,7 +41,6 @@ namespace SystemInfoApi
             builder.Services.AddScoped<DrivesRepository>();
             builder.Services.AddScoped<OsRepository>();
             builder.Services.AddScoped<ApplicationsRepository>();
-
 
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
@@ -37,7 +58,11 @@ namespace SystemInfoApi
 
             app.UseRouting();
 
-            app.UseAuthorization();
+            app.UseAuthentication(); // auth experimental -----
+
+            //app.UseAuthorization(); // auth experimental-----
+            //app.UseSession(); // auth experimental-----
+            //app.UseMiddleware<AuthenticationMiddleware>(); // auth experimental -----
 
             // Add 406 error code to ensure application/json accept header is present in requests
             app.UseMiddleware<NotAcceptableMiddleware>();

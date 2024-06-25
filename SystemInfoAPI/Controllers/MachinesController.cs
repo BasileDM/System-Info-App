@@ -56,14 +56,14 @@ namespace SystemInfoApi.Controllers
         {
             if (!ModelState.IsValid)
             {
-                Console.WriteLine("Failed to validate model.");
-                return BadRequest(ModelState);
+                Console.WriteLine("Failed to validate model: " + ModelState);
+                return BadRequest("Invalid request, check API logs for more information.");
             }
 
             if (machineId != machine.Id)
             {
                 Console.WriteLine($"Machine Id mismatch. Route was Update/{machineId}, but machine id was {machine.Id}");
-                return BadRequest("Machine Id mismatch.");
+                return BadRequest("Machine Id error.");
             }
 
             try
