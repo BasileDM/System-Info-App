@@ -123,11 +123,6 @@ namespace SystemInfoApi.Repositories
 
         public async Task<ApplicationModel> UpdateAsync(ApplicationModel app, SqlConnection connection, SqlTransaction transaction)
         {
-            if (!await DoesAppDriveRelationExist(app.Id, app.DriveId, connection, transaction))
-            {
-                Console.WriteLine($"App {app.Name} with id n°{app.Id} is new on drive {app.DriveId}. Inserting a new relation.");
-                return await InsertAsync(app, connection, transaction);
-            }
 
             try
             {

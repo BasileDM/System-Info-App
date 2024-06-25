@@ -1,4 +1,5 @@
 ﻿using System.Data.SqlClient;
+using System.Text.Json;
 using SystemInfoApi.Classes;
 using SystemInfoApi.Models;
 using SystemInfoApi.Repositories;
@@ -83,12 +84,27 @@ namespace SystemInfoApi.Services
                         foreach (ApplicationModel app in drive.AppList)
                         {
                             app.DriveId = drive.Id;
-                            ApplicationModel updatedApp = await appRepository.UpdateAsync(app, connection, transaction);
+
+                            // Check if the app already has a realation with this drive
+                            // If not, create instead of update
+                            if (!await appRepository.DoesAppDriveRelationExist(app.Id, app.DriveId, connection, transaction))
+                            {
+                                Console.WriteLine($"App {app.Name} with id n°{app.Id} is new on drive {app.DriveId}. Inserting a new relation.");
+                                await appRepository.InsertAsync(app, connection, transaction);
+                            }
+                            else
+                            {
+                                await appRepository.UpdateAsync(app, connection, transaction);
+                            }
                         } 
                     }
                     updatedDrivesList.Add(drive);
                 }
                 machine.Drives = updatedDrivesList;
+
+                Console.WriteLine("Machine updated succesfully :\r\n" +
+                    $"{JsonSerializer.Serialize(machine, new JsonSerializerOptions { WriteIndented = true })}\r\n");
+
                 return machine;
             });
         }

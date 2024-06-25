@@ -1,4 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using SystemInfoApi.Models;
 using SystemInfoApi.Services;
 
@@ -75,7 +77,7 @@ namespace SystemInfoApi.Controllers
                     return NotFound($"Machine with ID {machineId} was not found.");
                 }
 
-                return Ok(updatedMachine);
+                return Ok("Request successful.");
             }
             catch (ArgumentException ex)
             {
