@@ -49,5 +49,54 @@ namespace SystemInfoApi.Repositories
                 throw new ApplicationException($"An error occured inserting the OS into the database: {ex}", ex);
             }
         }
+
+        public async Task<OsModel> UpdateAsync(OsModel os, SqlConnection connection, SqlTransaction transaction)
+        {
+            try
+            {
+                var otn = db.OsTableNames;
+
+                string query = @$"
+                    UPDATE {otn.TableName}
+                    SET
+                        {otn.DriveId} = @driveId, 
+                        {otn.Directory} = @directory, 
+                        {otn.Architecture} = @architecture, 
+                        {otn.Version} = @version, 
+                        {otn.ProductName} = @productName, 
+                        {otn.ReleaseId} = @releaseId, 
+                        {otn.CurrentBuild} = @currentBuild, 
+                        {otn.Ubr} = @ubr
+                    WHERE {otn.Id} = @osId
+
+                    SELECT {otn.Id} 
+                    FROM {otn.TableName}
+                    WHERE {otn.DriveId} = @driveId";
+
+                using (SqlCommand cmd = new(query, connection, transaction))
+                {
+                    cmd.Parameters.AddWithValue("@driveId", os.DriveId);
+                    cmd.Parameters.AddWithValue("@directory", os.Directory);
+                    cmd.Parameters.AddWithValue("@architecture", os.Architecture);
+                    cmd.Parameters.AddWithValue("@version", os.Version);
+                    cmd.Parameters.AddWithValue("@productName", os.ProductName);
+                    cmd.Parameters.AddWithValue("@releaseId", os.ReleaseId);
+                    cmd.Parameters.AddWithValue("@currentBuild", os.CurrentBuild);
+                    cmd.Parameters.AddWithValue("@ubr", os.Ubr);
+                    cmd.Parameters.AddWithValue("@osId", os.Id);
+
+                    var obj = await cmd.ExecuteScalarAsync() ??
+                        throw new ArgumentException("OS not found.");
+
+                    os.Id = Convert.ToInt32(obj);
+                }
+
+                return os;
+            }
+            catch (Exception ex)
+            {
+                throw new ApplicationException($"An error occured inserting the OS into the database: {ex}", ex);
+            }
+        }
     }
 }

@@ -48,6 +48,38 @@ namespace SystemInfoApi.Repositories
             }
         }
 
+        public async Task<MachineModel> UpdateAsync(MachineModel machine, SqlConnection connection, SqlTransaction transaction)
+        {
+            try
+            {
+                string query = @$"
+                    UPDATE {_machinesTable.TableName} 
+                    SET {_machinesTable.CustomerId} = @customerID, {_machinesTable.MachineName} = @machineName
+                    WHERE {_machinesTable.Id} = @machineId;";
+
+                using SqlCommand cmd = new(query, connection, transaction);
+                cmd.Parameters.AddWithValue("@customerId", machine.CustomerId);
+                cmd.Parameters.AddWithValue("@machineName", machine.Name);
+                cmd.Parameters.AddWithValue("@machineId", machine.Id);
+
+                int rowsAffected = await cmd.ExecuteNonQueryAsync();
+                if (rowsAffected <= 0)
+                {
+                    throw new ArgumentException($"Machine with id {machine.Id} was not found.");
+                }
+
+                return machine;
+            }
+            catch (SqlException ex) when (ex.Number == 547) // Foreign key violation error number
+            {
+                throw new ArgumentException("The provided customer ID is invalid or does not exist in the database.");
+            }
+            catch (Exception ex)
+            {
+                throw new ApplicationException($"An error occured inserting the machine into the database.\r\n {ex}", ex);
+            }
+        }
+
         /// <summary>Gets all the machines without details (embedded models).</summary>
         /// <returns>
         ///   A <see cref="List{MachineModel}"/> of instantiated <see cref="MachineModel"/>.
@@ -164,7 +196,7 @@ namespace SystemInfoApi.Repositories
                 string appsTableName = _appsTable.TableName;
 
                  string query = @$"
-                    SELECT Machine.{_machinesTable.Id} AS Customer_Id,
+                    SELECT Machine.{_machinesTable.CustomerId} AS Customer_Id,
                         Machine.{_machinesTable.Id} AS Machine_Id,
                         Machine.{_machinesTable.MachineName} AS Machine_Name, 
                         Drive.{_drivesTable.Id} AS Drive_Id, 

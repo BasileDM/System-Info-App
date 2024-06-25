@@ -1,4 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using SystemInfoApi.Models;
 using SystemInfoApi.Services;
 
@@ -40,7 +42,47 @@ namespace SystemInfoApi.Controllers
             }
             catch (ArgumentException)
             {
-                return BadRequest("Invalid request, check API console for more information.");
+                return BadRequest("Invalid request, check API logs for more information.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return StatusCode(500, $"Internal error. An unexepected error has occured, check API logs for more information.");
+            }
+        }
+
+        // PUT : api/<Machines>/Update/{machineId}
+        [HttpPut("{machineId:int:min(0)}")]
+        [Consumes("application/json")]
+        public async Task<ActionResult<MachineModel>> Update(int machineId, [FromBody] MachineModel machine)
+        {
+            if (!ModelState.IsValid)
+            {
+                Console.WriteLine("Failed to validate model.");
+                return BadRequest(ModelState);
+            }
+
+            if (machineId != machine.Id)
+            {
+                Console.WriteLine($"Machine Id mismatch. Route was Update/{machineId}, but machine id was {machine.Id}");
+                return BadRequest("Machine Id mismatch.");
+            }
+
+            try
+            {
+                MachineModel updatedMachine = await machinesService.UpdateFullMachineAsync(machine);
+
+                if (updatedMachine == null)
+                {
+                    return NotFound($"Machine with ID {machineId} was not found.");
+                }
+
+                return Ok("Request successful.");
+            }
+            catch (ArgumentException ex)
+            {
+                Console.WriteLine(ex.Message);
+                return BadRequest("Invalid request, check API logs for more information.");
             }
             catch (Exception ex)
             {
