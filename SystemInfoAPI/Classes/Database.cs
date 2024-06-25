@@ -16,8 +16,8 @@ namespace SystemInfoApi.Classes
 
         public Database(IConfiguration configuration, IWebHostEnvironment env)
         {
-            string coStrValue = env.IsDevelopment() ? "SystemInfoDbDev" : "SysteminfoDb";
-            _ConnectionString = configuration.GetSection("ConnectionStrings")[coStrValue];
+            string connectionStrValue = env.IsDevelopment() ? "SystemInfoDbDev" : "SysteminfoDb";
+            _ConnectionString = configuration.GetSection("ConnectionStrings")[connectionStrValue];
 
             CustomersTableNames = new();
             MachinesTableNames = new();
@@ -37,9 +37,22 @@ namespace SystemInfoApi.Classes
             {
                 using SqlConnection connection = CreateConnection();
                 TryOpenConnection(connection);
+
+                // Check auto migration configuration
+                string? autoMigration = app.Configuration.GetSection("AutoMigration").Value;
+
                 if (!DoTablesExist(connection))
                 {
-                    PromptTablesCreation();
+                    if (autoMigration != null && String.Equals(autoMigration.ToLower(), "true"))
+                    {
+                        CreateTablesAsync().Wait();
+                    }
+                    else
+                    {
+                        throw new ApplicationException(
+                            "Warning: Mandatory database tables were not detected.\r\n " +
+                            "Switch auto-migration to true in appsetings.json, or make sure the tables are created in the database for the program to function.");
+                    }
                 }
             }
             catch (Exception ex)

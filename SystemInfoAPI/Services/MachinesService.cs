@@ -1,5 +1,4 @@
 ﻿using System.Data.SqlClient;
-using System.Text.Json;
 using SystemInfoApi.Classes;
 using SystemInfoApi.Models;
 using SystemInfoApi.Repositories;
@@ -101,9 +100,7 @@ namespace SystemInfoApi.Services
                     updatedDrivesList.Add(drive);
                 }
                 machine.Drives = updatedDrivesList;
-
-                Console.WriteLine("Machine updated succesfully :\r\n" +
-                    $"{JsonSerializer.Serialize(machine, new JsonSerializerOptions { WriteIndented = true })}\r\n");
+                Console.WriteLine("Machine updated successfully :\r\n");
 
                 return machine;
             });
