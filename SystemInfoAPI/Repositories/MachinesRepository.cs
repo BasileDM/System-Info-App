@@ -65,7 +65,7 @@ namespace SystemInfoApi.Repositories
                 int rowsAffected = await cmd.ExecuteNonQueryAsync();
                 if (rowsAffected <= 0)
                 {
-                    throw new ArgumentException("Failed updating the machine in the database. 0 rows affected.");
+                    throw new ArgumentException($"Machine with id {machine.Id} was not found.");
                 }
 
                 return machine;
@@ -76,7 +76,7 @@ namespace SystemInfoApi.Repositories
             }
             catch (Exception ex)
             {
-                throw new ApplicationException($"An error occured inserting the machine into the database : {ex}", ex);
+                throw new ApplicationException($"An error occured inserting the machine into the database.\r\n {ex}", ex);
             }
         }
 
