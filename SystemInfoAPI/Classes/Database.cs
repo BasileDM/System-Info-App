@@ -51,7 +51,7 @@ namespace SystemInfoApi.Classes
                     {
                         throw new ApplicationException(
                             "Warning: Mandatory database tables were not detected.\r\n " +
-                            "Turn auto-migration to true in appsetings.json, or make sure the tables are created in the database for the program to function.");
+                            "Switch auto-migration to true in appsetings.json, or make sure the tables are created in the database for the program to function.");
                     }
                 }
             }

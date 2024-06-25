@@ -90,7 +90,6 @@ namespace SystemInfoClient.Classes
             try
             {
                 string path = GetFilePath();
-                //string json = File.ReadAllText(path);
                 SettingsClass settings = GetInstance();
                 settings.MachineId = newMachineId;
                 string json = JsonSerializer.Serialize(settings, SerializerOptions);
