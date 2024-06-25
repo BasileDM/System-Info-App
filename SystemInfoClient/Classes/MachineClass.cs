@@ -1,5 +1,5 @@
 ﻿using System.Runtime.Versioning;
-using SystemInfoClient.Models;
+using System.Text.Json;
 
 namespace SystemInfoClient.Classes
 {
@@ -10,20 +10,17 @@ namespace SystemInfoClient.Classes
         public int CustomerId { get; set; }
         public string Name { get; set; }
         public List<DriveClass> Drives { get; set; }
+        private JsonSerializerOptions SerializerOptions { get; set; }
 
-        public MachineClass(SettingsModel settings)
+        public MachineClass(SettingsClass settings)
         {
             try
             {
-                Dictionary<string, ApplicationSettings> appList = settings.ApplicationsList;
-
-                if (Int32.TryParse(settings.MachineId, out int parsedMachineId) && parsedMachineId > 0)
-                {
-                    Id = parsedMachineId;
-                }
-                    ;
+                Id = settings.ParsedMachineId;
+                CustomerId = settings.ParsedCustomerId;
                 Name = Environment.MachineName;
                 Drives = [];
+                SerializerOptions = new() { WriteIndented = true };
 
                 string? systemDrive = Path.GetPathRoot(Environment.SystemDirectory);
 
@@ -33,13 +30,16 @@ namespace SystemInfoClient.Classes
 
                     if (drive.IsReady)
                     {
-                        foreach (var app in appList)
+                        if (settings.ApplicationsList != null)
                         {
-                            if (app.Value.Path != null && app.Value.Path.Contains(drive.RootDirectory.ToString()))
+                            foreach (var appSettings in settings.ApplicationsList)
                             {
-                                AppClass appClass = new(app);
-                                driveAppsList.Add(appClass);
-                            }
+                                if (appSettings.Value.Path != null && appSettings.Value.Path.Contains(drive.RootDirectory.ToString()))
+                                {
+                                    AppClass appClass = new(appSettings);
+                                    driveAppsList.Add(appClass);
+                                }
+                            } 
                         }
                         bool isSystemDriveBool = drive.Name == systemDrive;
                         Drives.Add(new DriveClass(drive, isSystemDriveBool, driveAppsList));
@@ -66,6 +66,14 @@ namespace SystemInfoClient.Classes
             {
                 drive.LogInfo();
             }
+        }
+        public string JsonSerialize()
+        {
+            return JsonSerializer.Serialize(this, SerializerOptions);
+        }
+        public void LogJson()
+        {
+            Console.WriteLine(JsonSerialize());
         }
     }
 }

@@ -4,7 +4,7 @@
     {
         public int Id { get; set; }
         public string Name { get; set; }
-        public int CustomerId { get; set; }  // Foreign key property
+        public int CustomerId { get; set; }  // Foreign key
         public ICollection<DriveModel> Drives { get; set; }
     }
 }

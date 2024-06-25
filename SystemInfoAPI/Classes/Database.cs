@@ -7,27 +7,30 @@ namespace SystemInfoApi.Classes
     public class Database
     {
         protected readonly string? _ConnectionString;
-        protected readonly IConfigurationSection _DbConfig;
+        public readonly CustomersTableNames CustomersTableNames;
+        public readonly MachinesTableNames MachinesTableNames;
+        public readonly DrivesTableNames DrivesTableNames;
+        public readonly OsTableNames OsTableNames;
+        public readonly AppsDrivesRelationTableNames AppsDrivesRelationTableNames;
+        public readonly ApplicationsTableNames ApplicationsTableNames;
 
         public Database(IConfiguration configuration, IWebHostEnvironment env)
         {
-            if (env.IsDevelopment())
-            {
-                _ConnectionString = configuration.GetSection("ConnectionStrings")["SystemInfoDbDev"];
-                _DbConfig = configuration.GetSection("DatabaseConfigDev"); // map tables and columns names as properties instead of getting from config
-            }
-            else
-            {
-                _ConnectionString = configuration.GetSection("ConnectionStrings")["SysteminfoDb"];
-                _DbConfig = configuration.GetSection("DatabaseConfig");
-            }
+            string coStrValue = env.IsDevelopment() ? "SystemInfoDbDev" : "SysteminfoDb";
+            _ConnectionString = configuration.GetSection("ConnectionStrings")[coStrValue];
+
+            CustomersTableNames = new();
+            MachinesTableNames = new();
+            DrivesTableNames = new();
+            OsTableNames = new();
+            AppsDrivesRelationTableNames = new();
+            ApplicationsTableNames = new();
         }
 
         protected SqlConnection CreateConnection()
         {
             return new SqlConnection(_ConnectionString);
         }
-
         public void Init(WebApplication app)
         {
             try
@@ -46,7 +49,6 @@ namespace SystemInfoApi.Classes
                 return;
             }
         }
-
         private static void TryOpenConnection(SqlConnection connection)
         {
             try
@@ -60,15 +62,14 @@ namespace SystemInfoApi.Classes
             }
 
         }
-
-        private static bool DoTablesExist(SqlConnection connection)
+        private bool DoTablesExist(SqlConnection connection)
         {
             try
             {
                 string checkTablesSql = @$"
                     SELECT COUNT(*) 
                     FROM information_schema.tables 
-                    WHERE table_name = 'Client_Machine'";
+                    WHERE table_name = '{MachinesTableNames.TableName}'";
 
                 using SqlCommand cmd = new(checkTablesSql, connection);
                 int? tableCount = (int?)cmd.ExecuteScalar();
@@ -79,7 +80,6 @@ namespace SystemInfoApi.Classes
                 throw new Exception($"Error verifying database tables: {ex.Message}");
             }
         }
-
         private void PromptTablesCreation()
         {
             string? answer;
@@ -99,7 +99,6 @@ namespace SystemInfoApi.Classes
                 throw new Exception("Table creation has been aborted, the app will shut down.");
             }
         }
-
         private async Task<bool> CreateTablesAsync()
         {
             return await MakeTransactionAsync(async (connection, transaction) =>
@@ -109,14 +108,11 @@ namespace SystemInfoApi.Classes
                 string migrationPath = AppDomain.CurrentDomain.BaseDirectory + "/Migrations/SysteminfoDb.sql";
                 string script = File.ReadAllText(migrationPath);
 
-                script = script.Replace("customersTableName", _DbConfig["CustomerTableName"]);
-
                 await using SqlCommand cmd = new(script, connection, transaction);
                 await cmd.ExecuteNonQueryAsync();
                 return true;
             });
         }
-
 
         /// <summary>
         ///     This method is a transaction wrapper for a database operation that contains multiple commands.
@@ -173,5 +169,87 @@ namespace SystemInfoApi.Classes
                 await connection.CloseAsync();
             }
         }
+    }
+
+    public class CustomersTableNames
+    {
+        public string TableName { get; } = "Client";
+        public string Id { get; } = "id_client";
+        public string Name { get; } = "Nom_Client";
+    }
+    public class MachinesTableNames
+    {
+        public string TableName { get; } = "Client_machine";
+        public string Id { get; } = "id_client_machine";
+        public string CustomerId { get; } = "id_client";
+        public string MachineName { get; } = "Nom_Machine";
+    }
+    public class DrivesTableNames
+    {
+        public string TableName { get; } = "Client_Machine_Disque";
+        public string Id { get; } = "id_client_machine_disque";
+        public string MachineId { get; } = "id_client_machine";
+        public string DriveName { get; } = "Nom_Disque";
+        public string RootDirectory { get; } = "Dossier_Racine";
+        public string Label { get; } = "Label";
+        public string Type { get; } = "Type";
+        public string Format { get; } = "Format";
+        public string Size { get; } = "Taille";
+        public string FreeSpace { get; } = "Espace_Disponible";
+        public string TotalSpace { get; } = "Espace_Total";
+        public string FreeSpacePercentage { get; } = "Espace_Disponible_Pourcent";
+        public string IsSystemDrive { get; } = "Is_System_Drive";
+    }
+    public class OsTableNames
+    {
+        public string TableName { get; } = "Client_Machine_Disque_Os";
+        public string Id { get; } = "id_client_machine_disque_os";
+        public string DriveId { get; } = "id_client_machine_disque";
+        public string Directory { get; } = "Dossier";
+        public string Architecture { get; } = "Architecture";
+        public string Version { get; } = "Version";
+        public string ProductName { get; } = "Nom_Produit";
+        public string ReleaseId { get; } = "Id_Release";
+        public string CurrentBuild { get; } = "Build_Actuel";
+        public string Ubr { get; } = "Update_Build_Revision";
+    }
+    public class AppsDrivesRelationTableNames
+    {
+        public string TableName { get; } = "Relation_Disque_Application";
+        public string DriveId { get; } = "id_client_machine_disque";
+        public string AppId { get; } = "id_client_machine_disque_app";
+        public string Comments { get; } = "Commentaires";
+        public string CompanyName { get; } = "Nom_Entreprise";
+        public string FileBuildPart { get; } = "Partie_Build_Fichier";
+        public string FileDescription { get; } = "Description_Fichier";
+        public string FileMajorPart { get; } = "Partie_Majeure_Fichier";
+        public string FileMinorPart { get; } = "Partie_Mineure_Fichier";
+        public string FileName { get; } = "Nom_Fichier";
+        public string FilePrivatePart { get; } = "Partie_Privee_Fichier";
+        public string FileVersion { get; } = "Version_Fichier";
+        public string InternalName { get; } = "Nom_Interne";
+        public string IsDebug { get; } = "Is_Debug";
+        public string IsPatched { get; } = "Is_Patched";
+        public string IsPreRelease { get; } = "Is_Pre_Release";
+        public string IsPrivateBuild { get; } = "Is_Private_Build";
+        public string IsSpecialBuild { get; } = "Is_Special_Build";
+        public string Language { get; } = "Langage";
+        public string Copyright { get; } = "Copyright";
+        public string Trademarks { get; } = "Trademarks";
+        public string OriginalFilename { get; } = "Nom_Fichier_Original";
+        public string PrivateBuild { get; } = "Build_Prive";
+        public string ProductBuildPart { get; } = "Partie_Build_Produit";
+        public string ProductMajorPart { get; } = "Partie_Majeure_Produit";
+        public string ProductMinorPart { get; } = "Partie_Mineure_Produit";
+        public string ProductName { get; } = "Nom_Produit";
+        public string ProductPrivatePart { get; } = "Partie_Privee_Produit";
+        public string ProductVersion { get; } = "Version_Produit";
+        public string SpecialBuild { get; } = "Build_Special";
+    }
+    public class ApplicationsTableNames
+    {
+        public string TableName { get; } = "Client_Machine_Disque_Application";
+        public string Id { get; } = "id_client_machine_disque_app";
+        public string AppName { get; } = "Nom_Application";
     }
 }

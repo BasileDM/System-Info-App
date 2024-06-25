@@ -1,9 +1,10 @@
 ﻿using System.Data.SqlClient;
+using SystemInfoApi.Classes;
 using SystemInfoApi.Models;
 
 namespace SystemInfoApi.Repositories
 {
-    public class OsRepository
+    public class OsRepository(Database db)
     {
         /// <summary>Asynchronously inserts a new Operating System entry in the database.</summary>
         /// <param name="os">The <see cref="OsModel"/> to add to the DB.</param>
@@ -16,9 +17,11 @@ namespace SystemInfoApi.Repositories
         {
             try
             {
-                string query = @"
-                    INSERT INTO Client_Machine_Disque_Os
-                        (id_client_machine_disque, Directory, Architecture, Version, Product_Name, Release_Id, Current_Build, Ubr)
+                var otn = db.OsTableNames;
+
+                string query = @$"
+                    INSERT INTO {otn.TableName}
+                        ({otn.DriveId}, {otn.Directory}, {otn.Architecture}, {otn.Version}, {otn.ProductName}, {otn.ReleaseId}, {otn.CurrentBuild}, {otn.Ubr})
                     VALUES 
                         (@driveId, @directory, @architecture, @version, @productName, @releaseId, @currentBuild, @ubr);
 
@@ -43,7 +46,56 @@ namespace SystemInfoApi.Repositories
             }
             catch (Exception ex)
             {
-                throw new ApplicationException("An error occured inserting the OS into the database.", ex);
+                throw new ApplicationException($"An error occured inserting the OS into the database: {ex}", ex);
+            }
+        }
+
+        public async Task<OsModel> UpdateAsync(OsModel os, SqlConnection connection, SqlTransaction transaction)
+        {
+            try
+            {
+                var otn = db.OsTableNames;
+
+                string query = @$"
+                    UPDATE {otn.TableName}
+                    SET
+                        {otn.DriveId} = @driveId, 
+                        {otn.Directory} = @directory, 
+                        {otn.Architecture} = @architecture, 
+                        {otn.Version} = @version, 
+                        {otn.ProductName} = @productName, 
+                        {otn.ReleaseId} = @releaseId, 
+                        {otn.CurrentBuild} = @currentBuild, 
+                        {otn.Ubr} = @ubr
+                    WHERE {otn.Id} = @osId
+
+                    SELECT {otn.Id} 
+                    FROM {otn.TableName}
+                    WHERE {otn.DriveId} = @driveId";
+
+                using (SqlCommand cmd = new(query, connection, transaction))
+                {
+                    cmd.Parameters.AddWithValue("@driveId", os.DriveId);
+                    cmd.Parameters.AddWithValue("@directory", os.Directory);
+                    cmd.Parameters.AddWithValue("@architecture", os.Architecture);
+                    cmd.Parameters.AddWithValue("@version", os.Version);
+                    cmd.Parameters.AddWithValue("@productName", os.ProductName);
+                    cmd.Parameters.AddWithValue("@releaseId", os.ReleaseId);
+                    cmd.Parameters.AddWithValue("@currentBuild", os.CurrentBuild);
+                    cmd.Parameters.AddWithValue("@ubr", os.Ubr);
+                    cmd.Parameters.AddWithValue("@osId", os.Id);
+
+                    var obj = await cmd.ExecuteScalarAsync() ??
+                        throw new ArgumentException("OS not found.");
+
+                    os.Id = Convert.ToInt32(obj);
+                }
+
+                return os;
+            }
+            catch (Exception ex)
+            {
+                throw new ApplicationException($"An error occured inserting the OS into the database: {ex}", ex);
             }
         }
     }
