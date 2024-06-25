@@ -42,7 +42,7 @@ namespace SystemInfoApi
             // Add 406 error code to ensure application/json accept header is present in requests
             app.UseMiddleware<NotAcceptableMiddleware>();
 
-            // Try establishing a connection to the database and check if tables exist
+            // Try establishing a connection to the database and check auto-migration setting.
             Database db = new(app.Configuration, app.Environment);
             db.Init(app);
 

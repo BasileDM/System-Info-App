@@ -90,18 +90,16 @@ namespace SystemInfoClient.Classes
             try
             {
                 string path = GetFilePath();
-                string json = File.ReadAllText(path);
+                //string json = File.ReadAllText(path);
                 SettingsClass settings = GetInstance();
                 settings.MachineId = newMachineId;
+                string json = JsonSerializer.Serialize(settings, SerializerOptions);
 
-                string newJson = JsonSerializer.Serialize(settings, SerializerOptions);
-
-                File.WriteAllText(path, newJson);
-                Console.WriteLine($"New machine id: {newMachineId}\r\n New settings.json content:\r\n{newJson}");
+                File.WriteAllText(path, json);
+                Console.WriteLine($"New machine id: {newMachineId}\r\n New settings.json content:\r\n{json}");
             }
             catch (Exception ex)
             {
-
                 Console.WriteLine($"{ex.Message} + {ex}");
             }
         }
