@@ -1,6 +1,6 @@
 ﻿using System.Runtime.Versioning;
 
-namespace SystemInfoClient.Classes
+namespace SystemInfoClient.Classes.System
 {
     [SupportedOSPlatform("windows")]
     public class DriveClass

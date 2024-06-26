@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics;
 
-namespace SystemInfoClient.Classes
+namespace SystemInfoClient.Classes.System
 {
     public class AppClass
     {

@@ -17,9 +17,14 @@ namespace SystemInfoApi.Controllers
             _config = configuration;
         }
 
+        // POST: api/<Auth>/GetToken
         [HttpPost]
         public IActionResult GetToken([FromBody] AuthRequest request)
         {
+            Console.WriteLine();
+            Console.WriteLine($"New token requested from: {HttpContext.Connection.RemoteIpAddress?.ToString()}");
+            Console.WriteLine($"Request Content: ClientId={request.ClientId}, ClientSecret={request.ClientSecret}");
+
             if (request.ClientId == "YourClientId" && request.ClientSecret == "YourClientSecret")
             {
                 var secretKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]));

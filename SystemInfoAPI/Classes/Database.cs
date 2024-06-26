@@ -193,6 +193,7 @@ namespace SystemInfoApi.Classes
                 {
                     Console.WriteLine($"{stat.Key} : {stat.Value}");
                 }
+                Console.WriteLine();
             }
         }
     }
