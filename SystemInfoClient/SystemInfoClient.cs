@@ -1,8 +1,4 @@
-﻿using System.Net.Http.Headers;
-using System.Runtime.Versioning;
-using System.Text;
-using System.Text.Json;
-using System.Text.Json.Serialization;
+﻿using System.Runtime.Versioning;
 using SystemInfoClient.Classes;
 using SystemInfoClient.Classes.System;
 
@@ -17,7 +13,6 @@ namespace SystemInfoClient
             {
                 // Load settings.json from SettingsClass factory method
                 SettingsClass settings = SettingsClass.GetInstance();
-
 
                 // Create full machine with CustomerId, drives, os and apps info
                 MachineClass machine = new(settings);

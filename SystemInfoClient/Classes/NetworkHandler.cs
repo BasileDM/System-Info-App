@@ -3,21 +3,22 @@ using System.Text;
 using System.Text.Json.Serialization;
 using System.Text.Json;
 using SystemInfoClient.Classes.System;
-using System.Runtime.CompilerServices;
+using System.Runtime.Versioning;
 
 namespace SystemInfoClient.Classes
 {
+    [SupportedOSPlatform("windows")]
     internal class NetworkHandler
     {
-        private readonly string _ClientId;
-        private readonly string _ClientSecret;
-        private readonly string _ApiUrl;
+        private readonly string _clientId;
+        private readonly string _clientSecret;
+        private readonly string _apiUrl;
 
         public NetworkHandler(SettingsClass settings)
         {
-            _ClientId = "YourClientId";
-            _ClientSecret = "YourClientSecret";
-            _ApiUrl = settings.ApiUrl ?? throw new Exception("Invalid API URL in settings.json");
+            _clientId = "YourClientId";
+            _clientSecret = "YourClientSecret";
+            _apiUrl = settings.ApiUrl ?? throw new Exception("Invalid API URL in settings.json");
         }
 
         private static HttpClient CreateHttpClient()
@@ -34,11 +35,9 @@ namespace SystemInfoClient.Classes
         {
             // Prepare and send request
             HttpClient client = CreateHttpClient();
-
-            var authRequest = new { ClientId = _ClientId, ClientSecret = _ClientSecret };
+            var authRequest = new { ClientId = _clientId, ClientSecret = _clientSecret };
             var content = new StringContent(JsonSerializer.Serialize(authRequest), Encoding.UTF8, "application/json");
-
-            HttpResponseMessage response = await client.PostAsync(_ApiUrl + "api/Auth/GetToken", content);
+            HttpResponseMessage response = await client.PostAsync(_apiUrl + "api/Auth/GetToken", content);
 
             // Handle response
             if (response.IsSuccessStatusCode)
@@ -76,13 +75,13 @@ namespace SystemInfoClient.Classes
             // If the machine ID is 0, then it is a new machine
             if (machine.Id == 0)
             {
-                string route = _ApiUrl + "api/Machines/Create";
+                string route = _apiUrl + "api/Machines/Create";
                 return await client.PostAsync(route, content);
             }
             // If the machine already has an ID, use the update route
             else if (machine.Id > 0)
             {
-                string route = _ApiUrl + "api/Machines/Update/" + machine.Id;
+                string route = _apiUrl + "api/Machines/Update/" + machine.Id;
                 return await client.PutAsync(route, content);
             }
             else

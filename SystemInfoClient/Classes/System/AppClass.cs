@@ -75,7 +75,6 @@ namespace SystemInfoClient.Classes.System
                 throw new FileNotFoundException($"File not found for application: {appSettings.Value}, with path: {appSettings.Value.Path}");
             }
         }
-
         public void LogInfo()
         {
             Console.WriteLine($"    {Id}");
