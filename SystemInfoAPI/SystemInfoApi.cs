@@ -1,5 +1,5 @@
-using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
 using SystemInfoApi.Classes;
 using SystemInfoApi.Middleware;
 using SystemInfoApi.Repositories;
@@ -15,8 +15,10 @@ namespace SystemInfoApi
             var builder = WebApplication.CreateBuilder(args);
 
             // JWT authentication setup
-            string jwtKey = builder.Configuration.GetSection("Jwt:Key").Value ??
+            string jwtKey = builder.Configuration["Jwt:Key"] ??
                 throw new Exception("Invalid secret key in appsettings.json.");
+            string jwtIssuer = builder.Configuration["Jwt:Issuer"] ??
+                throw new Exception("Invalid issuer in appsettings.json.");
 
             builder.Services
                 .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -26,9 +28,9 @@ namespace SystemInfoApi
                     {
                         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
                         ValidateIssuerSigningKey = true,
-                        ValidateIssuer = true,
-                        ValidIssuer = builder.Configuration.GetSection("Jwt:Issuer").Value,
+                        ValidIssuer = jwtIssuer,
                         ValidateLifetime = true,
+                        ValidateIssuer = false,
                         ValidateAudience = false,
                     };
                 });
@@ -59,10 +61,8 @@ namespace SystemInfoApi
             app.UseRouting();
 
             app.UseAuthentication(); // auth experimental -----
-
-            //app.UseAuthorization(); // auth experimental-----
+            app.UseAuthorization(); // auth experimental-----
             //app.UseSession(); // auth experimental-----
-            //app.UseMiddleware<AuthenticationMiddleware>(); // auth experimental -----
 
             // Add 406 error code to ensure application/json accept header is present in requests
             app.UseMiddleware<NotAcceptableMiddleware>();
