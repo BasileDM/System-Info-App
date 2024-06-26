@@ -1,9 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Text;
-using Microsoft.AspNetCore.Authorization;
 using System.ComponentModel.DataAnnotations;
 
 namespace SystemInfoApi.Controllers
@@ -19,11 +17,9 @@ namespace SystemInfoApi.Controllers
             _config = configuration;
         }
 
-        //[AllowAnonymous]
         [HttpPost]
         public IActionResult GetToken([FromBody] AuthRequest request)
         {
-
             if (request.ClientId == "YourClientId" && request.ClientSecret == "YourClientSecret")
             {
                 var secretKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]));
@@ -31,15 +27,12 @@ namespace SystemInfoApi.Controllers
 
                 var SecurityToken = new JwtSecurityToken(
                     _config["Jwt:Issuer"],
-                    _config["Jwt:Issuer"],
                     null,
                     expires: DateTime.Now.AddMinutes(120),
                     signingCredentials: credentials);
 
-                var token = new JwtSecurityTokenHandler().WriteToken(SecurityToken);
-
-                Console.WriteLine($"\r\nCredentials: {secretKey}\r\n");
-                return Ok(token);
+                string token = new JwtSecurityTokenHandler().WriteToken(SecurityToken);
+                return Ok(new { Token = token });
             }
             return Unauthorized();
         }

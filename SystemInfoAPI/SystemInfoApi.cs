@@ -15,8 +15,15 @@ namespace SystemInfoApi
             var builder = WebApplication.CreateBuilder(args);
 
             // JWT authentication setup
-            string jwtKey = builder.Configuration["Jwt:Key"] ??
-                throw new Exception("Invalid secret key in appsettings.json.");
+            string? jwtKey = builder.Configuration["Jwt:Key"];
+
+            if (jwtKey == null || jwtKey.Length < 33)
+            {
+                int keyLength = jwtKey == null ? 0 : jwtKey.Length;
+                throw new ApplicationException(
+                    $"Invalid secret key in appsettings.json, key length must be at least 33 characters and was {keyLength}");
+            }
+
             string jwtIssuer = builder.Configuration["Jwt:Issuer"] ??
                 throw new Exception("Invalid issuer in appsettings.json.");
 
@@ -29,8 +36,8 @@ namespace SystemInfoApi
                         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
                         ValidateIssuerSigningKey = true,
                         ValidIssuer = jwtIssuer,
+                        ValidateIssuer = false, // Change this to true
                         ValidateLifetime = true,
-                        ValidateIssuer = false,
                         ValidateAudience = false,
                     };
                 });
@@ -60,9 +67,8 @@ namespace SystemInfoApi
 
             app.UseRouting();
 
-            app.UseAuthentication(); // auth experimental -----
-            app.UseAuthorization(); // auth experimental-----
-            //app.UseSession(); // auth experimental-----
+            app.UseAuthentication();
+            app.UseAuthorization();
 
             // Add 406 error code to ensure application/json accept header is present in requests
             app.UseMiddleware<NotAcceptableMiddleware>();

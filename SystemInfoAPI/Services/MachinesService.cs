@@ -100,7 +100,7 @@ namespace SystemInfoApi.Services
                     updatedDrivesList.Add(drive);
                 }
                 machine.Drives = updatedDrivesList;
-                Console.WriteLine("Machine updated successfully :\r\n");
+                Console.WriteLine($"Machine {machine.Id} has been updated.");
 
                 return machine;
             });
