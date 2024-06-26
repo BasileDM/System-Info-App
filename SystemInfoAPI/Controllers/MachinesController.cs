@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using SystemInfoApi.Models;
 using SystemInfoApi.Services;
 
@@ -9,6 +10,7 @@ namespace SystemInfoApi.Controllers
     public class MachinesController(MachinesService machinesService) : ControllerBase
     {
         // POST: api/<Machines>/Create
+        [Authorize]
         [HttpPost]
         [Consumes("application/json")]
         public async Task<ActionResult<MachineModel>> Create([FromBody] MachineModel machine)
@@ -50,6 +52,7 @@ namespace SystemInfoApi.Controllers
         }
 
         // PUT : api/<Machines>/Update/{machineId}
+        [Authorize]
         [HttpPut("{machineId:int:min(0)}")]
         [Consumes("application/json")]
         public async Task<ActionResult<MachineModel>> Update(int machineId, [FromBody] MachineModel machine)
@@ -90,6 +93,7 @@ namespace SystemInfoApi.Controllers
         }
 
         // GET: api/<Machines>/GetAll
+        [Authorize]
         [HttpGet]
         public async Task<ActionResult<List<MachineModel>>> GetAll()
         {
@@ -106,6 +110,7 @@ namespace SystemInfoApi.Controllers
         }
 
         // GET: api/<Machines>/GetById/{id}
+        [Authorize]
         [HttpGet("{machineId:int:min(0)}")]
         public async Task<ActionResult<MachineModel>> GetById(int machineId)
         {
