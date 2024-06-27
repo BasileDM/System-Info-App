@@ -35,7 +35,7 @@ namespace SystemInfoClient.Services
 
             var hashedPass = SecurityService.GetPasswordHash(out byte[] salt);
 
-            Console.WriteLine("L:38 NetworkService: Pass: " + hashedPass + " Salt: " + salt);
+            Console.WriteLine($"L:38 NetworkService: \r\nPass: {hashedPass}\r\nSalt: {Convert.ToHexString(salt)}");
 
             var authRequest = new { Pass = hashedPass, Salt = salt };
             var content = new StringContent(JsonSerializer.Serialize(authRequest), Encoding.UTF8, "application/json");
@@ -58,7 +58,7 @@ namespace SystemInfoClient.Services
             }
             else
             {
-                throw new Exception("Failed to obtain authentication token");
+                throw new Exception($"Failed to obtain authentication token: {response.StatusCode}");
             }
         }
         public async Task<HttpResponseMessage> PostMachineInfo(MachineClass machine)

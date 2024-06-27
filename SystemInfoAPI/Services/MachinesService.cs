@@ -53,7 +53,6 @@ namespace SystemInfoApi.Services
                 return updatedMachine;
             });
         }
-
         public async Task<MachineModel> UpdateFullMachineAsync(MachineModel machine)
         {
             return await MakeTransactionAsync(async (connection, transaction) =>
@@ -105,13 +104,11 @@ namespace SystemInfoApi.Services
                 return machine;
             });
         }
-
         public async Task<MachineModel> GetByIdAsync(int machineId)
         {
             await using SqlConnection connection = CreateConnection();
             return await machinesRepository.GetByIdAsync(machineId, connection);
         }
-
         public async Task<List<MachineModel>> GetAllAsync()
         {
             await using SqlConnection connection = CreateConnection();

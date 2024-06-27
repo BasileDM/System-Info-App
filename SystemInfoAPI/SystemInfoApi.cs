@@ -15,17 +15,8 @@ namespace SystemInfoApi
             var builder = WebApplication.CreateBuilder(args);
 
             // JWT authentication setup
-            string? jwtKey = builder.Configuration["Jwt:Key"];
-
-            if (jwtKey == null || jwtKey.Length < 33)
-            {
-                int keyLength = jwtKey == null ? 0 : jwtKey.Length;
-                throw new ApplicationException(
-                    $"Invalid secret key in appsettings.json, key length must be at least 33 characters and was {keyLength}");
-            }
-
-            string jwtIssuer = builder.Configuration["Jwt:Issuer"] ??
-                throw new Exception("Invalid issuer in appsettings.json.");
+            string jwtSecret = AuthenticationService.ValidateSecret(builder.Configuration["Jwt:Secret"]);
+            string jwtIssuer = AuthenticationService.ValidaterIssuer(builder.Configuration["Jwt:Issuer"]);
 
             builder.Services
                 .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -33,7 +24,7 @@ namespace SystemInfoApi
                 {
                     options.TokenValidationParameters = new TokenValidationParameters
                     {
-                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret)),
                         ValidateIssuerSigningKey = true,
                         ValidIssuer = jwtIssuer,
                         ValidateIssuer = false, // Change this to true

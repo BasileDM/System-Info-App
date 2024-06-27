@@ -20,9 +20,8 @@ namespace SystemInfoClient
                 machine.LogJson();
 
                 // POST machine to API route
-                NetworkService networkHandler = new(settings);
-
-                HttpResponseMessage response = await networkHandler.PostMachineInfo(machine);
+                NetworkService networkService = new(settings);
+                HttpResponseMessage response = await networkService.PostMachineInfo(machine);
 
                 // Handle API response
                 if (await NetworkService.IsResponseOk(response))

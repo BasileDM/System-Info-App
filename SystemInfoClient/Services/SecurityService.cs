@@ -13,9 +13,9 @@ namespace SystemInfoClient.Services
             var pbkdf2 = Rfc2898DeriveBytes.Pbkdf2(
                 pass,
                 salt,
-                100000,
+                172099,
                 HashAlgorithmName.SHA256,
-                32);
+                64);
 
             return Convert.ToBase64String(pbkdf2);
         }

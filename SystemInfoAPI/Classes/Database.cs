@@ -94,25 +94,6 @@ namespace SystemInfoApi.Classes
                 throw new Exception($"Error verifying database tables: {ex.Message}");
             }
         }
-        private void PromptTablesCreation()
-        {
-            string? answer;
-            do
-            {
-                Console.WriteLine("Database tables not detected. Do you want to create them ? y/n ");
-                answer = Console.ReadLine()?.ToLower();
-
-            } while (answer != "y" && answer != "n");
-
-            if (answer == "y")
-            {
-                CreateTablesAsync().Wait();
-            }
-            else if (answer == "n")
-            {
-                throw new Exception("Table creation has been aborted, the app will shut down.");
-            }
-        }
         private async Task<bool> CreateTablesAsync()
         {
             return await MakeTransactionAsync(async (connection, transaction) =>
