@@ -3,6 +3,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 using System.ComponentModel.DataAnnotations;
+using SystemInfoApi.Services;
 
 namespace SystemInfoApi.Controllers
 {
@@ -23,9 +24,9 @@ namespace SystemInfoApi.Controllers
         {
             Console.WriteLine();
             Console.WriteLine($"New token requested from: {HttpContext.Connection.RemoteIpAddress?.ToString()}");
-            Console.WriteLine($"Request Content: ClientId={request.Pass}, ClientSecret={request.Salt}");
+            Console.WriteLine($"Request Content: Hash = {request.Pass}, Salt = {request.Salt}");
 
-            if (request.Pass == "YourClientId" && request.Salt == "YourClientSecret")
+            if (CryptoService.VerifyPassword(request.Pass, request.Salt))
             {
                 var secretKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]));
                 var credentials = new SigningCredentials(secretKey, SecurityAlgorithms.HmacSha256);
@@ -48,6 +49,6 @@ namespace SystemInfoApi.Controllers
         [Required]
         public string Pass { get; set; }
         [Required]
-        public string Salt { get; set; }
+        public byte[] Salt { get; set; }
     }
 }
