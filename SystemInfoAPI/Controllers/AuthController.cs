@@ -23,9 +23,9 @@ namespace SystemInfoApi.Controllers
         {
             Console.WriteLine();
             Console.WriteLine($"New token requested from: {HttpContext.Connection.RemoteIpAddress?.ToString()}");
-            Console.WriteLine($"Request Content: ClientId={request.ClientId}, ClientSecret={request.ClientSecret}");
+            Console.WriteLine($"Request Content: ClientId={request.Pass}, ClientSecret={request.Salt}");
 
-            if (request.ClientId == "YourClientId" && request.ClientSecret == "YourClientSecret")
+            if (request.Pass == "YourClientId" && request.Salt == "YourClientSecret")
             {
                 var secretKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]));
                 var credentials = new SigningCredentials(secretKey, SecurityAlgorithms.HmacSha256);
@@ -46,8 +46,8 @@ namespace SystemInfoApi.Controllers
     public class AuthRequest
     {
         [Required]
-        public string ClientId { get; set; }
+        public string Pass { get; set; }
         [Required]
-        public string ClientSecret { get; set; }
+        public string Salt { get; set; }
     }
 }

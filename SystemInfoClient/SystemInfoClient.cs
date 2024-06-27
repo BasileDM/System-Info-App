@@ -1,6 +1,7 @@
 ﻿using System.Runtime.Versioning;
 using SystemInfoClient.Classes;
 using SystemInfoClient.Classes.System;
+using SystemInfoClient.Services;
 
 namespace SystemInfoClient
 {
@@ -19,11 +20,12 @@ namespace SystemInfoClient
                 machine.LogJson();
 
                 // POST machine to API route
-                NetworkHandler networkHandler = new(settings);
+                NetworkService networkHandler = new(settings);
+
                 HttpResponseMessage response = await networkHandler.PostMachineInfo(machine);
 
                 // Handle API response
-                if (await NetworkHandler.IsResponseOk(response))
+                if (await NetworkService.IsResponseOk(response))
                 {
                     string newMachineId = GetMachineIdFromResponse(response);
 

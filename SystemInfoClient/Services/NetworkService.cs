@@ -4,20 +4,17 @@ using System.Text.Json.Serialization;
 using System.Text.Json;
 using SystemInfoClient.Classes.System;
 using System.Runtime.Versioning;
+using SystemInfoClient.Classes;
 
-namespace SystemInfoClient.Classes
+namespace SystemInfoClient.Services
 {
     [SupportedOSPlatform("windows")]
-    internal class NetworkHandler
+    internal class NetworkService
     {
-        private readonly string _clientId;
-        private readonly string _clientSecret;
         private readonly string _apiUrl;
 
-        public NetworkHandler(SettingsClass settings)
+        public NetworkService(SettingsClass settings)
         {
-            _clientId = "YourClientId";
-            _clientSecret = "YourClientSecret";
             _apiUrl = settings.ApiUrl ?? throw new Exception("Invalid API URL in settings.json");
         }
 
@@ -35,7 +32,12 @@ namespace SystemInfoClient.Classes
         {
             // Prepare and send request
             HttpClient client = CreateHttpClient();
-            var authRequest = new { ClientId = _clientId, ClientSecret = _clientSecret };
+
+            var hashedPass = SecurityService.GetPasswordHash(out byte[] salt);
+
+            Console.WriteLine("L:38 NetworkService: Pass: " + hashedPass + " Salt: " + salt);
+
+            var authRequest = new { Pass = hashedPass, Salt = salt };
             var content = new StringContent(JsonSerializer.Serialize(authRequest), Encoding.UTF8, "application/json");
             HttpResponseMessage response = await client.PostAsync(_apiUrl + "api/Auth/GetToken", content);
 
