@@ -8,32 +8,33 @@ namespace SystemInfoApi.Services
 {
     public class AuthenticationService
     {
-        public static bool VerifyPassword(string hash, byte[] salt)
+        public static bool VerifyPassword(string sentPassHash, byte[] sentSalt)
         {
-            if (hash == GetPasswordHashFromSalt(salt))
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }
-        public static string GetPasswordHashFromSalt(byte[] salt)
-        {
-            string pass = "PlaceholderPass123456789@test";
+            string apiPass = "PlaceholderPass123456789@test";
 
             var pbkdf2 = Rfc2898DeriveBytes.Pbkdf2(
-                pass,
-                salt,
+                apiPass,
+                sentSalt,
                 172099,
                 HashAlgorithmName.SHA256,
                 64);
 
-            return Convert.ToBase64String(pbkdf2);
+            string apiPassHash = Convert.ToBase64String(pbkdf2);
+
+            if (sentPassHash == apiPassHash)
+            {
+                Console.WriteLine("Password is valid.");
+                return true;
+            }
+            else
+            {
+                Console.WriteLine("Invalid password.");
+                return false;
+            }
         }
         public static string GenerateJwtToken(IConfiguration config)
         {
+            Console.WriteLine("Generating token...");
             var secretKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(config["Jwt:Secret"]));
             var credentials = new SigningCredentials(secretKey, SecurityAlgorithms.HmacSha256);
 
@@ -43,7 +44,11 @@ namespace SystemInfoApi.Services
                 expires: DateTime.Now.AddMinutes(120),
                 signingCredentials: credentials);
 
-            return new JwtSecurityTokenHandler().WriteToken(SecurityToken);
+
+            Console.WriteLine($"Encoding token: {SecurityToken}");
+            string encodedToken = new JwtSecurityTokenHandler().WriteToken(SecurityToken);
+            Console.WriteLine($"Sending encoded token: {encodedToken}");
+            return encodedToken;
         }
         public static string ValidateSecret(string secret)
         {

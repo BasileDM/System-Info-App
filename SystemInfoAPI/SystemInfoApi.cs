@@ -27,7 +27,7 @@ namespace SystemInfoApi
                         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret)),
                         ValidateIssuerSigningKey = true,
                         ValidIssuer = jwtIssuer,
-                        ValidateIssuer = false, // Change this to true
+                        ValidateIssuer = true,
                         ValidateLifetime = true,
                         ValidateAudience = false,
                     };
