@@ -122,7 +122,6 @@ namespace SystemInfoApi.Repositories
         }
         public async Task<ApplicationModel> UpdateAsync(ApplicationModel app, SqlConnection connection, SqlTransaction transaction)
         {
-
             try
             {
                 var appsDrivesRTable = db.AppsDrivesRelationTableNames;

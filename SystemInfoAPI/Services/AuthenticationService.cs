@@ -10,45 +10,72 @@ namespace SystemInfoApi.Services
     {
         public static bool VerifyPassword(string sentPassHash, byte[] sentSalt)
         {
-            string apiPass = "PlaceholderPass123456789@test";
-
-            var pbkdf2 = Rfc2898DeriveBytes.Pbkdf2(
-                apiPass,
-                sentSalt,
-                172099,
-                HashAlgorithmName.SHA256,
-                64);
-
-            string apiPassHash = Convert.ToBase64String(pbkdf2);
-
-            if (sentPassHash == apiPassHash)
+            try
             {
-                Console.WriteLine("Password is valid.");
-                return true;
+                string apiPass = "PlaceholderPass123456789@test";
+
+                var pbkdf2 = Rfc2898DeriveBytes.Pbkdf2(
+                    apiPass,
+                    sentSalt,
+                    600000,
+                    HashAlgorithmName.SHA256,
+                    64);
+
+                string apiPassHash = Convert.ToBase64String(pbkdf2);
+
+                if (sentPassHash == apiPassHash)
+                {
+                    Console.WriteLine("Password is valid.");
+                    return true;
+                }
+                else
+                {
+                    Console.WriteLine("Invalid password.");
+                    return false;
+                }
             }
-            else
+            catch (Exception ex)
             {
-                Console.WriteLine("Invalid password.");
-                return false;
+                Console.WriteLine($"Error verifying password: {ex.Message}");
+                throw new Exception("The password could not be verified.", ex);
             }
         }
         public static string GenerateJwtToken(IConfiguration config)
         {
-            Console.WriteLine("Generating token...");
-            var secretKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(config["Jwt:Secret"]));
-            var credentials = new SigningCredentials(secretKey, SecurityAlgorithms.HmacSha256);
+            try
+            {
+                Console.WriteLine("Generating token...");
+                var secretKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(config["Jwt:Secret"]));
+                var credentials = new SigningCredentials(secretKey, SecurityAlgorithms.HmacSha256);
 
-            var SecurityToken = new JwtSecurityToken(
-                issuer: config["Jwt:Issuer"],
-                expires: DateTime.Now.AddMinutes(120),
-                signingCredentials: credentials);
+                var SecurityToken = new JwtSecurityToken(
+                    issuer: config["Jwt:Issuer"],
+                    expires: DateTime.UtcNow.AddMilliseconds(120),
+                    signingCredentials: credentials);
 
-            Console.WriteLine($"Encoding token: {SecurityToken}");
-            string encodedToken = new JwtSecurityTokenHandler().WriteToken(SecurityToken);
-            Console.WriteLine($"Sending encoded token: {encodedToken}");
-            return encodedToken;
+                Console.WriteLine($"Encoding token: {SecurityToken}");
+                string encodedToken = new JwtSecurityTokenHandler().WriteToken(SecurityToken);
+                Console.WriteLine($"Sending encoded token: {encodedToken}");
+
+                return encodedToken;
+            }
+            catch (ArgumentNullException ex)
+            {
+                Console.WriteLine($"Configuration error: {ex.Message}");
+                throw new Exception("JWT configuration is invalid. Please check the JWT secret and issuer in the configuration.", ex);
+            }
+            catch (ArgumentException ex)
+            {
+                Console.WriteLine($"Argument error: {ex.Message}");
+                throw new Exception("An argument error occurred while generating the JWT token.", ex);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Unexpected error: {ex.Message}");
+                throw new Exception("An unexpected error occurred while generating the JWT token.", ex);
+            }
         }
-        public static string ValidateSecret(string secret)
+        public static string ValidateSecret(string? secret)
         {
             if (secret == null || secret.Length < 33)
             {
@@ -58,7 +85,7 @@ namespace SystemInfoApi.Services
             }
             return secret;
         }
-        public static string ValidaterIssuer(string issuer)
+        public static string ValidaterIssuer(string? issuer)
         {
             if (issuer == null)
             {

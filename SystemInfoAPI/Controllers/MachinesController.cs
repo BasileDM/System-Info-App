@@ -114,6 +114,7 @@ namespace SystemInfoApi.Controllers
         [HttpGet("{machineId:int:min(0)}")]
         public async Task<ActionResult<MachineModel>> GetById(int machineId)
         {
+            Console.WriteLine($"Issuing request to get a machine by ID. Id: {machineId}");
             MachineModel machine = await machinesService.GetByIdAsync(machineId);
 
             if (machine.Id != 0)

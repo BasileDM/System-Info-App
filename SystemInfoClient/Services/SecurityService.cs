@@ -13,7 +13,7 @@ namespace SystemInfoClient.Services
             var pbkdf2 = Rfc2898DeriveBytes.Pbkdf2(
                 pass,
                 salt,
-                172099,
+                600000,
                 HashAlgorithmName.SHA256,
                 64);
 

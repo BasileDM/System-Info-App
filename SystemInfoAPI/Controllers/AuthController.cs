@@ -19,15 +19,24 @@ namespace SystemInfoApi.Controllers
         [HttpPost]
         public IActionResult GetToken([FromBody] AuthRequest request)
         {
-            AuthenticationService.LogRequestInfo(request, HttpContext.Connection);
-
-            if (!AuthenticationService.VerifyPassword(request.Pass, request.Salt))
+            try
             {
-                return Unauthorized();
-            }
+                AuthenticationService.LogRequestInfo(request, HttpContext.Connection);
 
-            string token = AuthenticationService.GenerateJwtToken(_config);
-            return Ok(new { Token = token });
+                if (!AuthenticationService.VerifyPassword(request.Pass, request.Salt))
+                {
+                    return Unauthorized();
+                }
+
+                string token = AuthenticationService.GenerateJwtToken(_config);
+
+                return Ok(new { Token = token });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error while issuing token: {ex.Message}");
+                return StatusCode(500, "Could not deliver token.");
+            }
         }
     }
 
