@@ -6,7 +6,7 @@ namespace SystemInfoClient.Services
     {
         public static string GetPasswordHash(out byte[] salt)
         {
-            string pass = "PlaceholderPass123456789@test";
+            string pass = "Your-API-Password-123456789@test";
 
             salt = RandomNumberGenerator.GetBytes(128 / 8);
 

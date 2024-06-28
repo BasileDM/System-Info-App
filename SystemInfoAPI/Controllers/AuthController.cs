@@ -9,10 +9,12 @@ namespace SystemInfoApi.Controllers
     public class AuthController : ControllerBase
     {
         private readonly IConfiguration _config;
+        private readonly string _apiPass;
 
         public AuthController(IConfiguration configuration)
         {
             _config = configuration;
+            _apiPass = AuthenticationService.ValidateApiPass(_config["ApiPassword"]);
         }
 
         // POST: api/<Auth>/GetToken
@@ -23,7 +25,7 @@ namespace SystemInfoApi.Controllers
             {
                 AuthenticationService.LogRequestInfo(request, HttpContext.Connection);
 
-                if (!AuthenticationService.VerifyPassword(request.Pass, request.Salt))
+                if (!AuthenticationService.VerifyPassword(_apiPass, request.Pass, request.Salt))
                 {
                     return Unauthorized();
                 }

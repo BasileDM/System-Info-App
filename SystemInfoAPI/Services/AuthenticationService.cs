@@ -8,12 +8,10 @@ namespace SystemInfoApi.Services
 {
     public class AuthenticationService
     {
-        public static bool VerifyPassword(string sentPassHash, byte[] sentSalt)
+        public static bool VerifyPassword(string apiPass, string sentPassHash, byte[] sentSalt)
         {
             try
             {
-                string apiPass = "PlaceholderPass123456789@test";
-
                 var pbkdf2 = Rfc2898DeriveBytes.Pbkdf2(
                     apiPass,
                     sentSalt,
@@ -83,7 +81,10 @@ namespace SystemInfoApi.Services
                 throw new ApplicationException(
                     $"Invalid secret key in appsettings.json, key length must be at least 33 characters and was {keyLength}");
             }
-            return secret;
+            else
+            {
+                return secret;
+            }
         }
         public static string ValidaterIssuer(string? issuer)
         {
@@ -96,11 +97,23 @@ namespace SystemInfoApi.Services
                 return issuer;
             }
         }
+        public static string ValidateApiPass(string? apiPass)
+        {
+            if (apiPass != null && apiPass.Length >= 20)
+            {
+                return apiPass;
+            }
+            else
+            {
+                throw new InvalidDataException("Invalid API password in appsettings.json, the password must be at least 20 characters.");
+            }
+        }
         public static void LogRequestInfo(AuthRequest request, ConnectionInfo connectionInfo)
         {
             Console.WriteLine();
             Console.WriteLine($"New token requested from: {connectionInfo.RemoteIpAddress?.ToString()}");
             Console.WriteLine($"Request Content: \r\nHash: {request.Pass}, \r\nSalt: {Convert.ToHexString(request.Salt)}");
         }
+
     }
 }
