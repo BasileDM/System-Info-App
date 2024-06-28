@@ -33,6 +33,8 @@ namespace SystemInfoApi
                     };
                 });
 
+            builder.Services.AddAuthorization();
+
             // Add services to the container.
             builder.Services.AddControllers();
             builder.Services.AddScoped<Database>();

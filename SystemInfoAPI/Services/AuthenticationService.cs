@@ -39,11 +39,9 @@ namespace SystemInfoApi.Services
             var credentials = new SigningCredentials(secretKey, SecurityAlgorithms.HmacSha256);
 
             var SecurityToken = new JwtSecurityToken(
-                config["Jwt:Issuer"],
-                null,
+                issuer: config["Jwt:Issuer"],
                 expires: DateTime.Now.AddMinutes(120),
                 signingCredentials: credentials);
-
 
             Console.WriteLine($"Encoding token: {SecurityToken}");
             string encodedToken = new JwtSecurityTokenHandler().WriteToken(SecurityToken);

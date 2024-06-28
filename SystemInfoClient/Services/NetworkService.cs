@@ -30,35 +30,53 @@ namespace SystemInfoClient.Services
         }
         private async Task<string> GetJwtToken()
         {
-            // Prepare and send request
-            HttpClient client = CreateHttpClient();
-
-            var hashedPass = SecurityService.GetPasswordHash(out byte[] salt);
-
-            Console.WriteLine($"L:38 NetworkService: \r\nPass: {hashedPass}\r\nSalt: {Convert.ToHexString(salt)}");
-
-            var authRequest = new { Pass = hashedPass, Salt = salt };
-            var content = new StringContent(JsonSerializer.Serialize(authRequest), Encoding.UTF8, "application/json");
-            HttpResponseMessage response = await client.PostAsync(_apiUrl + "api/Auth/GetToken", content);
-
-            // Handle response
-            if (response.IsSuccessStatusCode)
+            try
             {
-                var jsonResponse = await response.Content.ReadAsStringAsync();
-                TokenResponse? tokenResponse = JsonSerializer.Deserialize<TokenResponse>(jsonResponse);
+                // Prepare and send request
+                HttpClient client = CreateHttpClient();
 
-                if (tokenResponse != null && tokenResponse.Token.ToString() != null)
+                var hashedPass = SecurityService.GetPasswordHash(out byte[] salt);
+
+                Console.WriteLine($"L:38 NetworkService: \r\nPass: {hashedPass}\r\nSalt: {Convert.ToHexString(salt)}");
+
+                var authRequest = new { Pass = hashedPass, Salt = salt };
+                var content = new StringContent(JsonSerializer.Serialize(authRequest), Encoding.UTF8, "application/json");
+                HttpResponseMessage response = await client.PostAsync(_apiUrl + "api/Auth/GetToken", content);
+
+                // Handle response
+                if (response.IsSuccessStatusCode)
                 {
-                    return tokenResponse.Token;
+                    var jsonResponse = await response.Content.ReadAsStringAsync();
+                    TokenResponse? tokenResponse = JsonSerializer.Deserialize<TokenResponse>(jsonResponse);
+
+                    if (tokenResponse != null && tokenResponse.Token.ToString() != null)
+                    {
+                        return tokenResponse.Token;
+                    }
+                    else
+                    {
+                        throw new Exception("Null token");
+                    }
                 }
                 else
                 {
-                    throw new Exception("Null token");
+                    throw new Exception($"Failed to obtain authentication token: {response.StatusCode}");
                 }
             }
-            else
+            catch (HttpRequestException ex)
             {
-                throw new Exception($"Failed to obtain authentication token: {response.StatusCode}");
+                Console.WriteLine($"HTTP request error: {ex.Message}");
+                throw new Exception("Failed to obtain authentication token due to an HTTP request error.", ex);
+            }
+            catch (JsonException ex)
+            {
+                Console.WriteLine($"JSON serialization/deserialization error: {ex.Message}");
+                throw new Exception("Failed to parse the token response from the API.", ex);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Unexpected error: {ex.Message}");
+                throw new Exception("An unexpected error occurred while obtaining the authentication token.", ex);
             }
         }
         public async Task<HttpResponseMessage> PostMachineInfo(MachineClass machine)
