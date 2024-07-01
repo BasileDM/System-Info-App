@@ -1,4 +1,6 @@
-﻿using System.Security.Cryptography;
+﻿using Konscious.Security.Cryptography;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace SystemInfoClient.Services
 {
@@ -12,14 +14,16 @@ namespace SystemInfoClient.Services
 
             salt = RandomNumberGenerator.GetBytes(128 / 8);
 
-            var pbkdf2 = Rfc2898DeriveBytes.Pbkdf2(
-                pass,
-                salt,
-                1000000,
-                HashAlgorithmName.SHA512,
-                64);
+            var argon2 = new Argon2id(Encoding.UTF8.GetBytes(pass))
+            {
+                Salt = salt,
+                DegreeOfParallelism = 2,
+                Iterations = 3,
+                MemorySize = 512 * 512
+            };
+            byte[] hash = argon2.GetBytes(64);
 
-            return Convert.ToBase64String(pbkdf2);
+            return Convert.ToBase64String(hash);
         }
     }
 }

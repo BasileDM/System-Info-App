@@ -9,12 +9,12 @@ namespace SystemInfoApi.Controllers
     public class AuthController : ControllerBase
     {
         private readonly IConfiguration _config;
-        private readonly string _apiPass;
+        private readonly string? _apiPass;
 
         public AuthController(IConfiguration configuration)
         {
             _config = configuration;
-            _apiPass = AuthenticationService.ValidateApiPass(_config["ApiPassword"]);
+            _apiPass = _config["ApiPassword"];
         }
 
         // POST: api/<Auth>/GetToken
@@ -25,18 +25,23 @@ namespace SystemInfoApi.Controllers
             {
                 AuthenticationService.LogRequestInfo(request, HttpContext.Connection);
 
-                if (!AuthenticationService.VerifyPassword(_apiPass, request.Pass, request.Salt))
+                string validPass = AuthenticationService.ValidateApiPass(_apiPass);
+                if (!AuthenticationService.VerifyPassword(validPass, request.Pass, request.Salt))
                 {
                     return Unauthorized();
                 }
 
                 string token = AuthenticationService.GenerateJwtToken(_config);
-
                 return Ok(new { Token = token });
+            }
+            catch (InvalidDataException ex)
+            {
+                Console.WriteLine(ex.Message);
+                return StatusCode(500, "An error has occured.");
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error while issuing token: {ex.Message}");
+                Console.WriteLine($"Unexpected error while issuing token: {ex.Message}");
                 return StatusCode(500, "Could not deliver token.");
             }
         }

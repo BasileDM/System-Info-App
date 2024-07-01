@@ -1,4 +1,5 @@
-﻿using Microsoft.IdentityModel.Tokens;
+﻿using Konscious.Security.Cryptography;
+using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Cryptography;
 using System.Text;
@@ -8,20 +9,22 @@ namespace SystemInfoApi.Services
 {
     public class AuthenticationService
     {
-        public static bool VerifyPassword(string apiPass, string sentPassHash, byte[] sentSalt)
+        public static bool VerifyPassword(string pass, string providedHash, byte[] providedSalt)
         {
             try
             {
-                var pbkdf2 = Rfc2898DeriveBytes.Pbkdf2(
-                    apiPass,
-                    sentSalt,
-                    1000000,
-                    HashAlgorithmName.SHA512,
-                    64);
+                var argon2 = new Argon2id(Encoding.UTF8.GetBytes(pass))
+                {
+                    Salt = providedSalt,
+                    DegreeOfParallelism = 2,
+                    Iterations = 3,
+                    MemorySize = 512 * 512,
+                };
 
-                string apiPassHash = Convert.ToBase64String(pbkdf2);
+                byte[] hash = argon2.GetBytes(64);
+                string computedHash = Convert.ToBase64String(hash);
 
-                if (sentPassHash == apiPassHash)
+                if (providedHash == computedHash)
                 {
                     Console.WriteLine("Password is valid.");
                     return true;
