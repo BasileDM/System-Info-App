@@ -16,7 +16,7 @@ namespace SystemInfoApi
 
             // JWT authentication setup
             string jwtSecret = AuthenticationService.ValidateSecret(builder.Configuration["Jwt:Secret"]);
-            string jwtIssuer = AuthenticationService.ValidaterIssuer(builder.Configuration["Jwt:Issuer"]);
+            string jwtIssuer = AuthenticationService.ValidateIssuer(builder.Configuration["Jwt:Issuer"]);
 
             builder.Services
                 .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -30,6 +30,7 @@ namespace SystemInfoApi
                         ValidateIssuer = true,
                         ValidateLifetime = true,
                         ValidateAudience = false,
+                        ClockSkew = TimeSpan.Zero
                     };
                 });
 

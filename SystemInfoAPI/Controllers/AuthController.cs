@@ -9,12 +9,10 @@ namespace SystemInfoApi.Controllers
     public class AuthController : ControllerBase
     {
         private readonly IConfiguration _config;
-        private readonly string? _apiPass;
 
         public AuthController(IConfiguration configuration)
         {
             _config = configuration;
-            _apiPass = _config["ApiPassword"];
         }
 
         // POST: api/<Auth>/GetToken
@@ -25,13 +23,16 @@ namespace SystemInfoApi.Controllers
             {
                 AuthenticationService.LogRequestInfo(request, HttpContext.Connection);
 
-                string validPass = AuthenticationService.ValidateApiPass(_apiPass);
+                string validPass = AuthenticationService.ValidateApiPass(_config["ApiPassword"]);
+                string validSecret = AuthenticationService.ValidateSecret(_config["Jwt:Secret"]);
+                string validIssuer = AuthenticationService.ValidateIssuer(_config["Jwt:Issuer"]);
+
                 if (!AuthenticationService.VerifyPassword(validPass, request.Pass, request.Salt))
                 {
                     return Unauthorized();
                 }
 
-                string token = AuthenticationService.GenerateJwtToken(_config);
+                string token = AuthenticationService.GenerateJwtToken(validSecret, validIssuer);
                 return Ok(new { Token = token });
             }
             catch (InvalidDataException ex)

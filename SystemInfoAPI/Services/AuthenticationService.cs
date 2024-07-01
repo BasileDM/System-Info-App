@@ -1,7 +1,6 @@
 ﻿using Konscious.Security.Cryptography;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
-using System.Security.Cryptography;
 using System.Text;
 using SystemInfoApi.Controllers;
 
@@ -41,17 +40,17 @@ namespace SystemInfoApi.Services
                 throw new Exception("The password could not be verified.", ex);
             }
         }
-        public static string GenerateJwtToken(IConfiguration config)
+        public static string GenerateJwtToken(string secret, string issuer)
         {
             try
             {
                 Console.WriteLine("Generating token...");
-                var secretKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(config["Jwt:Secret"]));
+                var secretKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret));
                 var credentials = new SigningCredentials(secretKey, SecurityAlgorithms.HmacSha256);
 
                 var SecurityToken = new JwtSecurityToken(
-                    issuer: config["Jwt:Issuer"],
-                    expires: DateTime.UtcNow.AddMilliseconds(120),
+                    issuer: issuer,
+                    expires: DateTime.UtcNow.AddSeconds(30),
                     signingCredentials: credentials);
 
                 Console.WriteLine($"Encoding token: {SecurityToken}");
@@ -89,7 +88,7 @@ namespace SystemInfoApi.Services
                 return secret;
             }
         }
-        public static string ValidaterIssuer(string? issuer)
+        public static string ValidateIssuer(string? issuer)
         {
             if (issuer == null)
             {
