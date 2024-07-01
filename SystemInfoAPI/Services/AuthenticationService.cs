@@ -15,7 +15,7 @@ namespace SystemInfoApi.Services
                 var pbkdf2 = Rfc2898DeriveBytes.Pbkdf2(
                     apiPass,
                     sentSalt,
-                    1019358,
+                    1000000,
                     HashAlgorithmName.SHA512,
                     64);
 
