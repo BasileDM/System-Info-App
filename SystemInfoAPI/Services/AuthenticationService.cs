@@ -16,7 +16,7 @@ namespace SystemInfoApi.Services
                 {
                     Salt = providedSalt,
                     DegreeOfParallelism = 2,
-                    Iterations = 3,
+                    Iterations = 4,
                     MemorySize = 512 * 512,
                 };
 
@@ -44,18 +44,18 @@ namespace SystemInfoApi.Services
         {
             try
             {
-                Console.WriteLine("Generating token...");
                 var secretKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret));
                 var credentials = new SigningCredentials(secretKey, SecurityAlgorithms.HmacSha256);
 
                 var SecurityToken = new JwtSecurityToken(
                     issuer: issuer,
+                    audience: "1",
                     expires: DateTime.UtcNow.AddSeconds(30),
                     signingCredentials: credentials);
 
-                Console.WriteLine($"Encoding token: {SecurityToken}");
+                Console.WriteLine($"Encoding token content:\r\n{SecurityToken}");
                 string encodedToken = new JwtSecurityTokenHandler().WriteToken(SecurityToken);
-                Console.WriteLine($"Sending encoded token: {encodedToken}");
+                Console.WriteLine($"Sending encoded token:\r\n{encodedToken}");
 
                 return encodedToken;
             }

@@ -37,7 +37,7 @@ namespace SystemInfoClient.Services
 
                 var hashedPass = SecurityService.GetPasswordHash(out byte[] salt);
 
-                Console.WriteLine($"L:38 NetworkService: \r\nPass: {hashedPass}\r\nSalt: {Convert.ToHexString(salt)}");
+                Console.WriteLine($"Token requested with password: \r\nPass: {hashedPass}\r\nSalt: {Convert.ToHexString(salt)}");
 
                 var authRequest = new { Pass = hashedPass, Salt = salt };
                 var content = new StringContent(JsonSerializer.Serialize(authRequest), Encoding.UTF8, "application/json");
@@ -51,11 +51,12 @@ namespace SystemInfoClient.Services
 
                     if (tokenResponse != null && tokenResponse.Token.ToString() != null)
                     {
+                        Console.WriteLine($"Token obtained with success:\r\n{tokenResponse.Token}");
                         return tokenResponse.Token;
                     }
                     else
                     {
-                        throw new Exception("Null token");
+                        throw new Exception("Null token.");
                     }
                 }
                 else
@@ -84,7 +85,7 @@ namespace SystemInfoClient.Services
             // Fetch JWT token
             string token = await GetJwtToken();
 
-            // Build HTTP Client and add auth header
+            // Build HTTP Client and add authorization header with token
             HttpClient client = CreateHttpClient();
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 

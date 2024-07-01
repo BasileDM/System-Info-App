@@ -18,7 +18,7 @@ namespace SystemInfoClient.Services
             {
                 Salt = salt,
                 DegreeOfParallelism = 2,
-                Iterations = 3,
+                Iterations = 4,
                 MemorySize = 512 * 512
             };
             byte[] hash = argon2.GetBytes(64);
