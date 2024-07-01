@@ -6,8 +6,9 @@ namespace SystemInfoClient.Services
     {
         public static string GetPasswordHash(out byte[] salt)
         {
-            string pass = Environment.GetEnvironmentVariable("SystemInfoApiKey", EnvironmentVariableTarget.User) ??
-                throw new NullReferenceException("The env variable 'SystemInfoApiKey' could not be found");
+            // Get the API password from a user env variable
+            string pass = Environment.GetEnvironmentVariable("SysInfoPass", EnvironmentVariableTarget.User) ??
+                throw new NullReferenceException("The env variable 'SysInfoPass' could not be found");
 
             salt = RandomNumberGenerator.GetBytes(128 / 8);
 
