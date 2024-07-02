@@ -1,7 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
-using SystemInfoApi.Classes;
 using SystemInfoApi.Models;
 using SystemInfoApi.Services;
 

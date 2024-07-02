@@ -12,16 +12,21 @@ namespace SystemInfoClient
         {
             try
             {
-                // Load settings.json from SettingsClass factory method
+                // Instanciate needed objects
                 SettingsClass settings = SettingsClass.GetInstance();
+                NetworkService net = new(settings);
+                SecurityService securityService = new(net);
 
                 // Create full machine with CustomerId, drives, os and apps info
                 MachineClass machine = new(settings);
                 machine.LogJson();
 
+                // Fetch JWT token
+                string token = await securityService.GetOrRequestTokenAsync();
+                //string token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3Mjk5MTgxMjUsImlzcyI6IlN5c3RlbUluZm9BcGkifQ.176_JjhiMPFLZLuSSwFexS6BHtBVNYXCuHNT4LvVpWk";
+
                 // POST machine to API route
-                NetworkService networkService = new(settings);
-                HttpResponseMessage response = await networkService.PostMachineInfo(machine);
+                HttpResponseMessage response = await net.SendMachineInfo(machine, token);
 
                 // Handle API response
                 if (await NetworkService.IsResponseOk(response))

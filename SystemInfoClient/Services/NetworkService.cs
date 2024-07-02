@@ -29,40 +29,34 @@ namespace SystemInfoClient.Services
 
             return client;
         }
-        private async Task<string> GetJwtToken()
+        public async Task<string> SendTokenRequest(string hash, byte[] salt)
         {
             try
             {
                 // Prepare and send request
                 HttpClient client = CreateHttpClient();
 
-                var hashedPass = SecurityService.GetPasswordHash(out byte[] salt);
+                Console.WriteLine($"Token requested with: ");
+                Console.WriteLine($"Salt: { Convert.ToHexString(salt) }");
+                Console.WriteLine($"Hash: { hash }");
 
-                Console.WriteLine($"Token requested with password: \r\nPass: {hashedPass}\r\nSalt: {Convert.ToHexString(salt)}");
-
-                var authRequest = new { Pass = hashedPass, Salt = salt };
+                var authRequest = new { Pass = hash, Salt = salt };
                 var content = new StringContent(JsonSerializer.Serialize(authRequest), Encoding.UTF8, "application/json");
                 HttpResponseMessage response = await client.PostAsync(_apiUrl + "api/Auth/GetToken", content);
 
                 // Handle response
-                if (response.IsSuccessStatusCode)
-                {
-                    var jsonResponse = await response.Content.ReadAsStringAsync();
-                    TokenResponse? tokenResponse = JsonSerializer.Deserialize<TokenResponse>(jsonResponse);
+                response.EnsureSuccessStatusCode();
+                var jsonResponse = await response.Content.ReadAsStringAsync();
+                TokenResponse? tokenResponse = JsonSerializer.Deserialize<TokenResponse>(jsonResponse);
 
-                    if (tokenResponse != null && tokenResponse.Token.ToString() != null)
-                    {
-                        Console.WriteLine($"Token obtained with success:\r\n{tokenResponse.Token}");
-                        return tokenResponse.Token;
-                    }
-                    else
-                    {
-                        throw new Exception("Null token.");
-                    }
+                if (tokenResponse != null && tokenResponse.Token.ToString() != null)
+                {
+                    Console.WriteLine($"Token obtained with success:\r\n{tokenResponse.Token}");
+                    return tokenResponse.Token;
                 }
                 else
                 {
-                    throw new Exception($"Failed to obtain authentication token: {response.StatusCode}");
+                    throw new Exception("Null token.");
                 }
             }
             catch (HttpRequestException ex)
@@ -81,11 +75,8 @@ namespace SystemInfoClient.Services
                 throw new Exception("An unexpected error occurred while obtaining the authentication token.", ex);
             }
         }
-        public async Task<HttpResponseMessage> PostMachineInfo(MachineClass machine)
+        public async Task<HttpResponseMessage> SendMachineInfo(MachineClass machine, string token)
         {
-            // Fetch JWT token
-            string token = await GetJwtToken();
-
             // Build HTTP Client and add authorization header with token
             HttpClient client = CreateHttpClient();
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
