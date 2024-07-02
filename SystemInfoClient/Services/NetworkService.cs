@@ -5,6 +5,7 @@ using System.Text.Json;
 using SystemInfoClient.Classes.System;
 using System.Runtime.Versioning;
 using SystemInfoClient.Classes;
+using System.Linq;
 
 namespace SystemInfoClient.Services
 {
@@ -115,19 +116,32 @@ namespace SystemInfoClient.Services
             if (response.IsSuccessStatusCode && response.Headers.Location != null)
             {
                 // Display response data 
-                Console.WriteLine(
-                    $"\r\n" +
-                    $"Machine data sent successfully.\r\n" +
-                    $"Code: {response.StatusCode}.\r\n" +
-                    $"Time: {response.Headers.Date}\r\n" +
-                    $"Location: {response.Headers.Location}\r\n"
-                );
+                Console.WriteLine();
+                Console.WriteLine($"Machine data sent successfully.");
+                Console.WriteLine($"Code: {response.StatusCode}.");
+                Console.WriteLine($"Time: {response.Headers.Date}.");
+                Console.WriteLine($"Location: {response.Headers.Location}.");
 
                 return true;
             }
+            else if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+            {
+                Console.WriteLine("Authorization error.");
+                if (response.Headers.WwwAuthenticate.Count > 0)
+                {
+                    var wwwAuthHeader = response.Headers.WwwAuthenticate.ToString();
+                    var errorDescriptionIndex = wwwAuthHeader.IndexOf("error_description=");
+
+                    if (errorDescriptionIndex != -1)
+                    {
+                        var errorDescription = wwwAuthHeader.Substring(errorDescriptionIndex + "error_description=".Length);
+                        Console.WriteLine($"Error Description: {errorDescription}");
+                    }
+                }
+                return false;
+            }
             else
             {
-                // Display response's error content
                 var errorContent = await response.Content.ReadAsStringAsync();
                 Console.WriteLine($"\r\n" +
                     $"{response.ReasonPhrase}: {errorContent}");

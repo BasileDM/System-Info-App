@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using SystemInfoApi.Classes;
 using SystemInfoApi.Models;
 using SystemInfoApi.Services;
 
@@ -24,20 +26,20 @@ namespace SystemInfoApi.Controllers
             try
             {
                 MachineModel newMachine = await machinesService.InsertFullMachineAsync(machine);
+
                 CreatedAtActionResult response = CreatedAtAction(nameof(GetById), new { machineId = newMachine.Id }, newMachine);
+
                 RouteValueDictionary? routeValues = response.RouteValues;
                 string? location = Url.Action(nameof(GetById), new { machineId = routeValues["machineId"] });
+                Console.WriteLine();
+                Console.WriteLine("A new machine has been created in the database.");
+                Console.WriteLine($"Time: {DateTime.Now.ToLocalTime}");
+                Console.WriteLine($"Customer ID: {newMachine.CustomerId}");
+                Console.WriteLine($"Machine ID: {newMachine.Id}");
+                Console.WriteLine($"Machine name: {newMachine.Name}");
+                Console.WriteLine($"Drives amount: {newMachine.Drives.Count}");
+                Console.WriteLine($"Location: {location}");
 
-                Console.WriteLine(
-                    "\r\n" +
-                    "A new machine has been created in the database. \r\n" +
-                    $"Time: {DateTime.Now} \r\n" +
-                    $"Customer ID: {newMachine.CustomerId} \r\n" +
-                    $"Machine ID: {newMachine.Id} \r\n" +
-                    $"Machine name: {newMachine.Name} \r\n" +
-                    $"Drives amount: {newMachine.Drives.Count} \r\n" +
-                    $"Location: {location}"
-                );
                 return response;
             }
             catch (ArgumentException)
@@ -77,8 +79,7 @@ namespace SystemInfoApi.Controllers
                 {
                     return NotFound($"Machine with ID {machineId} was not found.");
                 }
-
-                return Ok("Request successful.");
+                return CreatedAtRoute(nameof(GetById), new { machineId = updatedMachine.Id }, updatedMachine);
             }
             catch (ArgumentException ex)
             {
@@ -111,7 +112,7 @@ namespace SystemInfoApi.Controllers
 
         // GET: api/<Machines>/GetById/{id}
         [Authorize]
-        [HttpGet("{machineId:int:min(0)}")]
+        [HttpGet("{machineId:int:min(0)}", Name = nameof(GetById))]
         public async Task<ActionResult<MachineModel>> GetById(int machineId)
         {
             Console.WriteLine($"Issuing request to get a machine by ID. Id: {machineId}");

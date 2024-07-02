@@ -9,7 +9,7 @@ namespace SystemInfoClient.Services
         public static string GetPasswordHash(out byte[] salt)
         {
             // Get the API password from a user env variable
-            string pass = Environment.GetEnvironmentVariable("SysInfoPass", EnvironmentVariableTarget.User) ??
+            string pass = Environment.GetEnvironmentVariable("SysInfoApp", EnvironmentVariableTarget.User) ??
                 throw new NullReferenceException("Error, null API key.");
 
             salt = RandomNumberGenerator.GetBytes(128 / 8);
