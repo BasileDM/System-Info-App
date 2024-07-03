@@ -23,6 +23,8 @@ namespace SystemInfoClient.Services
 
         public async Task<HttpResponseMessage> SendMachineInfoAsync(MachineClass machine, string token)
         {
+            Logger.WriteColored("Sending machine info...", ConsoleColor.Yellow);
+
             // Build HTTP Client and add authorization header with token
             HttpClient client = HttpClientFactory.CreateHttpClient();
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
@@ -35,7 +37,6 @@ namespace SystemInfoClient.Services
                 $"{_apiUrl}api/Machines/Create" :
                 $"{_apiUrl}api/Machines/Update/{machine.Id}";
 
-            Console.WriteLine("Sending machine info...");
             return machine.Id == 0 ?
                 await client.PostAsync(route, content) :
                 await client.PutAsync(route, content);
@@ -55,11 +56,11 @@ namespace SystemInfoClient.Services
                     Logger.LogAuthorizationError(response);
 
                     // Try to obtain a new token
-                    Console.WriteLine("Requesting new token...");
                     var newToken = await _securityService.RequestTokenAsync();
 
                     // Send machine info with new token
                     HttpResponseMessage retryResponse = await SendMachineInfoAsync(machine, newToken);
+
                     retryResponse.EnsureSuccessStatusCode();
                     Logger.LogSuccessDetails(retryResponse);
                     UpdateSettingsWithId(retryResponse, settings);

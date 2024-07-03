@@ -3,6 +3,7 @@ using System.Runtime.Versioning;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using SystemInfoApi.Utilities;
 
 namespace SystemInfoClient.Services
 {
@@ -31,6 +32,7 @@ namespace SystemInfoClient.Services
         {
             try
             {
+                Logger.WriteColored("Requesting new token...", ConsoleColor.Yellow);
                 var hash = GetPasswordHash(out byte[] salt);
 
                 // Prepare and send request
@@ -53,7 +55,7 @@ namespace SystemInfoClient.Services
 
                 if (tokenResponse?.Token != null)
                 {
-                    Console.WriteLine($"Token obtained with success:\r\n{tokenResponse.Token}");
+                    Logger.WriteColored($"Token obtained with success:\r\n{tokenResponse.Token}", ConsoleColor.Green);
                     StoreToken(tokenResponse.Token);
                     return tokenResponse.Token;
                 }
