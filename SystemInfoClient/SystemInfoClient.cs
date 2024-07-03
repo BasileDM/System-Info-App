@@ -29,39 +29,11 @@ namespace SystemInfoClient
                 HttpResponseMessage response = await machineService.SendMachineInfoAsync(machine, token);
 
                 // Handle API response
-                if (await machineService.IsResponseOkAsync(response, machine))
-                {
-                    string newMachineId = GetMachineIdFromResponse(response);
-
-                    if (newMachineId != settings.ParsedMachineId.ToString())
-                        settings.RewriteFileWithId(newMachineId);
-                }
+                machineService.HandleResponseAsync(response, machine, settings);
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Error: " + ex.Message);
-            }
-        }
-        private static string GetMachineIdFromResponse(HttpResponseMessage response)
-        {
-            // Parse the last element of the Location header in the response to get the new machine ID
-            string machineId;
-            if (response.Headers.Location != null)
-            {
-                machineId = response.Headers.Location.Segments.Last();
-            }
-            else
-            {
-                throw new InvalidDataException("Invalid API response's location header");
-            }
-
-            if (Int32.TryParse(machineId, out int parsedMachineId) && parsedMachineId > 0)
-            {
-                return machineId;
-            }
-            else
-            {
-                throw new InvalidDataException("The machine ID sent by the API was invalid.");
             }
         }
     }

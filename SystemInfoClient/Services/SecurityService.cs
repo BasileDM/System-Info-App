@@ -14,7 +14,7 @@ namespace SystemInfoClient.Services
 
         public SecurityService(string apiUrl)
         {
-            _apiUrl = apiUrl;
+            _apiUrl = apiUrl ?? throw new Exception("Invalid API URL in settings.json");
         }
 
         public async Task<string> GetOrRequestTokenAsync()
@@ -22,17 +22,17 @@ namespace SystemInfoClient.Services
             string? token = GetToken();
             if (string.IsNullOrEmpty(token))
             {
-                var hash = GetPasswordHash(out byte[] salt);
-                token = await RequestTokenAsync(hash, salt);
-                StoreToken(token);
+                token = await RequestTokenAsync();
             }
 
             return token;
         }
-        public async Task<string> RequestTokenAsync(string hash, byte[] salt)
+        public async Task<string> RequestTokenAsync()
         {
             try
             {
+                var hash = GetPasswordHash(out byte[] salt);
+
                 // Prepare and send request
                 HttpClient client = HttpClientFactory.CreateHttpClient();
 
@@ -42,7 +42,11 @@ namespace SystemInfoClient.Services
 
                 var authRequest = new { Pass = hash, Salt = salt };
                 var content = new StringContent(JsonSerializer.Serialize(authRequest), Encoding.UTF8, "application/json");
-                HttpResponseMessage response = await client.PostAsync(_apiUrl + "api/Auth/GetToken", content);
+                string route = $"{_apiUrl}api/Auth/GetToken";
+
+                HttpResponseMessage response = await client.PostAsync(route, content);
+
+                Console.WriteLine($"Token request response: {response.StatusCode}");
 
                 // Handle response
                 response.EnsureSuccessStatusCode();
@@ -52,6 +56,7 @@ namespace SystemInfoClient.Services
                 if (tokenResponse?.Token != null)
                 {
                     Console.WriteLine($"Token obtained with success:\r\n{tokenResponse.Token}");
+                    StoreToken(tokenResponse.Token);
                     return tokenResponse.Token;
                 }
                 else
@@ -95,17 +100,14 @@ namespace SystemInfoClient.Services
         }
         private string GetEnvVariable()
         {
-            Console.WriteLine($"Checking process for env var: {_envName}");
             string? value = Environment.GetEnvironmentVariable(_envName, EnvironmentVariableTarget.Process);
 
             if (string.IsNullOrEmpty(value))
             {
-                Console.WriteLine($"Var {_envName} not found in process', checking User's");
                 value = Environment.GetEnvironmentVariable(_envName, EnvironmentVariableTarget.User);
             }
             if (string.IsNullOrEmpty(value))
             {
-                Console.WriteLine($"Var {_envName} not found in User's, checking Machine's");
                 value = Environment.GetEnvironmentVariable(_envName, EnvironmentVariableTarget.Machine);
             }
             if (string.IsNullOrEmpty(value))

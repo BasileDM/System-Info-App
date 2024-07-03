@@ -4,6 +4,7 @@ using System.Text.Json.Serialization;
 using System.Text.Json;
 using SystemInfoClient.Classes.System;
 using System.Runtime.Versioning;
+using SystemInfoClient.Classes;
 
 namespace SystemInfoClient.Services
 {
@@ -28,9 +29,25 @@ namespace SystemInfoClient.Services
             // Serialize machine into JSON content, build route string, and send
             // If the machine ID is 0 it is a new machine
             var content = new StringContent(machine.JsonSerialize(), Encoding.UTF8, "application/json");
-            string route = machine.Id == 0 ? $"{_apiUrl}api/Machines/Create" : $"{_apiUrl}api/Machines/Update/{machine.Id}";
 
-            return machine.Id == 0 ? await client.PostAsync(route, content) : await client.PutAsync(route, content);
+            string route = machine.Id == 0 ? 
+                $"{_apiUrl}api/Machines/Create" : 
+                $"{_apiUrl}api/Machines/Update/{machine.Id}";
+
+            Console.WriteLine("Sending machine info...");
+            return machine.Id == 0 ? 
+                await client.PostAsync(route, content) : 
+                await client.PutAsync(route, content);
+        }
+        public async void HandleResponseAsync(HttpResponseMessage response, MachineClass machine, SettingsClass settings)
+        {
+            if (await IsResponseOkAsync(response, machine))
+            {
+                string newMachineId = GetMachineIdFromResponse(response);
+
+                if (newMachineId != settings.ParsedMachineId.ToString())
+                    settings.RewriteFileWithId(newMachineId);
+            }
         }
         public async Task<bool> IsResponseOkAsync(HttpResponseMessage response, MachineClass machine)
         {
@@ -66,9 +83,12 @@ namespace SystemInfoClient.Services
                 }
 
                 // Try to obtain a new token
-                var newToken = await _securityService.GetOrRequestTokenAsync();
-                HttpResponseMessage retryResponse = await SendMachineInfoAsync(machine, newToken);
+                Console.WriteLine("Requesting new token...");
+                var newToken = _securityService.RequestTokenAsync().Result;
+                Console.WriteLine($"New token: {newToken}");
+                HttpResponseMessage retryResponse = SendMachineInfoAsync(machine, newToken).Result;
 
+                Console.WriteLine($"Retry response status code:{retryResponse.IsSuccessStatusCode}");
                 return retryResponse.IsSuccessStatusCode;
             }
             else
@@ -77,6 +97,28 @@ namespace SystemInfoClient.Services
                 Console.WriteLine();
                 Console.WriteLine($"{response.ReasonPhrase}: {errorContent}");
                 return false;
+            }
+        }
+        private static string GetMachineIdFromResponse(HttpResponseMessage response)
+        {
+            // Parse the last element of the Location header in the response to get the new machine ID
+            string machineId;
+            if (response.Headers.Location != null)
+            {
+                machineId = response.Headers.Location.Segments.Last();
+            }
+            else
+            {
+                throw new InvalidDataException("Invalid API response's location header");
+            }
+
+            if (Int32.TryParse(machineId, out int parsedMachineId) && parsedMachineId > 0)
+            {
+                return machineId;
+            }
+            else
+            {
+                throw new InvalidDataException("The machine ID sent by the API was invalid.");
             }
         }
     }

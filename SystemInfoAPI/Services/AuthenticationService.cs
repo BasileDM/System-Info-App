@@ -49,7 +49,7 @@ namespace SystemInfoApi.Services
 
                 var SecurityToken = new JwtSecurityToken(
                     issuer: issuer,
-                    expires: DateTime.UtcNow.AddSeconds(40),
+                    expires: DateTime.UtcNow.AddSeconds(15),
                     signingCredentials: credentials);
 
                 Console.WriteLine($"Encoding token content:\r\n{SecurityToken}");
