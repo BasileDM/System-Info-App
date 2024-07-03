@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Data.SqlClient;
+using SystemInfoApi.Utilities;
 
 namespace SystemInfoApi.Classes
 {
@@ -139,28 +140,20 @@ namespace SystemInfoApi.Classes
             {
                 T result = await operation(connection, transaction);
                 await transaction.CommitAsync();
-
-                Console.ForegroundColor = ConsoleColor.Green;
-                Console.WriteLine("Database transaction successful.");
-                Console.ForegroundColor = currentColor;
+                ConsoleUtils.WriteColored("Database transaction successful.", ConsoleColor.Green);
                 return result;
             }
             catch (ArgumentException ex)
             {
                 await transaction.RollbackAsync();
-
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine("Rolling back transaction due to an argument error:\r\n" + ex.Message);
-                Console.ForegroundColor = currentColor;
+                ConsoleUtils.WriteColored("Rolling back transaction due to an argument error:\r\n" + ex.Message, ConsoleColor.Red);
                 throw new ArgumentException("Error finalising the transaction with the database.", ex.Message);
             }
             catch (Exception ex)
             {
                 await transaction.RollbackAsync();
 
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine("Rolling back transaction due to an unexpected error:\r\n" + ex.Message);
-                Console.ForegroundColor = currentColor;
+                ConsoleUtils.WriteColored("Rolling back transaction due to an argument error:\r\n" + ex.Message, ConsoleColor.Red);
                 throw new ApplicationException("Error finalising the transaction with the database.", ex);
             }
             finally

@@ -12,7 +12,6 @@ namespace SystemInfoClient
         {
             try
             {
-                // Instanciate needed objects
                 SettingsClass settings = SettingsClass.GetInstance();
                 SecurityService securityService = new(settings.ApiUrl);
                 MachineService machineService = new(settings.ApiUrl, securityService);
@@ -23,9 +22,8 @@ namespace SystemInfoClient
 
                 // Fetch JWT token
                 string token = await securityService.GetOrRequestTokenAsync();
-                
 
-                // POST machine to API route
+                // Send machine info to API route
                 HttpResponseMessage response = await machineService.SendMachineInfoAsync(machine, token);
 
                 // Handle API response
