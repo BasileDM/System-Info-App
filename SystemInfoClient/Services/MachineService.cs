@@ -1,10 +1,10 @@
 ﻿using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json.Serialization;
-using System.Text.Json;
 using SystemInfoClient.Classes.System;
 using System.Runtime.Versioning;
 using SystemInfoClient.Classes;
+using System.Net;
 
 namespace SystemInfoClient.Services
 {
@@ -41,63 +41,44 @@ namespace SystemInfoClient.Services
         }
         public async Task HandleResponseAsync(HttpResponseMessage response, MachineClass machine, SettingsClass settings)
         {
-            if (await IsResponseOkAsync(response, machine))
+            switch(response.StatusCode)
             {
-                string newMachineId = GetMachineIdFromResponse(response);
+                // Success
+                case HttpStatusCode.OK when response.Headers.Location != null:
+                    LogSuccessResponseDetails(response);
+                    UpdateSettingsWithId(response, settings);
+                    break;
 
-                if (newMachineId != settings.ParsedMachineId.ToString())
-                    settings.RewriteFileWithId(newMachineId);
+                // Unauthorized
+                case HttpStatusCode.Unauthorized:
+                    LogAuthorizationError(response);
+
+                    // Try to obtain a new token
+                    Console.WriteLine("Requesting new token...");
+                    var newToken = await _securityService.RequestTokenAsync();
+
+                    // Send machine info with new token
+                    HttpResponseMessage retryResponse = await SendMachineInfoAsync(machine, newToken);
+                    retryResponse.EnsureSuccessStatusCode();
+                    UpdateSettingsWithId(retryResponse, settings);
+                    break;
+
+                // Generic
+                default:
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine();
+                    Console.WriteLine($"{response.ReasonPhrase}: {errorContent}");
+                    break;
+
             }
         }
-        public async Task<bool> IsResponseOkAsync(HttpResponseMessage response, MachineClass machine)
+        private static void UpdateSettingsWithId(HttpResponseMessage response, SettingsClass settings)
         {
-            if (response.IsSuccessStatusCode && response.Headers.Location != null)
-            {
-                // Display response data 
-                Console.WriteLine();
-                Console.WriteLine($"Machine data sent successfully.");
-                Console.WriteLine($"Code: {response.StatusCode}.");
-                Console.WriteLine($"Time: {response.Headers.Date}.");
-                Console.WriteLine($"Location: {response.Headers.Location}.");
+            Console.WriteLine(response.Headers.ToString());
+            string newMachineId = GetMachineIdFromResponse(response);
 
-                return true;
-            }
-            else if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
-            {
-                // Try to display relevant authorization error message.
-                Console.WriteLine("Authorization error.");
-                if (response.Headers.WwwAuthenticate.Count > 0)
-                {
-                    var wwwAuthHeader = response.Headers.WwwAuthenticate.ToString();
-                    var errorDescriptionIndex = wwwAuthHeader.IndexOf("error_description=");
-
-                    if (errorDescriptionIndex != -1)
-                    {
-                        var errorDescription = wwwAuthHeader.Substring(errorDescriptionIndex + "error_description=".Length);
-                        Console.WriteLine($"Error Description: {errorDescription}");
-                    }
-                }
-                else
-                {
-                    Console.WriteLine($"Unexpected authorization error.");
-                }
-
-                // Try to obtain a new token
-                Console.WriteLine("Requesting new token...");
-                var newToken = await _securityService.RequestTokenAsync();
-                Console.WriteLine($"New token: {newToken}");
-                HttpResponseMessage retryResponse = await SendMachineInfoAsync(machine, newToken);
-
-                Console.WriteLine($"Retry response status code:{retryResponse.IsSuccessStatusCode}");
-                return retryResponse.IsSuccessStatusCode;
-            }
-            else
-            {
-                var errorContent = await response.Content.ReadAsStringAsync();
-                Console.WriteLine();
-                Console.WriteLine($"{response.ReasonPhrase}: {errorContent}");
-                return false;
-            }
+            if (newMachineId != settings.ParsedMachineId.ToString())
+                settings.RewriteFileWithId(newMachineId);
         }
         private static string GetMachineIdFromResponse(HttpResponseMessage response)
         {
@@ -120,6 +101,33 @@ namespace SystemInfoClient.Services
             {
                 throw new InvalidDataException("The machine ID sent by the API was invalid.");
             }
+        }
+        private static void LogAuthorizationError(HttpResponseMessage response)
+        {
+            Console.WriteLine("Authorization error.");
+            if (response.Headers.WwwAuthenticate.Count > 0)
+            {
+                var wwwAuthHeader = response.Headers.WwwAuthenticate.ToString();
+                var errorDescriptionIndex = wwwAuthHeader.IndexOf("error_description=");
+
+                if (errorDescriptionIndex != -1)
+                {
+                    var errorDescription = wwwAuthHeader.Substring(errorDescriptionIndex + "error_description=".Length);
+                    Console.WriteLine($"Error Description: {errorDescription}");
+                }
+            }
+            else
+            {
+                Console.WriteLine($"Unexpected authorization error.");
+            }
+        }
+        private static void LogSuccessResponseDetails(HttpResponseMessage response)
+        {
+            Console.WriteLine();
+            Console.WriteLine($"Machine data sent successfully.");
+            Console.WriteLine($"Code: {response.StatusCode}.");
+            Console.WriteLine($"Time: {response.Headers.Date}.");
+            Console.WriteLine($"Location: {response.Headers.Location}.");
         }
     }
 

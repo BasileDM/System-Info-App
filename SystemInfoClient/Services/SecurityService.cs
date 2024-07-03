@@ -46,8 +46,6 @@ namespace SystemInfoClient.Services
 
                 HttpResponseMessage response = await client.PostAsync(route, content);
 
-                Console.WriteLine($"Token request response: {response.StatusCode}");
-
                 // Handle response
                 response.EnsureSuccessStatusCode();
                 var jsonResponse = await response.Content.ReadAsStringAsync();
