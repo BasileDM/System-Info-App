@@ -40,7 +40,7 @@ namespace SystemInfoApi.Services
                 throw new Exception("The password could not be verified.", ex);
             }
         }
-        public static string GenerateJwtToken(string secret, string issuer)
+        public static string GenerateJwtToken(string secret, string issuer, int expirationTime)
         {
             try
             {
@@ -49,7 +49,7 @@ namespace SystemInfoApi.Services
 
                 var SecurityToken = new JwtSecurityToken(
                     issuer: issuer,
-                    expires: DateTime.UtcNow.AddSeconds(15),
+                    expires: DateTime.UtcNow.AddSeconds(expirationTime),
                     signingCredentials: credentials);
 
                 Console.WriteLine($"Encoding token content:\r\n{SecurityToken}");
@@ -72,6 +72,17 @@ namespace SystemInfoApi.Services
             {
                 Console.WriteLine($"Unexpected error: {ex.Message}");
                 throw new Exception("An unexpected error occurred while generating the JWT token.", ex);
+            }
+        }
+        public static int ValidateExpirationTime(string? time)
+        {
+            if (!string.IsNullOrEmpty(time) && Int32.TryParse(time, out int parsedTime)) 
+            {
+                return parsedTime;
+            }
+            else
+            {
+                throw new ArgumentException("Invalid token expiration time in appsettings.json");
             }
         }
         public static string ValidateSecret(string? secret)

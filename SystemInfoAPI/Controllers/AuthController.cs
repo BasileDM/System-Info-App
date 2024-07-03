@@ -26,13 +26,14 @@ namespace SystemInfoApi.Controllers
                 string validPass = AuthenticationService.ValidateApiPass(_config["ApiPassword"]);
                 string validSecret = AuthenticationService.ValidateSecret(_config["Jwt:Secret"]);
                 string validIssuer = AuthenticationService.ValidateIssuer(_config["Jwt:Issuer"]);
+                int validExpiration = AuthenticationService.ValidateExpirationTime(_config["Jwt:Expiration"]);
 
                 if (!AuthenticationService.VerifyPassword(validPass, request.Pass, request.Salt))
                 {
                     return Unauthorized();
                 }
 
-                string token = AuthenticationService.GenerateJwtToken(validSecret, validIssuer);
+                string token = AuthenticationService.GenerateJwtToken(validSecret, validIssuer, validExpiration);
                 return Ok(new { Token = token });
             }
             catch (InvalidDataException ex)

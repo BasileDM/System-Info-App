@@ -17,6 +17,7 @@ namespace SystemInfoApi
             // JWT authentication setup
             string jwtSecret = AuthenticationService.ValidateSecret(builder.Configuration["Jwt:Secret"]);
             string jwtIssuer = AuthenticationService.ValidateIssuer(builder.Configuration["Jwt:Issuer"]);
+            int jwtExpiration = AuthenticationService.ValidateExpirationTime(builder.Configuration["Jwt:Expiration"]);
 
             builder.Services
                 .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

@@ -12,6 +12,9 @@ namespace SystemInfoClient.Services
     {
         private readonly string _apiUrl;
         private readonly string _envName = "SysInfoApp";
+        private readonly byte[] _key = Convert.FromBase64String("vgIBk3E0UTqRlCog5OqyxNAvHU0kpue9gxTbMt24n1g=");
+        private readonly byte[] _iv = Convert.FromHexString("ee62dd0adcbf5a6a");
+        private readonly string _flag = "enc.";
 
         public SecurityService(string apiUrl)
         {
@@ -83,14 +86,23 @@ namespace SystemInfoClient.Services
         }
         private string? GetToken()
         {
-            string[] envVars = GetEnvVariableValue().Split(";");
-            if (envVars.Length > 1)
+            string envVar = GetEnvVariableValue();
+            if (envVar.Contains(_flag))
             {
-                return envVars[1];
+                string decoded = DecodeString(envVar);
+                string[] envVars = decoded.Split(";");
+                if (envVars.Length > 1)
+                {
+                    return envVars[1];
+                }
+                else
+                {
+                    return null;
+                }
             }
             else
             {
-                return null;
+                return envVar;
             }
         }
         private void StoreToken(string value)
@@ -98,7 +110,8 @@ namespace SystemInfoClient.Services
             string envValue = GetEnvVariableValue();
             string pass = envValue.Split(";")[0];
             envValue = pass + ";" + value;
-            Environment.SetEnvironmentVariable(_envName, envValue, EnvironmentVariableTarget.User);
+            string encoded = EncodeString(envValue);
+            Environment.SetEnvironmentVariable(_envName, $"{_flag}{encoded}", EnvironmentVariableTarget.User);
         }
         private string GetEnvVariableValue()
         {
@@ -133,6 +146,43 @@ namespace SystemInfoClient.Services
             byte[] hash = argon2.GetBytes(64);
 
             return Convert.ToBase64String(hash);
+        }
+        public string EncodeString(string source)
+        {
+            Console.WriteLine($"Encoding: {source}");
+            using Aes aes = Aes.Create();
+            aes.Key = _key;
+            aes.IV = _iv;
+
+            using MemoryStream memoryStream = new();
+
+            using (CryptoStream cryptoStream = new(memoryStream, aes.CreateEncryptor(), CryptoStreamMode.Write))
+            {
+                using StreamWriter sw = new(cryptoStream);
+                sw.Write(source);
+            }
+
+            byte[] encrypted = memoryStream.ToArray();
+            return Convert.ToBase64String(encrypted);
+        }
+        public string DecodeString(string encodedString)
+        {
+            Console.WriteLine($"Decoding: {encodedString}");
+            byte[] buffer = Convert.FromBase64String(encodedString);
+
+            using Aes aes = Aes.Create();
+            aes.Key = _key;
+            aes.IV = _iv;
+
+            using MemoryStream memoryStream = new(buffer);
+
+            using (CryptoStream cryptoStream = new(memoryStream, aes.CreateDecryptor(), CryptoStreamMode.Read))
+            {
+                using StreamReader streamReader = new(cryptoStream);
+                string decrypted = streamReader.ReadToEnd();
+                return decrypted;
+            }
+
         }
     }
 }
