@@ -14,8 +14,8 @@ namespace SystemInfoClient
             {
                 // Instanciate needed objects
                 SettingsClass settings = SettingsClass.GetInstance();
-                NetworkService net = new(settings);
-                SecurityService securityService = new(net);
+                SecurityService securityService = new(settings.ApiUrl);
+                MachineService machineService = new(settings.ApiUrl, securityService);
 
                 // Create full machine with CustomerId, drives, os and apps info
                 MachineClass machine = new(settings);
@@ -23,13 +23,13 @@ namespace SystemInfoClient
 
                 // Fetch JWT token
                 string token = await securityService.GetOrRequestTokenAsync();
-                //string token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3Mjk5MTgxMjUsImlzcyI6IlN5c3RlbUluZm9BcGkifQ.176_JjhiMPFLZLuSSwFexS6BHtBVNYXCuHNT4LvVpWk";
+                
 
                 // POST machine to API route
-                HttpResponseMessage response = await net.SendMachineInfo(machine, token);
+                HttpResponseMessage response = await machineService.SendMachineInfoAsync(machine, token);
 
                 // Handle API response
-                if (await NetworkService.IsResponseOk(response))
+                if (await machineService.IsResponseOkAsync(response, machine))
                 {
                     string newMachineId = GetMachineIdFromResponse(response);
 

@@ -2,18 +2,19 @@
 using System.Runtime.Versioning;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
 
 namespace SystemInfoClient.Services
 {
     [SupportedOSPlatform("windows")]
     internal class SecurityService
     {
-        private readonly NetworkService _net;
+        private readonly string _apiUrl;
         private readonly string _envName = "SysInfoApp";
 
-        public SecurityService(NetworkService networkService)
+        public SecurityService(string apiUrl)
         {
-            _net = networkService;
+            _apiUrl = apiUrl;
         }
 
         public async Task<string> GetOrRequestTokenAsync()
@@ -22,48 +23,57 @@ namespace SystemInfoClient.Services
             if (string.IsNullOrEmpty(token))
             {
                 var hash = GetPasswordHash(out byte[] salt);
-                token = await _net.SendTokenRequest(hash, salt);
+                token = await RequestTokenAsync(hash, salt);
                 StoreToken(token);
             }
 
             return token;
         }
-        private string GetPasswordHash(out byte[] salt)
+        public async Task<string> RequestTokenAsync(string hash, byte[] salt)
         {
-            salt = RandomNumberGenerator.GetBytes(128 / 8);
-
-            var argon2 = new Argon2id(Encoding.UTF8.GetBytes(GetEnvVariable().Split(";")[0]))
+            try
             {
-                Salt = salt,
-                DegreeOfParallelism = 2,
-                Iterations = 4,
-                MemorySize = 512 * 512
-            };
-            byte[] hash = argon2.GetBytes(64);
+                // Prepare and send request
+                HttpClient client = HttpClientFactory.CreateHttpClient();
 
-            return Convert.ToBase64String(hash);
-        }
-        private string GetEnvVariable()
-        {
-            Console.WriteLine($"Checking process for env var: {_envName}");
-            string? value = Environment.GetEnvironmentVariable(_envName, EnvironmentVariableTarget.Process);
+                Console.WriteLine($"Token requested with: ");
+                Console.WriteLine($"Salt: {Convert.ToHexString(salt)}");
+                Console.WriteLine($"Hash: {hash}");
 
-            if (string.IsNullOrEmpty(value))
-            {
-                Console.WriteLine($"Var {_envName} not found in process', checking User's");
-                value = Environment.GetEnvironmentVariable(_envName, EnvironmentVariableTarget.User);
+                var authRequest = new { Pass = hash, Salt = salt };
+                var content = new StringContent(JsonSerializer.Serialize(authRequest), Encoding.UTF8, "application/json");
+                HttpResponseMessage response = await client.PostAsync(_apiUrl + "api/Auth/GetToken", content);
+
+                // Handle response
+                response.EnsureSuccessStatusCode();
+                var jsonResponse = await response.Content.ReadAsStringAsync();
+                TokenResponse? tokenResponse = JsonSerializer.Deserialize<TokenResponse>(jsonResponse);
+
+                if (tokenResponse?.Token != null)
+                {
+                    Console.WriteLine($"Token obtained with success:\r\n{tokenResponse.Token}");
+                    return tokenResponse.Token;
+                }
+                else
+                {
+                    throw new Exception("Null token.");
+                }
             }
-            if (string.IsNullOrEmpty(value))
+            catch (HttpRequestException ex)
             {
-                Console.WriteLine($"Var {_envName} not found in User's, checking Machine's");
-                value = Environment.GetEnvironmentVariable(_envName, EnvironmentVariableTarget.Machine);
+                Console.WriteLine($"HTTP request error: {ex.Message}");
+                throw new Exception("Failed to obtain authentication token due to an HTTP request error.", ex);
             }
-            if (string.IsNullOrEmpty(value))
+            catch (JsonException ex)
             {
-                throw new NullReferenceException("Error, could not find API key.");
+                Console.WriteLine($"JSON serialization/deserialization error: {ex.Message}");
+                throw new Exception("Failed to parse the token response from the API.", ex);
             }
-
-            return value;
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Unexpected error: {ex.Message}");
+                throw new Exception("An unexpected error occurred while obtaining the authentication token.", ex);
+            }
         }
         private string? GetToken()
         {
@@ -82,6 +92,43 @@ namespace SystemInfoClient.Services
             string env = GetEnvVariable();
             env = env + ";" + value;
             Environment.SetEnvironmentVariable(_envName, env, EnvironmentVariableTarget.User);
+        }
+        private string GetEnvVariable()
+        {
+            Console.WriteLine($"Checking process for env var: {_envName}");
+            string? value = Environment.GetEnvironmentVariable(_envName, EnvironmentVariableTarget.Process);
+
+            if (string.IsNullOrEmpty(value))
+            {
+                Console.WriteLine($"Var {_envName} not found in process', checking User's");
+                value = Environment.GetEnvironmentVariable(_envName, EnvironmentVariableTarget.User);
+            }
+            if (string.IsNullOrEmpty(value))
+            {
+                Console.WriteLine($"Var {_envName} not found in User's, checking Machine's");
+                value = Environment.GetEnvironmentVariable(_envName, EnvironmentVariableTarget.Machine);
+            }
+            if (string.IsNullOrEmpty(value))
+            {
+                throw new NullReferenceException("Could not find API key.");
+            }
+
+            return value;
+        }
+        private string GetPasswordHash(out byte[] salt)
+        {
+            salt = RandomNumberGenerator.GetBytes(128 / 8);
+
+            var argon2 = new Argon2id(Encoding.UTF8.GetBytes(GetEnvVariable().Split(";")[0]))
+            {
+                Salt = salt,
+                DegreeOfParallelism = 2,
+                Iterations = 4,
+                MemorySize = 512 * 512
+            };
+            byte[] hash = argon2.GetBytes(64);
+
+            return Convert.ToBase64String(hash);
         }
     }
 }

@@ -7,7 +7,7 @@ namespace SystemInfoClient.Classes
     {
         public string? MachineId { get; set; }
         public string? CustomerId { get; set; }
-        public string? ApiUrl { get; set; }
+        public string ApiUrl { get; set; }
         public Dictionary<string, ApplicationSettings>? ApplicationsList { get; set; }
 
         [JsonIgnore]
@@ -20,7 +20,7 @@ namespace SystemInfoClient.Classes
         private SettingsClass() { } // Private constructor to avoid direct instantiation without using factory method
 
         [JsonConstructor] // Public constructor for the JsonSerializer
-        public SettingsClass(string? machineId, string? customerId, string? apiUrl, Dictionary<string, ApplicationSettings>? applicationsList)
+        public SettingsClass(string? machineId, string? customerId, string apiUrl, Dictionary<string, ApplicationSettings>? applicationsList)
         {
             MachineId = machineId;
             CustomerId = customerId;
