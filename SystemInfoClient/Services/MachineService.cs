@@ -39,7 +39,7 @@ namespace SystemInfoClient.Services
                 await client.PostAsync(route, content) : 
                 await client.PutAsync(route, content);
         }
-        public async void HandleResponseAsync(HttpResponseMessage response, MachineClass machine, SettingsClass settings)
+        public async Task HandleResponseAsync(HttpResponseMessage response, MachineClass machine, SettingsClass settings)
         {
             if (await IsResponseOkAsync(response, machine))
             {
@@ -84,9 +84,9 @@ namespace SystemInfoClient.Services
 
                 // Try to obtain a new token
                 Console.WriteLine("Requesting new token...");
-                var newToken = _securityService.RequestTokenAsync().Result;
+                var newToken = await _securityService.RequestTokenAsync();
                 Console.WriteLine($"New token: {newToken}");
-                HttpResponseMessage retryResponse = SendMachineInfoAsync(machine, newToken).Result;
+                HttpResponseMessage retryResponse = await SendMachineInfoAsync(machine, newToken);
 
                 Console.WriteLine($"Retry response status code:{retryResponse.IsSuccessStatusCode}");
                 return retryResponse.IsSuccessStatusCode;

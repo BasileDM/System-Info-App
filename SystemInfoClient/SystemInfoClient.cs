@@ -29,7 +29,7 @@ namespace SystemInfoClient
                 HttpResponseMessage response = await machineService.SendMachineInfoAsync(machine, token);
 
                 // Handle API response
-                machineService.HandleResponseAsync(response, machine, settings);
+                await machineService.HandleResponseAsync(response, machine, settings);
             }
             catch (Exception ex)
             {
