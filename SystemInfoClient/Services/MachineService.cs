@@ -45,10 +45,15 @@ namespace SystemInfoClient.Services
         {
             switch (response.StatusCode)
             {
-                // Success
+                // Machine creation
                 case HttpStatusCode.OK when response.Headers.Location != null:
                     Logger.LogSuccessDetails(response);
                     UpdateSettingsWithId(response, settings);
+                    break;
+
+                // Machine update
+                case HttpStatusCode.Created:
+                    Logger.LogSuccessDetails(response);
                     break;
 
                 // Unauthorized

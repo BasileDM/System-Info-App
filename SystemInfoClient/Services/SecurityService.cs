@@ -55,7 +55,8 @@ namespace SystemInfoClient.Services
 
                 if (tokenResponse?.Token != null)
                 {
-                    Logger.WriteColored($"Token obtained with success:\r\n{tokenResponse.Token}", ConsoleColor.Green);
+                    Logger.WriteColored($"Token obtained with success: ", ConsoleColor.Green);
+                    Console.WriteLine(tokenResponse.Token);
                     StoreToken(tokenResponse.Token);
                     return tokenResponse.Token;
                 }
@@ -82,7 +83,7 @@ namespace SystemInfoClient.Services
         }
         private string? GetToken()
         {
-            string[] envVars = GetEnvVariable().Split(";");
+            string[] envVars = GetEnvVariableValue().Split(";");
             if (envVars.Length > 1)
             {
                 return envVars[1];
@@ -94,11 +95,12 @@ namespace SystemInfoClient.Services
         }
         private void StoreToken(string value)
         {
-            string env = GetEnvVariable();
-            env = env + ";" + value;
-            Environment.SetEnvironmentVariable(_envName, env, EnvironmentVariableTarget.User);
+            string envValue = GetEnvVariableValue();
+            string pass = envValue.Split(";")[0];
+            envValue = pass + ";" + value;
+            Environment.SetEnvironmentVariable(_envName, envValue, EnvironmentVariableTarget.User);
         }
-        private string GetEnvVariable()
+        private string GetEnvVariableValue()
         {
             string? value = Environment.GetEnvironmentVariable(_envName, EnvironmentVariableTarget.Process);
 
@@ -121,7 +123,7 @@ namespace SystemInfoClient.Services
         {
             salt = RandomNumberGenerator.GetBytes(128 / 8);
 
-            var argon2 = new Argon2id(Encoding.UTF8.GetBytes(GetEnvVariable().Split(";")[0]))
+            var argon2 = new Argon2id(Encoding.UTF8.GetBytes(GetEnvVariableValue().Split(";")[0]))
             {
                 Salt = salt,
                 DegreeOfParallelism = 2,
