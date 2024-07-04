@@ -13,7 +13,7 @@ namespace SystemInfoClient.Services
     {
         private readonly string _apiUrl;
         private readonly string _envName = "SysInfoApp";
-        private readonly string _flag = "enc.";
+        private readonly string _flag = "54a7dV4o87.";
         private string EnvValue
         {
             get
@@ -161,7 +161,7 @@ namespace SystemInfoClient.Services
             {
                 wasDecoded = true;
                 string unflagged = encodedString.Substring(_flag.Length);
-                Console.WriteLine($"Decoding, env was unflagged");
+                Console.WriteLine($"Decoding en variable...");
                 byte[] bytes;
 
                 try
@@ -170,9 +170,8 @@ namespace SystemInfoClient.Services
                 }
                 catch (FormatException)
                 {
-                    ConsoleUtils.WriteColored(
-                        $"The env variable can't be converted from base64 even though the flag was detected.\r\n" +
-                        $"This must mean that it's a clear password, starting with the flag by accident.", ConsoleColor.DarkYellow);
+                    // If the env variable can't be converted from base64 even though the flag was detected...
+                    // ...it's a clear password, starting with the flag by accident.
                     wasDecoded = false;
                     return encodedString;
                 }
@@ -189,10 +188,7 @@ namespace SystemInfoClient.Services
                 }
                 else
                 {
-                    // If inner flag is not present, it means the original string was not properly encoded
-                    ConsoleUtils.WriteColored(
-                        "Decoded string does not contain the expected marker.\r\n" +
-                        "Returning the original encoded string.", ConsoleColor.DarkYellow);
+                    // If the inner flag is not present, it means the original string was not encoded by the app
                     wasDecoded = false;
                     return encodedString;
                 }
@@ -200,8 +196,6 @@ namespace SystemInfoClient.Services
             else
             {
                 wasDecoded = false;
-                Console.WriteLine($"Flag not found returning string without decoding:");
-                Console.WriteLine(encodedString + "\r\n");
                 return encodedString;
             }
         }
