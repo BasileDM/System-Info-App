@@ -29,7 +29,7 @@ namespace SystemInfoApi.Services
                 byte[] hash = argon2.GetBytes(64);
                 string computedPass = Convert.ToBase64String(hash);
 
-                if (providedPass == computedPass)
+                if (SecureCompare(providedPass, computedPass))
                 {
                     Console.WriteLine("Password is valid.");
                     return true;
@@ -45,6 +45,17 @@ namespace SystemInfoApi.Services
                 Console.WriteLine($"Error verifying password: {ex.Message}");
                 throw new Exception("The password could not be verified.", ex);
             }
+        }
+        private static bool SecureCompare(string a, string b)
+        {
+            if (a.Length != b.Length) return false;
+
+            int diff = 0;
+            for (int i = 0; i < a.Length; i++)
+            {
+                diff |= a[i] ^ b[i];
+            }
+            return diff == 0;
         }
         public static (string Hash, byte[] Salt) DecodeSaltAndHash(string saltAndHashBase64, int saltLength, int hashLength)
         {
@@ -100,7 +111,7 @@ namespace SystemInfoApi.Services
         }
         public static int ValidateExpirationTime(string? time)
         {
-            if (!string.IsNullOrEmpty(time) && Int32.TryParse(time, out int parsedTime)) 
+            if (!string.IsNullOrEmpty(time) && Int32.TryParse(time, out int parsedTime))
             {
                 return parsedTime;
             }
@@ -150,6 +161,5 @@ namespace SystemInfoApi.Services
             Console.WriteLine($"New token requested from: {connectionInfo.RemoteIpAddress?.ToString()}");
             Console.WriteLine($"Request Content: \r\nHash: {request.Pass}");
         }
-
     }
 }
