@@ -28,7 +28,7 @@ namespace SystemInfoApi.Controllers
                 string validIssuer = AuthenticationService.ValidateIssuer(_config["Jwt:Issuer"]);
                 int validExpiration = AuthenticationService.ValidateExpirationTime(_config["Jwt:Expiration"]);
 
-                if (!AuthenticationService.VerifyPassword(validPass, request.Pass, request.Salt))
+                if (!AuthenticationService.VerifyPassword(validPass, request.Pass))
                 {
                     return Unauthorized();
                 }
@@ -53,7 +53,5 @@ namespace SystemInfoApi.Controllers
     {
         [Required]
         public string Pass { get; set; }
-        [Required]
-        public byte[] Salt { get; set; }
     }
 }

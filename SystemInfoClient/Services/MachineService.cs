@@ -1,6 +1,5 @@
 ﻿using System.Net.Http.Headers;
 using System.Text;
-using System.Text.Json.Serialization;
 using SystemInfoClient.Classes.System;
 using System.Runtime.Versioning;
 using SystemInfoClient.Classes;
@@ -23,7 +22,7 @@ namespace SystemInfoClient.Services
 
         public async Task<HttpResponseMessage> SendMachineInfoAsync(MachineClass machine, string token)
         {
-            Logger.WriteColored("Sending machine info...", ConsoleColor.Yellow);
+            ConsoleUtils.WriteColored("Sending machine info...", ConsoleColor.Yellow);
 
             // Build HTTP Client and add authorization header with token
             HttpClient client = HttpClientFactory.CreateHttpClient();
@@ -47,18 +46,18 @@ namespace SystemInfoClient.Services
             {
                 // Machine creation
                 case HttpStatusCode.OK when response.Headers.Location != null:
-                    Logger.LogSuccessDetails(response);
+                    ConsoleUtils.LogSuccessDetails(response);
                     UpdateSettingsWithId(response, settings);
                     break;
 
                 // Machine update
                 case HttpStatusCode.Created:
-                    Logger.LogSuccessDetails(response);
+                    ConsoleUtils.LogSuccessDetails(response);
                     break;
 
                 // Unauthorized
                 case HttpStatusCode.Unauthorized:
-                    Logger.LogAuthorizationError(response);
+                    ConsoleUtils.LogAuthorizationError(response);
 
                     // Try to obtain a new token
                     var newToken = await _securityService.RequestTokenAsync();
@@ -67,7 +66,7 @@ namespace SystemInfoClient.Services
                     HttpResponseMessage retryResponse = await SendMachineInfoAsync(machine, newToken);
 
                     retryResponse.EnsureSuccessStatusCode();
-                    Logger.LogSuccessDetails(retryResponse);
+                    ConsoleUtils.LogSuccessDetails(retryResponse);
                     UpdateSettingsWithId(retryResponse, settings);
                     break;
 
@@ -108,11 +107,5 @@ namespace SystemInfoClient.Services
                 throw new InvalidDataException("The machine ID sent by the API was invalid.");
             }
         }
-    }
-
-    public class TokenResponse
-    {
-        [JsonPropertyName("token")]
-        public string Token { get; set; }
     }
 }

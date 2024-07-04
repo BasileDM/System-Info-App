@@ -8,10 +8,16 @@ namespace SystemInfoApi.Services
 {
     public class AuthenticationService
     {
-        public static bool VerifyPassword(string pass, string providedHash, byte[] providedSalt)
+        public static bool VerifyPassword(string pass, string providedHash)
         {
             try
             {
+                var (Hash, Salt) = DecodeSaltAndHash(providedHash, 16, 64);
+                string providedPass = Hash;
+                Console.WriteLine($"Provided pass: {providedPass}");
+                byte[] providedSalt = Salt;
+                Console.WriteLine($"Provided salt: {Convert.ToHexString(providedSalt)}");
+
                 var argon2 = new Argon2id(Encoding.UTF8.GetBytes(pass))
                 {
                     Salt = providedSalt,
@@ -21,9 +27,9 @@ namespace SystemInfoApi.Services
                 };
 
                 byte[] hash = argon2.GetBytes(64);
-                string computedHash = Convert.ToBase64String(hash);
+                string computedPass = Convert.ToBase64String(hash);
 
-                if (providedHash == computedHash)
+                if (providedPass == computedPass)
                 {
                     Console.WriteLine("Password is valid.");
                     return true;
@@ -39,6 +45,24 @@ namespace SystemInfoApi.Services
                 Console.WriteLine($"Error verifying password: {ex.Message}");
                 throw new Exception("The password could not be verified.", ex);
             }
+        }
+        public static (string Hash, byte[] Salt) DecodeSaltAndHash(string saltAndHashBase64, int saltLength, int hashLength)
+        {
+            // Decode the base64 string to get the combined byte array
+            byte[] saltAndHash = Convert.FromBase64String(saltAndHashBase64);
+
+            // Extract the salt from the combined byte array
+            byte[] salt = new byte[saltLength];
+            Buffer.BlockCopy(saltAndHash, 0, salt, 0, salt.Length);
+
+            // Extract the hash from the combined byte array
+            byte[] hash = new byte[hashLength];
+            Buffer.BlockCopy(saltAndHash, salt.Length, hash, 0, hash.Length);
+
+            // Convert the hash to a base64 string
+            string hashBase64 = Convert.ToBase64String(hash);
+
+            return (hashBase64, salt);
         }
         public static string GenerateJwtToken(string secret, string issuer, int expirationTime)
         {
@@ -124,7 +148,7 @@ namespace SystemInfoApi.Services
         {
             Console.WriteLine();
             Console.WriteLine($"New token requested from: {connectionInfo.RemoteIpAddress?.ToString()}");
-            Console.WriteLine($"Request Content: \r\nHash: {request.Pass}, \r\nSalt: {Convert.ToHexString(request.Salt)}");
+            Console.WriteLine($"Request Content: \r\nHash: {request.Pass}");
         }
 
     }

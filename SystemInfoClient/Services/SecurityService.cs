@@ -3,6 +3,7 @@ using System.Runtime.Versioning;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using SystemInfoApi.Utilities;
 
 namespace SystemInfoClient.Services
@@ -12,8 +13,6 @@ namespace SystemInfoClient.Services
     {
         private readonly string _apiUrl;
         private readonly string _envName = "SysInfoApp";
-        private readonly byte[] _key = Convert.FromBase64String("vgIBk3E0UTqRlCog5OqyxNAvHU0kpue9gxTbMt24n1g=");
-        private readonly byte[] _iv = Convert.FromHexString("ee62dd0adcbf5a6a");
         private readonly string _flag = "enc.";
 
         public SecurityService(string apiUrl)
@@ -23,7 +22,7 @@ namespace SystemInfoClient.Services
 
         public async Task<string> GetOrRequestTokenAsync()
         {
-            string? token = GetToken();
+            string? token = GetTokenFromEnv();
             if (string.IsNullOrEmpty(token))
             {
                 token = await RequestTokenAsync();
@@ -35,17 +34,18 @@ namespace SystemInfoClient.Services
         {
             try
             {
-                Logger.WriteColored("Requesting new token...", ConsoleColor.Yellow);
-                var hash = GetPasswordHash(out byte[] salt);
+                ConsoleUtils.WriteColored("Requesting new token...", ConsoleColor.Yellow);
+                var hash = GetHashedPassFromEnv();
+                Console.WriteLine($"Request token method, GetHash returned: {hash}");
 
                 // Prepare and send request
                 HttpClient client = HttpClientFactory.CreateHttpClient();
 
                 Console.WriteLine($"Token requested with: ");
-                Console.WriteLine($"Salt: {Convert.ToHexString(salt)}");
+                //Console.WriteLine($"Salt: {Convert.ToHexString(salt)}");
                 Console.WriteLine($"Hash: {hash}");
 
-                var authRequest = new { Pass = hash, Salt = salt };
+                var authRequest = new { Pass = hash };
                 var content = new StringContent(JsonSerializer.Serialize(authRequest), Encoding.UTF8, "application/json");
                 string route = $"{_apiUrl}api/Auth/GetToken";
 
@@ -58,7 +58,7 @@ namespace SystemInfoClient.Services
 
                 if (tokenResponse?.Token != null)
                 {
-                    Logger.WriteColored($"Token obtained with success: ", ConsoleColor.Green);
+                    ConsoleUtils.WriteColored($"Token obtained with success: ", ConsoleColor.Green);
                     Console.WriteLine(tokenResponse.Token);
                     StoreToken(tokenResponse.Token);
                     return tokenResponse.Token;
@@ -84,59 +84,115 @@ namespace SystemInfoClient.Services
                 throw new Exception("An unexpected error occurred while obtaining the authentication token.", ex);
             }
         }
-        private string? GetToken()
+        private string? GetTokenFromEnv()
         {
-            string envVar = GetEnvVariableValue();
-            if (envVar.Contains(_flag))
+            string envValue = GetEnvVariableValue();
+            Console.WriteLine($"Get token method: Decoded env value: {envValue}");
+            string[] splitValues = envValue.Split(";");
+
+            if (splitValues.Length > 1)
             {
-                string decoded = DecodeString(envVar);
-                string[] envVars = decoded.Split(";");
-                if (envVars.Length > 1)
-                {
-                    return envVars[1];
-                }
-                else
-                {
-                    return null;
-                }
+                Console.WriteLine($"Token found: {splitValues[1]}");
+                return splitValues[1];
             }
             else
             {
-                return envVar;
+                Console.WriteLine($"Token not found");
+                return null;
             }
         }
-        private void StoreToken(string value)
+        private void StoreToken(string token)
         {
-            string envValue = GetEnvVariableValue();
-            string pass = envValue.Split(";")[0];
-            envValue = pass + ";" + value;
-            string encoded = EncodeString(envValue);
-            Environment.SetEnvironmentVariable(_envName, $"{_flag}{encoded}", EnvironmentVariableTarget.User);
+            string pass = GetHashedPassFromEnv();
+            Console.WriteLine($"Store token method, Pass: {pass}");
+            string newValue = pass + ";" + token;
+            Console.WriteLine($"New value with token: {newValue}");
+            string encoded = EncodeString(newValue);
+            Console.WriteLine($"Encoded: {encoded}");
+            Environment.SetEnvironmentVariable(_envName, encoded, EnvironmentVariableTarget.User);
         }
         private string GetEnvVariableValue()
         {
-            string? value = Environment.GetEnvironmentVariable(_envName, EnvironmentVariableTarget.Process);
+            Console.WriteLine($"Getting env raw getEnvVariable() method.");
+            string? base64 = Environment.GetEnvironmentVariable(_envName, EnvironmentVariableTarget.User);
 
-            if (string.IsNullOrEmpty(value))
+            if (string.IsNullOrEmpty(base64))
             {
-                value = Environment.GetEnvironmentVariable(_envName, EnvironmentVariableTarget.User);
+                Console.WriteLine("Env not found in USERS, checking MACHINE");
+                base64 = Environment.GetEnvironmentVariable(_envName, EnvironmentVariableTarget.Machine);
             }
-            if (string.IsNullOrEmpty(value))
-            {
-                value = Environment.GetEnvironmentVariable(_envName, EnvironmentVariableTarget.Machine);
-            }
-            if (string.IsNullOrEmpty(value))
+            if (string.IsNullOrEmpty(base64))
             {
                 throw new NullReferenceException("Could not find API key.");
             }
 
-            return value;
-        }
-        private string GetPasswordHash(out byte[] salt)
-        {
-            salt = RandomNumberGenerator.GetBytes(128 / 8);
+            Console.WriteLine($"Raw : {base64}");
+            string decoded = DecodeString(base64, out bool wasDecoded);
+            if (wasDecoded)
+            {
+                Console.WriteLine("GetEnvValue method returned the decoded env variable.");
+                Console.WriteLine($"{decoded}");
+                return decoded;
+            }
+            else // If the flag is not found then the password is not yet hashed
+            {
+                string hash = HashString(base64);
+                string encoded = EncodeString(hash);
+                Environment.SetEnvironmentVariable(_envName, encoded, EnvironmentVariableTarget.User);
 
-            var argon2 = new Argon2id(Encoding.UTF8.GetBytes(GetEnvVariableValue().Split(";")[0]))
+                Console.WriteLine("GetEnvValue method returned the hash alone.");
+                Console.WriteLine($"{hash}");
+                return hash;
+            }
+        }
+        private string GetHashedPassFromEnv()
+        {
+            string envValue = GetEnvVariableValue();
+            string[] splitValues = envValue.Split(";");
+
+            if (splitValues.Length > 1 )
+            {
+                string pass = splitValues[0];
+                return pass;
+            } 
+            else
+            {
+                return envValue;
+            }
+
+        }
+        public string EncodeString(string source)
+        {
+            byte[] bytes = Encoding.UTF8.GetBytes(source);
+            string base64 = Convert.ToBase64String(bytes);
+            string flagged = _flag + base64;
+            return flagged;
+        }
+        public string DecodeString(string encodedString, out bool wasDecoded)
+        {
+            Console.WriteLine($"Decoding string: {encodedString}");
+            if (encodedString.Contains(_flag))
+            {
+                wasDecoded = true;
+                string unflagged = encodedString.Replace(_flag, "");
+                Console.WriteLine($"Flag found and removed :  {unflagged}");
+                byte[] bytes = Convert.FromBase64String(unflagged);
+                string decoded = Encoding.UTF8.GetString(bytes);
+                Console.WriteLine($"Decoded {decoded}");
+                return decoded;
+            }
+            else
+            {
+                wasDecoded = false;
+                Console.WriteLine($"Flag not found returning string without decoding");
+                return encodedString;
+            }
+        }
+        private static string HashString(string source)
+        {
+            byte[] salt = RandomNumberGenerator.GetBytes(128 / 8);
+
+            var argon2 = new Argon2id(Encoding.UTF8.GetBytes(source))
             {
                 Salt = salt,
                 DegreeOfParallelism = 2,
@@ -145,44 +201,17 @@ namespace SystemInfoClient.Services
             };
             byte[] hash = argon2.GetBytes(64);
 
-            return Convert.ToBase64String(hash);
+            // Concatenate the salt and hash
+            byte[] saltAndHash = new byte[salt.Length + hash.Length];
+            Buffer.BlockCopy(salt, 0, saltAndHash, 0, salt.Length);
+            Buffer.BlockCopy(hash, 0, saltAndHash, salt.Length, hash.Length);
+
+            return Convert.ToBase64String(saltAndHash);
         }
-        public string EncodeString(string source)
-        {
-            Console.WriteLine($"Encoding: {source}");
-            using Aes aes = Aes.Create();
-            aes.Key = _key;
-            aes.IV = _iv;
-
-            using MemoryStream memoryStream = new();
-
-            using (CryptoStream cryptoStream = new(memoryStream, aes.CreateEncryptor(), CryptoStreamMode.Write))
-            {
-                using StreamWriter sw = new(cryptoStream);
-                sw.Write(source);
-            }
-
-            byte[] encrypted = memoryStream.ToArray();
-            return Convert.ToBase64String(encrypted);
-        }
-        public string DecodeString(string encodedString)
-        {
-            Console.WriteLine($"Decoding: {encodedString}");
-            byte[] buffer = Convert.FromBase64String(encodedString);
-
-            using Aes aes = Aes.Create();
-            aes.Key = _key;
-            aes.IV = _iv;
-
-            using MemoryStream memoryStream = new(buffer);
-
-            using (CryptoStream cryptoStream = new(memoryStream, aes.CreateDecryptor(), CryptoStreamMode.Read))
-            {
-                using StreamReader streamReader = new(cryptoStream);
-                string decrypted = streamReader.ReadToEnd();
-                return decrypted;
-            }
-
-        }
+    }
+    public class TokenResponse
+    {
+        [JsonPropertyName("token")]
+        public string Token { get; set; }
     }
 }

@@ -1,6 +1,6 @@
 ﻿namespace SystemInfoApi.Utilities
 {
-    public class Logger
+    public class ConsoleUtils
     {
         public static void WriteColored(string message, ConsoleColor color)
         {
