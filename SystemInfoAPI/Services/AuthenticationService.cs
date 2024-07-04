@@ -48,12 +48,16 @@ namespace SystemInfoApi.Services
         }
         private static bool SecureCompare(string a, string b)
         {
-            if (a.Length != b.Length) return false;
+            if (a == null || b == null) return false;
 
-            int diff = 0;
-            for (int i = 0; i < a.Length; i++)
+            int diff = a.Length ^ b.Length;
+            int maxLength = Math.Max(a.Length, b.Length);
+
+            for (int i = 0; i < maxLength; i++)
             {
-                diff |= a[i] ^ b[i];
+                char charA = i < a.Length ? a[i] : '\0';
+                char charB = i < b.Length ? b[i] : '\0';
+                diff |= charA ^ charB;
             }
             return diff == 0;
         }
