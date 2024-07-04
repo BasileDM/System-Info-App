@@ -29,7 +29,7 @@ namespace SystemInfoClient.Services
                     throw new NullReferenceException("Could not find API key.");
                 }
 
-                string decoded = DecodeString(base64, out bool wasDecoded);
+                string decoded = DecodeStringIfFlagged(base64, out bool wasDecoded);
                 if (wasDecoded)
                 {
                     return decoded;
@@ -149,22 +149,53 @@ namespace SystemInfoClient.Services
         }
         private string EncodeString(string source)
         {
-            byte[] bytes = Encoding.UTF8.GetBytes(source);
+            string flaggedSource = _flag + source; 
+            byte[] bytes = Encoding.UTF8.GetBytes(flaggedSource);
             string base64 = Convert.ToBase64String(bytes);
             string flagged = _flag + base64;
             return flagged;
         }
-        private string DecodeString(string encodedString, out bool wasDecoded)
+        private string DecodeStringIfFlagged(string encodedString, out bool wasDecoded)
         {
-            if (encodedString.Contains(_flag))
+            if (encodedString.StartsWith(_flag))
             {
                 wasDecoded = true;
-                string unflagged = encodedString.Replace(_flag, "");
-                byte[] bytes = Convert.FromBase64String(unflagged);
+                string unflagged = encodedString.Substring(_flag.Length);
+                Console.WriteLine($"Decoding, env was unflagged");
+                byte[] bytes;
+
+                try
+                {
+                    bytes = Convert.FromBase64String(unflagged);
+                }
+                catch (FormatException)
+                {
+                    ConsoleUtils.WriteColored(
+                        $"The env variable can't be converted from base64 even though the flag was detected.\r\n" +
+                        $"This must mean that it's a clear password, starting with the flag by accident.", ConsoleColor.DarkYellow);
+                    wasDecoded = false;
+                    return encodedString;
+                }
+
                 string decoded = Encoding.UTF8.GetString(bytes);
                 Console.WriteLine($"Flag found, removed and string decoded:");
                 Console.WriteLine(decoded + "\r\n");
-                return decoded;
+
+                if (decoded.StartsWith(_flag))
+                {
+                    // Remove the inner flag before returning the decoded string
+                    decoded = decoded.Substring(_flag.Length);
+                    return decoded;
+                }
+                else
+                {
+                    // If inner flag is not present, it means the original string was not properly encoded
+                    ConsoleUtils.WriteColored(
+                        "Decoded string does not contain the expected marker.\r\n" +
+                        "Returning the original encoded string.", ConsoleColor.DarkYellow);
+                    wasDecoded = false;
+                    return encodedString;
+                }
             }
             else
             {
