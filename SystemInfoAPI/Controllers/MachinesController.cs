@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using SystemInfoApi.Models;
 using SystemInfoApi.Services;
+using SystemInfoApi.Utilities;
 
 namespace SystemInfoApi.Controllers
 {
@@ -17,26 +18,15 @@ namespace SystemInfoApi.Controllers
         {
             if (!ModelState.IsValid)
             {
-                Console.WriteLine("Failed to validate model.");
-                return BadRequest(ModelState);
+                Console.WriteLine("Failed to validate model: " + ModelState);
+                return BadRequest("Invalid request, check API logs for more information.");
             }
 
             try
             {
                 MachineModel newMachine = await machinesService.InsertFullMachineAsync(machine);
-
                 CreatedAtActionResult response = CreatedAtAction(nameof(GetById), new { machineId = newMachine.Id }, newMachine);
-
-                RouteValueDictionary? routeValues = response.RouteValues;
-                string? location = Url.Action(nameof(GetById), new { machineId = routeValues["machineId"] });
-                Console.WriteLine();
-                Console.WriteLine("A new machine has been created in the database.");
-                Console.WriteLine($"Time: {DateTime.Now.ToLocalTime}");
-                Console.WriteLine($"Customer ID: {newMachine.CustomerId}");
-                Console.WriteLine($"Machine ID: {newMachine.Id}");
-                Console.WriteLine($"Machine name: {newMachine.Name}");
-                Console.WriteLine($"Drives amount: {newMachine.Drives.Count}");
-                Console.WriteLine($"Location: {location}");
+                ConsoleUtils.LogCreationInfo(response.RouteValues, newMachine, Url);
 
                 return response;
             }
@@ -57,6 +47,8 @@ namespace SystemInfoApi.Controllers
         [Consumes("application/json")]
         public async Task<ActionResult<MachineModel>> Update(int machineId, [FromBody] MachineModel machine)
         {
+            Console.WriteLine($"Issuing request to update a machine with ID: {machine.Id}");
+
             if (!ModelState.IsValid)
             {
                 Console.WriteLine("Failed to validate model: " + ModelState);
@@ -96,6 +88,7 @@ namespace SystemInfoApi.Controllers
         [HttpGet]
         public async Task<ActionResult<List<MachineModel>>> GetAll()
         {
+            Console.WriteLine($"Issuing request to get all machines.");
             List<MachineModel> machinesList = await machinesService.GetAllAsync();
 
             if (machinesList.Count > 0)

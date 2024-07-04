@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
 using SystemInfoApi.Services;
+using SystemInfoApi.Utilities;
 
 namespace SystemInfoApi.Controllers
 {
@@ -21,7 +22,7 @@ namespace SystemInfoApi.Controllers
         {
             try
             {
-                AuthenticationService.LogRequestInfo(request, HttpContext.Connection);
+                ConsoleUtils.LogAuthRequestInfo(request, HttpContext.Connection);
 
                 string validPass = AuthenticationService.ValidateApiPass(_config["ApiPassword"]);
                 string validSecret = AuthenticationService.ValidateSecret(_config["Jwt:Secret"]);

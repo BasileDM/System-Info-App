@@ -2,7 +2,6 @@
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Text;
-using SystemInfoApi.Controllers;
 
 namespace SystemInfoApi.Services
 {
@@ -14,8 +13,8 @@ namespace SystemInfoApi.Services
             {
                 var (Hash, Salt) = DecodeSaltAndHash(providedHash, 16, 64);
                 string providedPass = Hash;
-                Console.WriteLine($"Provided pass: {providedPass}");
                 byte[] providedSalt = Salt;
+                Console.WriteLine($"Provided pass hash: {providedPass}");
                 Console.WriteLine($"Provided salt: {Convert.ToHexString(providedSalt)}");
 
                 var argon2 = new Argon2id(Encoding.UTF8.GetBytes(pass))
@@ -158,12 +157,6 @@ namespace SystemInfoApi.Services
             {
                 throw new InvalidDataException("Invalid API password in appsettings.json, the password must be at least 20 characters.");
             }
-        }
-        public static void LogRequestInfo(AuthRequest request, ConnectionInfo connectionInfo)
-        {
-            Console.WriteLine();
-            Console.WriteLine($"New token requested from: {connectionInfo.RemoteIpAddress?.ToString()}");
-            Console.WriteLine($"Request Content: \r\nHash: {request.Pass}");
         }
     }
 }
