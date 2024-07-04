@@ -44,26 +44,15 @@ namespace SystemInfoClient.Services
                 }
             }
         }
-
         private string HashedPass
         {
             get
             {
                 string envValue = EnvValue;
                 string[] splitValues = envValue.Split(";");
-
-                if (splitValues.Length > 1)
-                {
-                    string pass = splitValues[0];
-                    return pass;
-                }
-                else
-                {
-                    return envValue;
-                }
+                return splitValues[0];
             }
         }
-
         private string? Token
         {
             get
@@ -98,13 +87,12 @@ namespace SystemInfoClient.Services
             }
             return token;
         }
-
         public async Task<string> RequestTokenAsync()
         {
             try
             {
                 ConsoleUtils.WriteColored("Requesting new token...", ConsoleColor.Yellow);
-                var hash = HashedPass;
+                string hash = HashedPass;
 
                 // Prepare and send request
                 HttpClient client = HttpClientFactory.CreateHttpClient();
@@ -127,7 +115,7 @@ namespace SystemInfoClient.Services
                 {
                     ConsoleUtils.WriteColored($"Token obtained with success: ", ConsoleColor.Green);
                     Console.WriteLine(tokenResponse.Token);
-                    StoreToken(tokenResponse.Token);
+                    StoreToken(hash, tokenResponse.Token);
 
                     return tokenResponse.Token;
                 }
@@ -152,15 +140,13 @@ namespace SystemInfoClient.Services
                 throw new Exception("An unexpected error occurred while obtaining the authentication token.", ex);
             }
         }
-
-        private void StoreToken(string token)
+        private void StoreToken(string passHash, string token)
         {
-            string pass = HashedPass;
-            string newValue = pass + ";" + token;
+            string newValue = passHash + ";" + token;
+            Console.WriteLine($"Encoding new env value: {newValue}");
             string encoded = EncodeString(newValue);
             Environment.SetEnvironmentVariable(_envName, encoded, EnvironmentVariableTarget.User);
         }
-
         private string EncodeString(string source)
         {
             byte[] bytes = Encoding.UTF8.GetBytes(source);
@@ -168,27 +154,26 @@ namespace SystemInfoClient.Services
             string flagged = _flag + base64;
             return flagged;
         }
-
         private string DecodeString(string encodedString, out bool wasDecoded)
         {
-            Console.WriteLine($"Decoding string: {encodedString}\r\n");
             if (encodedString.Contains(_flag))
             {
                 wasDecoded = true;
                 string unflagged = encodedString.Replace(_flag, "");
                 byte[] bytes = Convert.FromBase64String(unflagged);
                 string decoded = Encoding.UTF8.GetString(bytes);
-                Console.WriteLine($"Flag found, removed and string decoded.\r\n");
+                Console.WriteLine($"Flag found, removed and string decoded:");
+                Console.WriteLine(decoded + "\r\n");
                 return decoded;
             }
             else
             {
                 wasDecoded = false;
-                Console.WriteLine($"Flag not found returning string without decoding\r\n");
+                Console.WriteLine($"Flag not found returning string without decoding:");
+                Console.WriteLine(encodedString + "\r\n");
                 return encodedString;
             }
         }
-
         private static string HashString(string source)
         {
             Console.WriteLine($"Hashing string: {source}");
@@ -215,7 +200,6 @@ namespace SystemInfoClient.Services
             Console.WriteLine($"Concat salt and hash: {hashSaltConcatString}");
             return hashSaltConcatString;
         }
-
     }
 
     public class TokenResponse
