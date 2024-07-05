@@ -1,4 +1,6 @@
-﻿using System.Data.SqlClient;
+﻿using System.Collections;
+using System.Data.SqlClient;
+using SystemInfoApi.Utilities;
 
 namespace SystemInfoApi.Classes
 {
@@ -16,8 +18,8 @@ namespace SystemInfoApi.Classes
 
         public Database(IConfiguration configuration, IWebHostEnvironment env)
         {
-            string coStrValue = env.IsDevelopment() ? "SystemInfoDbDev" : "SysteminfoDb";
-            _ConnectionString = configuration.GetSection("ConnectionStrings")[coStrValue];
+            string connectionStrValue = env.IsDevelopment() ? "SystemInfoDbDev" : "SysteminfoDb";
+            _ConnectionString = configuration.GetSection("ConnectionStrings")[connectionStrValue];
 
             CustomersTableNames = new();
             MachinesTableNames = new();
@@ -37,9 +39,22 @@ namespace SystemInfoApi.Classes
             {
                 using SqlConnection connection = CreateConnection();
                 TryOpenConnection(connection);
+
+                // Check auto migration configuration
+                string? autoMigration = app.Configuration.GetSection("AutoMigration").Value;
+
                 if (!DoTablesExist(connection))
                 {
-                    PromptTablesCreation();
+                    if (autoMigration != null && String.Equals(autoMigration.ToLower(), "true"))
+                    {
+                        CreateTablesAsync().Wait();
+                    }
+                    else
+                    {
+                        throw new ApplicationException(
+                            "Warning: Mandatory database tables were not detected.\r\n " +
+                            "Switch auto-migration to true in appsetings.json, or make sure the tables are created in the database for the program to function.");
+                    }
                 }
             }
             catch (Exception ex)
@@ -80,25 +95,6 @@ namespace SystemInfoApi.Classes
                 throw new Exception($"Error verifying database tables: {ex.Message}");
             }
         }
-        private void PromptTablesCreation()
-        {
-            string? answer;
-            do
-            {
-                Console.WriteLine("Database tables not detected. Do you want to create them ? y/n ");
-                answer = Console.ReadLine()?.ToLower();
-
-            } while (answer != "y" && answer != "n");
-
-            if (answer == "y")
-            {
-                CreateTablesAsync().Wait();
-            }
-            else if (answer == "n")
-            {
-                throw new Exception("Table creation has been aborted, the app will shut down.");
-            }
-        }
         private async Task<bool> CreateTablesAsync()
         {
             return await MakeTransactionAsync(async (connection, transaction) =>
@@ -135,38 +131,43 @@ namespace SystemInfoApi.Classes
             await using SqlConnection connection = CreateConnection();
             await connection.OpenAsync();
             var transaction = connection.BeginTransaction();
+            connection.StatisticsEnabled = true;
             Console.WriteLine("\r\nNew database transaction initiated.");
+
             var currentColor = Console.ForegroundColor;
 
             try
             {
                 T result = await operation(connection, transaction);
                 await transaction.CommitAsync();
-                Console.ForegroundColor = ConsoleColor.Green;
-                Console.WriteLine("Database transaction successful.");
-                Console.ForegroundColor = currentColor;
+                ConsoleUtils.WriteColored("Database transaction successful.", ConsoleColor.Green);
                 return result;
             }
             catch (ArgumentException ex)
             {
                 await transaction.RollbackAsync();
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine("Rolling back transaction due to an argument error:\r\n" + ex.Message);
-                Console.ForegroundColor = currentColor;
+                ConsoleUtils.WriteColored("Rolling back transaction due to an argument error:\r\n" + ex.Message, ConsoleColor.Red);
                 throw new ArgumentException("Error finalising the transaction with the database.", ex.Message);
             }
             catch (Exception ex)
             {
                 await transaction.RollbackAsync();
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine("Rolling back transaction due to an unexpected error:\r\n" + ex.Message);
-                Console.ForegroundColor = currentColor;
+
+                ConsoleUtils.WriteColored("Rolling back transaction due to an argument error:\r\n" + ex.Message, ConsoleColor.Red);
                 throw new ApplicationException("Error finalising the transaction with the database.", ex);
             }
             finally
             {
                 await transaction.DisposeAsync();
                 await connection.CloseAsync();
+
+                // Display connection stats
+                var stats = connection.RetrieveStatistics();
+                foreach (DictionaryEntry stat in stats)
+                {
+                    Console.WriteLine($"{stat.Key} : {stat.Value}");
+                }
+                Console.WriteLine();
             }
         }
     }

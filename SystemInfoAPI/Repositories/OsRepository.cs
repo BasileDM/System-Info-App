@@ -49,7 +49,6 @@ namespace SystemInfoApi.Repositories
                 throw new ApplicationException($"An error occured inserting the OS into the database: {ex}", ex);
             }
         }
-
         public async Task<OsModel> UpdateAsync(OsModel os, SqlConnection connection, SqlTransaction transaction)
         {
             try

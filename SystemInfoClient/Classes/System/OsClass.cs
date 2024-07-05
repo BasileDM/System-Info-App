@@ -1,7 +1,7 @@
 ﻿using Microsoft.Win32;
 using System.Runtime.Versioning;
 
-namespace SystemInfoClient.Classes
+namespace SystemInfoClient.Classes.System
 {
     public class OsClass
     {
@@ -14,7 +14,8 @@ namespace SystemInfoClient.Classes
         public string? Ubr { get; set; }
 
         [SupportedOSPlatform("windows")]
-        public OsClass() {
+        public OsClass()
+        {
             try
             {
                 Directory = Environment.SystemDirectory;
@@ -44,7 +45,8 @@ namespace SystemInfoClient.Classes
             }
         }
 
-        public void LogInfo() {
+        public void LogInfo()
+        {
             Console.WriteLine($"    OS System Directory: {Directory}");
             Console.WriteLine($"    OS Architecture: {Architecture}");
             Console.WriteLine($"    OS Version: {Version}");

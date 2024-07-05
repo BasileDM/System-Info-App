@@ -1,7 +1,7 @@
 ﻿using System.Runtime.Versioning;
 using System.Text.Json;
 
-namespace SystemInfoClient.Classes
+namespace SystemInfoClient.Classes.System
 {
     [SupportedOSPlatform("windows")]
     public class MachineClass
@@ -39,7 +39,7 @@ namespace SystemInfoClient.Classes
                                     AppClass appClass = new(appSettings);
                                     driveAppsList.Add(appClass);
                                 }
-                            } 
+                            }
                         }
                         bool isSystemDriveBool = drive.Name == systemDrive;
                         Drives.Add(new DriveClass(drive, isSystemDriveBool, driveAppsList));

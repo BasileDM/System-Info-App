@@ -7,7 +7,7 @@ namespace SystemInfoClient.Classes
     {
         public string? MachineId { get; set; }
         public string? CustomerId { get; set; }
-        public string? ApiUrl { get; set; }
+        public string ApiUrl { get; set; }
         public Dictionary<string, ApplicationSettings>? ApplicationsList { get; set; }
 
         [JsonIgnore]
@@ -20,7 +20,7 @@ namespace SystemInfoClient.Classes
         private SettingsClass() { } // Private constructor to avoid direct instantiation without using factory method
 
         [JsonConstructor] // Public constructor for the JsonSerializer
-        public SettingsClass(string? machineId, string? customerId, string? apiUrl, Dictionary<string, ApplicationSettings>? applicationsList)
+        public SettingsClass(string? machineId, string? customerId, string apiUrl, Dictionary<string, ApplicationSettings>? applicationsList)
         {
             MachineId = machineId;
             CustomerId = customerId;
@@ -90,18 +90,15 @@ namespace SystemInfoClient.Classes
             try
             {
                 string path = GetFilePath();
-                string json = File.ReadAllText(path);
                 SettingsClass settings = GetInstance();
                 settings.MachineId = newMachineId;
+                string json = JsonSerializer.Serialize(settings, SerializerOptions);
 
-                string newJson = JsonSerializer.Serialize(settings, SerializerOptions);
-
-                File.WriteAllText(path, newJson);
-                Console.WriteLine($"New machine id: {newMachineId}\r\n New settings.json content:\r\n{newJson}");
+                File.WriteAllText(path, json);
+                Console.WriteLine($"New machine id: {newMachineId}\r\n New settings.json content:\r\n{json}");
             }
             catch (Exception ex)
             {
-
                 Console.WriteLine($"{ex.Message} + {ex}");
             }
         }
