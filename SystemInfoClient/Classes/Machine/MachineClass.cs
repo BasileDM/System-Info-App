@@ -12,7 +12,7 @@ namespace SystemInfoClient.Classes.System
         public List<DriveClass> Drives { get; set; }
         private JsonSerializerOptions SerializerOptions { get; set; }
 
-        public MachineClass(SettingsClass settings)
+        public MachineClass(Settings settings)
         {
             try
             {

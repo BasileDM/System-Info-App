@@ -12,25 +12,26 @@ namespace SystemInfoClient
         {
             try
             {
-                SettingsClass settings = SettingsClass.GetInstance();
-                SecurityService securityService = new(settings.ApiUrl);
+                Settings settings = Settings.GetInstance();
+                EnvVariable envVariable = new("SysInfoApp", "54a7dV4o87.");
+                SecurityService securityService = new(settings.ApiUrl, envVariable);
                 MachineService machineService = new(settings.ApiUrl, securityService);
 
                 // Create full machine with CustomerId, drives, os and apps info
                 MachineClass machine = new(settings);
 
                 // Fetch JWT token
-                string token = await securityService.GetTokenAsync();
+                JwtToken token = await securityService.GetTokenAsync();
 
                 // Send machine info to API route
-                HttpResponseMessage response = await machineService.SendMachineInfoAsync(machine, token);
+                HttpResponseMessage response = await machineService.SendMachineInfoAsync(machine, token.GetString());
 
                 // Handle API response
                 await machineService.HandleResponseAsync(response, machine, settings);
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error: " + ex.Message);
+                Console.WriteLine($"Error: " + ex.Message + ex);
             }
         }
     }

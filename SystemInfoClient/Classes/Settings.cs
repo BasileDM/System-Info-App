@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 
 namespace SystemInfoClient.Classes
 {
-    public class SettingsClass
+    public class Settings
     {
         public string? MachineId { get; set; }
         public string? CustomerId { get; set; }
@@ -17,10 +17,10 @@ namespace SystemInfoClient.Classes
         [JsonIgnore]
         private JsonSerializerOptions SerializerOptions { get; set; } = new() { WriteIndented = true };
 
-        private SettingsClass() { } // Private constructor to avoid direct instantiation without using factory method
+        private Settings() { } // Private constructor to avoid direct instantiation without using factory method
 
         [JsonConstructor] // Public constructor for the JsonSerializer
-        public SettingsClass(string? machineId, string? customerId, string apiUrl, Dictionary<string, ApplicationSettings>? applicationsList)
+        public Settings(string? machineId, string? customerId, string apiUrl, Dictionary<string, ApplicationSettings>? applicationsList)
         {
             MachineId = machineId;
             CustomerId = customerId;
@@ -31,12 +31,12 @@ namespace SystemInfoClient.Classes
             ParsedMachineId = GetParsedId(MachineId, "machine");
         }
 
-        /// <summary>Factory method that returns an instance of <see cref="SettingsClass"/>.</summary>
+        /// <summary>Factory method that returns an instance of <see cref="Settings"/>.</summary>
         /// <remarks>The instance will have its properties populated by deserializing the settings.json file</remarks>
         /// <returns>
-        ///     A <see cref="SettingsClass"/> instance created by <see cref="JsonSerializer"/>.
+        ///     A <see cref="Settings"/> instance created by <see cref="JsonSerializer"/>.
         /// </returns>
-        public static SettingsClass GetInstance()
+        public static Settings GetInstance()
         {
             try
             {
@@ -47,7 +47,7 @@ namespace SystemInfoClient.Classes
                     jsonSettings = reader.ReadToEnd();
                 }
 
-                SettingsClass settings = JsonSerializer.Deserialize<SettingsClass>(jsonSettings) ??
+                Settings settings = JsonSerializer.Deserialize<Settings>(jsonSettings) ??
                     throw new InvalidDataException("Deserialization of settings.json failed: null settings.");
 
                 return settings;
@@ -90,7 +90,7 @@ namespace SystemInfoClient.Classes
             try
             {
                 string path = GetFilePath();
-                SettingsClass settings = GetInstance();
+                Settings settings = GetInstance();
                 settings.MachineId = newMachineId;
                 string json = JsonSerializer.Serialize(settings, SerializerOptions);
 

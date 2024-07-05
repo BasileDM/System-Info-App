@@ -40,7 +40,7 @@ namespace SystemInfoClient.Services
                 await client.PostAsync(route, content) :
                 await client.PutAsync(route, content);
         }
-        public async Task HandleResponseAsync(HttpResponseMessage response, MachineClass machine, SettingsClass settings)
+        public async Task HandleResponseAsync(HttpResponseMessage response, MachineClass machine, Settings settings)
         {
             switch (response.StatusCode)
             {
@@ -60,10 +60,10 @@ namespace SystemInfoClient.Services
                     ConsoleUtils.LogAuthorizationError(response);
 
                     // Try to obtain a new token
-                    var newToken = await _securityService.RequestTokenAsync();
+                    JwtToken newToken = await _securityService.RequestTokenAsync();
 
                     // Send machine info with new token
-                    HttpResponseMessage retryResponse = await SendMachineInfoAsync(machine, newToken);
+                    HttpResponseMessage retryResponse = await SendMachineInfoAsync(machine, newToken.GetString());
 
                     retryResponse.EnsureSuccessStatusCode();
                     ConsoleUtils.LogSuccessDetails(retryResponse);
@@ -78,7 +78,7 @@ namespace SystemInfoClient.Services
                     break;
             }
         }
-        private static void UpdateSettingsWithId(HttpResponseMessage response, SettingsClass settings)
+        private static void UpdateSettingsWithId(HttpResponseMessage response, Settings settings)
         {
             string newMachineId = GetMachineIdFromResponse(response);
 
