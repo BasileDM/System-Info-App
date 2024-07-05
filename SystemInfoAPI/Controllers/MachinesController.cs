@@ -1,6 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using SystemInfoApi.Models;
 using SystemInfoApi.Services;
+using SystemInfoApi.Utilities;
 
 namespace SystemInfoApi.Controllers
 {
@@ -9,33 +11,23 @@ namespace SystemInfoApi.Controllers
     public class MachinesController(MachinesService machinesService) : ControllerBase
     {
         // POST: api/<Machines>/Create
+        [Authorize]
         [HttpPost]
         [Consumes("application/json")]
         public async Task<ActionResult<MachineModel>> Create([FromBody] MachineModel machine)
         {
             if (!ModelState.IsValid)
             {
-                Console.WriteLine("Failed to validate model.");
-                return BadRequest(ModelState);
+                Console.WriteLine("Failed to validate model: " + ModelState);
+                return BadRequest("Invalid request, check API logs for more information.");
             }
 
             try
             {
                 MachineModel newMachine = await machinesService.InsertFullMachineAsync(machine);
                 CreatedAtActionResult response = CreatedAtAction(nameof(GetById), new { machineId = newMachine.Id }, newMachine);
-                RouteValueDictionary? routeValues = response.RouteValues;
-                string? location = Url.Action(nameof(GetById), new { machineId = routeValues["machineId"] });
+                ConsoleUtils.LogCreationInfo(response.RouteValues, newMachine, Url);
 
-                Console.WriteLine(
-                    "\r\n" +
-                    "A new machine has been created in the database. \r\n" +
-                    $"Time: {DateTime.Now} \r\n" +
-                    $"Customer ID: {newMachine.CustomerId} \r\n" +
-                    $"Machine ID: {newMachine.Id} \r\n" +
-                    $"Machine name: {newMachine.Name} \r\n" +
-                    $"Drives amount: {newMachine.Drives.Count} \r\n" +
-                    $"Location: {location}"
-                );
                 return response;
             }
             catch (ArgumentException)
@@ -50,20 +42,23 @@ namespace SystemInfoApi.Controllers
         }
 
         // PUT : api/<Machines>/Update/{machineId}
+        [Authorize]
         [HttpPut("{machineId:int:min(0)}")]
         [Consumes("application/json")]
         public async Task<ActionResult<MachineModel>> Update(int machineId, [FromBody] MachineModel machine)
         {
+            Console.WriteLine($"Issuing request to update a machine with ID: {machine.Id}");
+
             if (!ModelState.IsValid)
             {
-                Console.WriteLine("Failed to validate model.");
-                return BadRequest(ModelState);
+                Console.WriteLine("Failed to validate model: " + ModelState);
+                return BadRequest("Invalid request, check API logs for more information.");
             }
 
             if (machineId != machine.Id)
             {
                 Console.WriteLine($"Machine Id mismatch. Route was Update/{machineId}, but machine id was {machine.Id}");
-                return BadRequest("Machine Id mismatch.");
+                return BadRequest("Machine Id error.");
             }
 
             try
@@ -74,8 +69,7 @@ namespace SystemInfoApi.Controllers
                 {
                     return NotFound($"Machine with ID {machineId} was not found.");
                 }
-
-                return Ok("Request successful.");
+                return CreatedAtRoute(nameof(GetById), new { machineId = updatedMachine.Id }, updatedMachine);
             }
             catch (ArgumentException ex)
             {
@@ -90,9 +84,11 @@ namespace SystemInfoApi.Controllers
         }
 
         // GET: api/<Machines>/GetAll
+        [Authorize]
         [HttpGet]
         public async Task<ActionResult<List<MachineModel>>> GetAll()
         {
+            Console.WriteLine($"Issuing request to get all machines.");
             List<MachineModel> machinesList = await machinesService.GetAllAsync();
 
             if (machinesList.Count > 0)
@@ -106,9 +102,11 @@ namespace SystemInfoApi.Controllers
         }
 
         // GET: api/<Machines>/GetById/{id}
-        [HttpGet("{machineId:int:min(0)}")]
+        [Authorize]
+        [HttpGet("{machineId:int:min(0)}", Name = nameof(GetById))]
         public async Task<ActionResult<MachineModel>> GetById(int machineId)
         {
+            Console.WriteLine($"Issuing request to get a machine by ID. Id: {machineId}");
             MachineModel machine = await machinesService.GetByIdAsync(machineId);
 
             if (machine.Id != 0)

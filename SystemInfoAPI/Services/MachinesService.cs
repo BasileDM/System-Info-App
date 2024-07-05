@@ -53,7 +53,6 @@ namespace SystemInfoApi.Services
                 return updatedMachine;
             });
         }
-
         public async Task<MachineModel> UpdateFullMachineAsync(MachineModel machine)
         {
             return await MakeTransactionAsync(async (connection, transaction) =>
@@ -100,18 +99,16 @@ namespace SystemInfoApi.Services
                     updatedDrivesList.Add(drive);
                 }
                 machine.Drives = updatedDrivesList;
-                Console.WriteLine("Machine updated successfully :\r\n");
+                Console.WriteLine($"Machine {machine.Id} has been updated.");
 
                 return machine;
             });
         }
-
         public async Task<MachineModel> GetByIdAsync(int machineId)
         {
             await using SqlConnection connection = CreateConnection();
             return await machinesRepository.GetByIdAsync(machineId, connection);
         }
-
         public async Task<List<MachineModel>> GetAllAsync()
         {
             await using SqlConnection connection = CreateConnection();

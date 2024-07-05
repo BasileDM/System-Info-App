@@ -1,0 +1,211 @@
+﻿using Konscious.Security.Cryptography;
+using System.Runtime.Versioning;
+using System.Security.Cryptography;
+using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using SystemInfoApi.Utilities;
+
+namespace SystemInfoClient.Services
+{
+    [SupportedOSPlatform("windows")]
+    internal class SecurityService
+    {
+        private readonly string _apiUrl;
+        private readonly string _envName = "SysInfoApp";
+        private readonly string _flag = "54a7dV4o87.";
+        private string EnvValue
+        {
+            get
+            {
+                string base64 = Environment.GetEnvironmentVariable(_envName, EnvironmentVariableTarget.User) ??
+                                Environment.GetEnvironmentVariable(_envName, EnvironmentVariableTarget.Machine) ??
+                                throw new NullReferenceException("Could not find API key.");
+
+                string decoded = DecodeStringIfFlagged(base64, out bool wasDecoded);
+                if (wasDecoded)
+                {
+                    return decoded;
+                }
+                else // If the flag is not found then the password is not yet hashed
+                {
+                    string hash = HashString(base64);
+                    string encoded = EncodeString(hash);
+                    Environment.SetEnvironmentVariable(_envName, encoded, EnvironmentVariableTarget.User);
+                    return hash;
+                }
+            }
+        }
+        private string? Token
+        {
+            get
+            {
+                string[] splitValues = EnvValue.Split(";");
+                return splitValues.Length > 1 ? splitValues[1] : null;
+            }
+            set
+            {
+                string newValue = $"{EnvValue.Split(";")[0]};{value}";
+                Environment.SetEnvironmentVariable(_envName, EncodeString(newValue), EnvironmentVariableTarget.User);
+            }
+        }
+
+        public SecurityService(string apiUrl)
+        {
+            _apiUrl = apiUrl ?? throw new Exception("Invalid API URL in settings.json");
+        }
+
+        public async Task<string> GetTokenAsync()
+        {
+            string? token = Token;
+            if (token == null)
+            {
+                Console.WriteLine("Token not found.");
+                token = await RequestTokenAsync();
+            }
+            else
+            {
+                Console.WriteLine($"Token found: \r\n{token}");
+            }
+
+            return token;
+        }
+        public async Task<string> RequestTokenAsync()
+        {
+            try
+            {
+                ConsoleUtils.WriteColored("Requesting new token...", ConsoleColor.Yellow);
+                string hash = EnvValue.Split(";")[0];
+
+                // Prepare and send request
+                HttpClient client = HttpClientFactory.CreateHttpClient();
+
+                Console.WriteLine($"Token requested with: ");
+                Console.WriteLine($"Hash: {hash}");
+
+                var authRequest = new { Pass = hash };
+                var content = new StringContent(JsonSerializer.Serialize(authRequest), Encoding.UTF8, "application/json");
+                string route = $"{_apiUrl}api/Auth/GetToken";
+
+                HttpResponseMessage response = await client.PostAsync(route, content);
+
+                // Handle response
+                response.EnsureSuccessStatusCode();
+                var jsonResponse = await response.Content.ReadAsStringAsync();
+                TokenResponse? tokenResponse = JsonSerializer.Deserialize<TokenResponse>(jsonResponse);
+
+                if (tokenResponse?.Token != null)
+                {
+                    ConsoleUtils.WriteColored($"Token obtained with success: ", ConsoleColor.Green);
+                    Console.WriteLine(tokenResponse.Token);
+
+                    Token = tokenResponse.Token;
+                    return tokenResponse.Token;
+                }
+                else
+                {
+                    throw new Exception("Null token.");
+                }
+            }
+            catch (HttpRequestException ex)
+            {
+                Console.WriteLine($"HTTP request error: {ex.Message}");
+                throw new Exception("Failed to obtain authentication token due to an HTTP request error.", ex);
+            }
+            catch (JsonException ex)
+            {
+                Console.WriteLine($"JSON serialization/deserialization error: {ex.Message}");
+                throw new Exception("Failed to parse the token response from the API.", ex);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Unexpected error: {ex.Message}");
+                throw new Exception("An unexpected error occurred while obtaining the authentication token.", ex);
+            }
+        }
+        private string EncodeString(string source)
+        {
+            string flaggedSource = _flag + source; 
+            byte[] bytes = Encoding.UTF8.GetBytes(flaggedSource);
+            string base64 = Convert.ToBase64String(bytes);
+            string flagged = _flag + base64;
+            return flagged;
+        }
+        private string DecodeStringIfFlagged(string encodedString, out bool wasDecoded)
+        {
+            if (encodedString.StartsWith(_flag))
+            {
+                wasDecoded = true;
+                string unflagged = encodedString.Substring(_flag.Length);
+                Console.WriteLine($"Decoding env variable...");
+                byte[] bytes;
+
+                try
+                {
+                    bytes = Convert.FromBase64String(unflagged);
+                }
+                catch (FormatException)
+                {
+                    // If the env variable can't be converted from base64 even though the flag was detected...
+                    // ...it's a clear password, starting with the flag by accident.
+                    wasDecoded = false;
+                    return encodedString;
+                }
+
+                string decoded = Encoding.UTF8.GetString(bytes);
+                Console.WriteLine($"Flag found, removed and string decoded:");
+                Console.WriteLine(decoded + "\r\n");
+
+                if (decoded.StartsWith(_flag))
+                {
+                    // Remove the inner flag before returning the decoded string
+                    decoded = decoded.Substring(_flag.Length);
+                    return decoded;
+                }
+                else
+                {
+                    // If the inner flag is not present, it means the original string was not encoded by the app
+                    wasDecoded = false;
+                    return encodedString;
+                }
+            }
+            else
+            {
+                wasDecoded = false;
+                return encodedString;
+            }
+        }
+        private static string HashString(string source)
+        {
+            Console.WriteLine($"Hashing string: {source}");
+
+            byte[] salt = RandomNumberGenerator.GetBytes(128 / 8);
+            Console.WriteLine($"Salt: {Convert.ToHexString(salt)}");
+
+            var argon2 = new Argon2id(Encoding.UTF8.GetBytes(source))
+            {
+                Salt = salt,
+                DegreeOfParallelism = 2,
+                Iterations = 4,
+                MemorySize = 512 * 512
+            };
+            byte[] hash = argon2.GetBytes(64);
+            Console.WriteLine($"Hash: {Convert.ToBase64String(hash)}");
+
+            // Concatenate the salt and hash
+            byte[] saltAndHash = new byte[salt.Length + hash.Length];
+            Buffer.BlockCopy(salt, 0, saltAndHash, 0, salt.Length);
+            Buffer.BlockCopy(hash, 0, saltAndHash, salt.Length, hash.Length);
+
+            string hashSaltConcatString = Convert.ToBase64String(saltAndHash);
+            Console.WriteLine($"Concat salt and hash: {hashSaltConcatString}");
+            return hashSaltConcatString;
+        }
+    }
+
+    public class TokenResponse
+    {
+        [JsonPropertyName("token")]
+        public string Token { get; set; }
+    }
+}

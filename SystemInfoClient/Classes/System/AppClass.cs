@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics;
 
-namespace SystemInfoClient.Classes
+namespace SystemInfoClient.Classes.System
 {
     public class AppClass
     {
@@ -75,7 +75,6 @@ namespace SystemInfoClient.Classes
                 throw new FileNotFoundException($"File not found for application: {appSettings.Value}, with path: {appSettings.Value.Path}");
             }
         }
-
         public void LogInfo()
         {
             Console.WriteLine($"    {Id}");

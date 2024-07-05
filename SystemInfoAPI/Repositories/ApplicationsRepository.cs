@@ -120,10 +120,8 @@ namespace SystemInfoApi.Repositories
                 throw new Exception(ex.Message, ex);
             }
         }
-
         public async Task<ApplicationModel> UpdateAsync(ApplicationModel app, SqlConnection connection, SqlTransaction transaction)
         {
-
             try
             {
                 var appsDrivesRTable = db.AppsDrivesRelationTableNames;
@@ -208,7 +206,6 @@ namespace SystemInfoApi.Repositories
                 throw new Exception(ex.Message, ex);
             }
         }
-
         public async Task<bool> DoesAppDriveRelationExist(int appId, int driveId, SqlConnection connection, SqlTransaction transaction)
         {
             AppsDrivesRelationTableNames appsDrivesRTable = db.AppsDrivesRelationTableNames;
