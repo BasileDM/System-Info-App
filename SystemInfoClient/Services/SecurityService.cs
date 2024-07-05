@@ -36,7 +36,6 @@ namespace SystemInfoClient.Services
                 }
             }
         }
-        private string HashedPass { get; set; }
         private string? Token
         {
             get
@@ -54,7 +53,6 @@ namespace SystemInfoClient.Services
         public SecurityService(string apiUrl)
         {
             _apiUrl = apiUrl ?? throw new Exception("Invalid API URL in settings.json");
-            HashedPass = EnvValue.Split(";")[0];
         }
 
         public async Task<string> GetTokenAsync()
@@ -77,7 +75,7 @@ namespace SystemInfoClient.Services
             try
             {
                 ConsoleUtils.WriteColored("Requesting new token...", ConsoleColor.Yellow);
-                string hash = HashedPass;
+                string hash = EnvValue.Split(";")[0];
 
                 // Prepare and send request
                 HttpClient client = HttpClientFactory.CreateHttpClient();

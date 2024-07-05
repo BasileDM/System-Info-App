@@ -18,7 +18,6 @@ namespace SystemInfoClient
 
                 // Create full machine with CustomerId, drives, os and apps info
                 MachineClass machine = new(settings);
-                machine.LogJson();
 
                 // Fetch JWT token
                 string token = await securityService.GetTokenAsync();
