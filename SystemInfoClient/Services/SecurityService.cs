@@ -18,16 +18,9 @@ namespace SystemInfoClient.Services
         {
             get
             {
-                string? base64 = Environment.GetEnvironmentVariable(_envName, EnvironmentVariableTarget.User);
-
-                if (string.IsNullOrEmpty(base64))
-                {
-                    base64 = Environment.GetEnvironmentVariable(_envName, EnvironmentVariableTarget.Machine);
-                }
-                if (string.IsNullOrEmpty(base64))
-                {
-                    throw new NullReferenceException("Could not find API key.");
-                }
+                string base64 = Environment.GetEnvironmentVariable(_envName, EnvironmentVariableTarget.User) ??
+                                Environment.GetEnvironmentVariable(_envName, EnvironmentVariableTarget.Machine) ??
+                                throw new NullReferenceException("Could not find API key.");
 
                 string decoded = DecodeStringIfFlagged(base64, out bool wasDecoded);
                 if (wasDecoded)
@@ -39,52 +32,44 @@ namespace SystemInfoClient.Services
                     string hash = HashString(base64);
                     string encoded = EncodeString(hash);
                     Environment.SetEnvironmentVariable(_envName, encoded, EnvironmentVariableTarget.User);
-
                     return hash;
                 }
             }
         }
-        private string HashedPass
-        {
-            get
-            {
-                string envValue = EnvValue;
-                string[] splitValues = envValue.Split(";");
-                return splitValues[0];
-            }
-        }
+        private string HashedPass { get; set; }
         private string? Token
         {
             get
             {
-                string envValue = EnvValue;
-                string[] splitValues = envValue.Split(";");
-
-                if (splitValues.Length > 1)
-                {
-                    Console.WriteLine($"Token found: {splitValues[1]}");
-                    return splitValues[1];
-                }
-                else
-                {
-                    Console.WriteLine($"Token not found");
-                    return null;
-                }
+                string[] splitValues = EnvValue.Split(";");
+                return splitValues.Length > 1 ? splitValues[1] : null;
+            }
+            set
+            {
+                string newValue = $"{EnvValue.Split(";")[0]};{value}";
+                Environment.SetEnvironmentVariable(_envName, EncodeString(newValue), EnvironmentVariableTarget.User);
             }
         }
 
         public SecurityService(string apiUrl)
         {
             _apiUrl = apiUrl ?? throw new Exception("Invalid API URL in settings.json");
+            HashedPass = EnvValue.Split(";")[0];
         }
 
-        public async Task<string> GetOrRequestTokenAsync()
+        public async Task<string> GetTokenAsync()
         {
             string? token = Token;
-            if (string.IsNullOrEmpty(token))
+            if (token == null)
             {
+                Console.WriteLine("Token not found.");
                 token = await RequestTokenAsync();
             }
+            else
+            {
+                Console.WriteLine($"Token found: \r\n{token}");
+            }
+
             return token;
         }
         public async Task<string> RequestTokenAsync()
@@ -115,8 +100,8 @@ namespace SystemInfoClient.Services
                 {
                     ConsoleUtils.WriteColored($"Token obtained with success: ", ConsoleColor.Green);
                     Console.WriteLine(tokenResponse.Token);
-                    StoreToken(hash, tokenResponse.Token);
 
+                    Token = tokenResponse.Token;
                     return tokenResponse.Token;
                 }
                 else
@@ -140,13 +125,6 @@ namespace SystemInfoClient.Services
                 throw new Exception("An unexpected error occurred while obtaining the authentication token.", ex);
             }
         }
-        private void StoreToken(string passHash, string token)
-        {
-            string newValue = passHash + ";" + token;
-            Console.WriteLine($"Encoding new env value: {newValue}");
-            string encoded = EncodeString(newValue);
-            Environment.SetEnvironmentVariable(_envName, encoded, EnvironmentVariableTarget.User);
-        }
         private string EncodeString(string source)
         {
             string flaggedSource = _flag + source; 
@@ -161,7 +139,7 @@ namespace SystemInfoClient.Services
             {
                 wasDecoded = true;
                 string unflagged = encodedString.Substring(_flag.Length);
-                Console.WriteLine($"Decoding en variable...");
+                Console.WriteLine($"Decoding env variable...");
                 byte[] bytes;
 
                 try

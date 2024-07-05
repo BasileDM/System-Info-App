@@ -21,7 +21,7 @@ namespace SystemInfoClient
                 machine.LogJson();
 
                 // Fetch JWT token
-                string token = await securityService.GetOrRequestTokenAsync();
+                string token = await securityService.GetTokenAsync();
 
                 // Send machine info to API route
                 HttpResponseMessage response = await machineService.SendMachineInfoAsync(machine, token);
