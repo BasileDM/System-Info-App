@@ -23,7 +23,7 @@ namespace SystemInfoClient.Services
 
         public async Task<JwtToken> GetTokenAsync()
         {
-            JwtToken token = _envVariable.Token;
+            JwtToken? token = _envVariable.Token;
             if (token == null)
             {
                 Console.WriteLine("Token not found.");
@@ -31,7 +31,7 @@ namespace SystemInfoClient.Services
             }
             else
             {
-                Console.WriteLine($"Token found: \r\n{token}");
+                Console.WriteLine($"Token found: \r\n{token.GetString()}");
             }
 
             return token;
@@ -45,9 +45,6 @@ namespace SystemInfoClient.Services
 
                 // Prepare and send request
                 HttpClient client = HttpClientFactory.CreateHttpClient();
-
-                Console.WriteLine($"Token requested with: ");
-                Console.WriteLine($"Hash: {hash}");
 
                 var authRequest = new { Pass = hash };
                 var content = new StringContent(JsonSerializer.Serialize(authRequest), Encoding.UTF8, "application/json");
@@ -64,7 +61,6 @@ namespace SystemInfoClient.Services
                 {
                     ConsoleUtils.WriteColored($"Token obtained with success: ", ConsoleColor.Green);
                     Console.WriteLine(tokenResponse.Token);
-
                     JwtToken token = JwtToken.GetInstance(tokenResponse.Token);
                     _envVariable.Token = token;
                     return token;

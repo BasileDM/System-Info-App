@@ -1,5 +1,4 @@
-﻿using System;
-using System.Text;
+﻿using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -36,7 +35,6 @@ namespace SystemInfoClient.Classes
                 Signature = signature
             };
         }
-
         private static string Base64UrlDecode(string base64Url)
         {
             string base64 = base64Url.Replace('-', '+').Replace('_', '/');
@@ -49,17 +47,14 @@ namespace SystemInfoClient.Classes
 
             byte[] bytes = Convert.FromBase64String(base64);
             string decoded = Encoding.UTF8.GetString(bytes);
-            Console.WriteLine(decoded);
             return decoded;
         }
-
         private static string Base64UrlEncode(string input)
         {
             byte[] bytes = Encoding.UTF8.GetBytes(input);
             string base64 = Convert.ToBase64String(bytes);
             return base64.Replace('+', '-').Replace('/', '_').Replace("=", string.Empty);
         }
-
         public string GetString()
         {
             string headerJson = JsonSerializer.Serialize(Header);

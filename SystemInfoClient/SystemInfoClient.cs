@@ -31,7 +31,7 @@ namespace SystemInfoClient
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error: " + ex.Message + ex);
+                Console.WriteLine($"Error: " + ex.Message);
             }
         }
     }

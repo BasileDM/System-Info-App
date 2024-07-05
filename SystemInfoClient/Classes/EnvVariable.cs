@@ -1,6 +1,4 @@
-﻿using System;
-using System.Buffers.Text;
-using System.Runtime.Versioning;
+﻿using System.Runtime.Versioning;
 using System.Text;
 using SystemInfoClient.Services;
 
@@ -18,12 +16,11 @@ namespace SystemInfoClient.Classes
             get => _decodedValue.Split(";")[0];
             set
             {
-                Console.WriteLine($"new hash value to set : {value}\r\nToken value: {Token?.GetString()}");
+                Console.WriteLine($"New hash value to set : {value}");
                 string newValue = _decodedValue.Split(";").Length > 1 ? $"{value};{Token?.GetString()}" : $"{value}";
                 SetDecodedValue(newValue);
             }
         }
-
         public JwtToken? Token
         {
             get
@@ -33,7 +30,6 @@ namespace SystemInfoClient.Classes
             }
             set
             {
-                Console.WriteLine($"new token value to set : {value?.GetString()}\r\nToken value: {Token?.GetString()}");
                 string newValue = $"{Hash};{value?.GetString()}";
                 SetDecodedValue(newValue);
             }
@@ -46,12 +42,8 @@ namespace SystemInfoClient.Classes
             _decodedValue = GetDecodedValue();
 
             string decodedValue = _decodedValue;
-            Console.WriteLine($"Variable decoded: {decodedValue}");
-            Console.WriteLine($"-------------------- HASH: {Hash}");
-
             if (decodedValue.Split(';').Length > 1)
             {
-                Console.WriteLine($"Constructor Token : {JwtToken.GetInstance(decodedValue.Split(';')[1])}");
                 Token = JwtToken.GetInstance(decodedValue.Split(';')[1]);
             }
         }
@@ -61,7 +53,6 @@ namespace SystemInfoClient.Classes
             _decodedValue = value;
             Environment.SetEnvironmentVariable(_envName, EncodeString(value), EnvironmentVariableTarget.User);
         }
-
         private string GetDecodedValue()
         {
             string base64 = Environment.GetEnvironmentVariable(_envName, EnvironmentVariableTarget.User) ??
@@ -81,7 +72,6 @@ namespace SystemInfoClient.Classes
                 return hash;
             }
         }
-
         private string EncodeString(string source)
         {
             string flaggedSource = _flag + source;
@@ -90,7 +80,6 @@ namespace SystemInfoClient.Classes
             string flagged = _flag + base64;
             return flagged;
         }
-
         private string DecodeStringIfFlagged(string encodedString, out bool wasDecoded)
         {
             if (encodedString.StartsWith(_flag))
