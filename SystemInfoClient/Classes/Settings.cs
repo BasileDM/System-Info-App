@@ -85,26 +85,32 @@ namespace SystemInfoClient.Classes
                     $"Invalid '{idOwner}' ID, please provide a valid one in the settings.json file");
             }
         }
-        public void RewriteFileWithId(string newMachineId)
+        public void RewriteFileWithId(string? newMachineId)
         {
-            try
+            if (newMachineId != ParsedMachineId.ToString() && newMachineId != null)
             {
-                string path = GetFilePath();
-                Settings settings = GetInstance();
-                settings.MachineId = newMachineId;
-                string json = JsonSerializer.Serialize(settings, SerializerOptions);
+                try
+                {
+                    MachineId = newMachineId;
+                    string path = GetFilePath();
+                    string json = GetJson();
 
-                File.WriteAllText(path, json);
-                Console.WriteLine($"New machine id: {newMachineId}\r\n New settings.json content:\r\n{json}");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"{ex.Message} + {ex}");
+                    File.WriteAllText(path, json);
+                    Console.WriteLine($"New machine id: {newMachineId}\r\n New settings.json content:\r\n{json}");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"{ex.Message} + {ex}");
+                }
             }
         }
         private static string GetFilePath()
         {
             return AppDomain.CurrentDomain.BaseDirectory + "settings.json";
+        }
+        private string GetJson()
+        {
+            return JsonSerializer.Serialize(this, SerializerOptions);
         }
     }
 
