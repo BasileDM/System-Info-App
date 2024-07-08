@@ -1,10 +1,9 @@
 ﻿using System.Net.Http.Headers;
 using System.Text;
-using SystemInfoClient.Classes.System;
 using System.Runtime.Versioning;
-using SystemInfoClient.Classes;
 using System.Net;
-using SystemInfoApi.Utilities;
+using SystemInfoClient.Utilities;
+using SystemInfoClient.Classes.System;
 
 namespace SystemInfoClient.Services
 {
@@ -36,6 +35,9 @@ namespace SystemInfoClient.Services
                 $"{_apiUrl}api/Machines/Create" :
                 $"{_apiUrl}api/Machines/Update/{machine.Id}";
 
+            Console.WriteLine($"Route used: {route}");
+            Console.WriteLine($"ID machine: {machine.Id}");
+
             return machine.Id == 0 ?
                 await client.PostAsync(route, content) :
                 await client.PutAsync(route, content);
@@ -45,24 +47,28 @@ namespace SystemInfoClient.Services
             switch (response.StatusCode)
             {
                 // Machine creation
-                case HttpStatusCode.OK when response.Headers.Location != null:
+                case HttpStatusCode.Created when response.Headers.Location != null:
+                    Console.WriteLine("Creation detected.");
                     ConsoleUtils.LogSuccessDetails(response);
                     UpdateSettingsWithId(response, settings);
                     break;
 
                 // Machine update
-                case HttpStatusCode.Created:
+                case HttpStatusCode.OK:
+                    Console.WriteLine("Update detected.");
                     ConsoleUtils.LogSuccessDetails(response);
                     break;
 
                 // Unauthorized
                 case HttpStatusCode.Unauthorized:
+                    Console.WriteLine("Unauthorized detected.");
                     ConsoleUtils.LogAuthorizationError(response);
 
                     // Try to obtain a new token
                     JwtToken newToken = await _securityService.RequestTokenAsync();
 
                     // Send machine info with new token
+                    machine.LogJson();
                     HttpResponseMessage retryResponse = await SendMachineInfoAsync(machine, newToken.GetString());
 
                     retryResponse.EnsureSuccessStatusCode();

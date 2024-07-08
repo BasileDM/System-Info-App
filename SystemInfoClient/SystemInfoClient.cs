@@ -3,7 +3,7 @@ using SystemInfoClient.Classes;
 using SystemInfoClient.Classes.System;
 using SystemInfoClient.Services;
 
-namespace SystemInfoClient
+namespace SystemInfoApi
 {
     [SupportedOSPlatform("windows")]
     public class SystemInfoClient
@@ -13,12 +13,13 @@ namespace SystemInfoClient
             try
             {
                 Settings settings = Settings.GetInstance();
-                EnvVariable envVariable = new("SysInfoApp", "54a7dV4o87.");
+                EnvVariable envVariable = new("SysInfoApp");
                 SecurityService securityService = new(settings.ApiUrl, envVariable);
                 MachineService machineService = new(settings.ApiUrl, securityService);
 
                 // Create full machine with CustomerId, drives, os and apps info
                 MachineClass machine = new(settings);
+                machine.LogJson();
 
                 // Fetch JWT token
                 JwtToken token = await securityService.GetTokenAsync();

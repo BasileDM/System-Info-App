@@ -2,15 +2,13 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace SystemInfoClient.Classes
+namespace SystemInfoApi.Classes
 {
     internal class JwtToken
     {
-        public JwtHeader Header { get; private set; }
-        public JwtPayload Payload { get; private set; }
-        public string Signature { get; private set; }
-
-        private JwtToken() { }
+        public JwtHeader? Header { get; private set; }
+        public JwtPayload? Payload { get; private set; }
+        public string? Signature { get; private set; }
 
         public static JwtToken GetInstance(string jwt)
         {

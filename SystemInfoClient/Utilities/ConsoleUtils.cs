@@ -1,4 +1,4 @@
-﻿namespace SystemInfoApi.Utilities
+﻿namespace SystemInfoClient.Utilities
 {
     public class ConsoleUtils
     {

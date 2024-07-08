@@ -18,7 +18,7 @@ namespace SystemInfoClient.Classes
             {
                 Console.WriteLine($"New hash value to set : {value}");
                 string newValue = _decodedValue.Split(";").Length > 1 ? $"{value};{Token?.GetString()}" : $"{value}";
-                SetDecodedValue(newValue);
+                SetDecodedValueAndStoreEncoded(newValue);
             }
         }
         public JwtToken? Token
@@ -31,14 +31,14 @@ namespace SystemInfoClient.Classes
             set
             {
                 string newValue = $"{Hash};{value?.GetString()}";
-                SetDecodedValue(newValue);
+                SetDecodedValueAndStoreEncoded(newValue);
             }
         }
 
-        public EnvVariable(string envName, string flag)
+        public EnvVariable(string envName)
         {
             _envName = envName;
-            _flag = flag;
+            _flag = "54a7dV4o87.";
             _decodedValue = GetDecodedValue();
 
             string decodedValue = _decodedValue;
@@ -48,7 +48,7 @@ namespace SystemInfoClient.Classes
             }
         }
 
-        private void SetDecodedValue(string value)
+        private void SetDecodedValueAndStoreEncoded(string value)
         {
             _decodedValue = value;
             Environment.SetEnvironmentVariable(_envName, EncodeString(value), EnvironmentVariableTarget.User);
@@ -82,6 +82,7 @@ namespace SystemInfoClient.Classes
         }
         private string DecodeStringIfFlagged(string encodedString, out bool wasDecoded)
         {
+            // If the flag is present we can try to decode the variable
             if (encodedString.StartsWith(_flag))
             {
                 wasDecoded = true;
@@ -95,6 +96,7 @@ namespace SystemInfoClient.Classes
                 }
                 catch (FormatException)
                 {
+                    // If the conversion is not possible, the variable has not been encoded by us
                     wasDecoded = false;
                     return encodedString;
                 }
@@ -103,6 +105,7 @@ namespace SystemInfoClient.Classes
                 Console.WriteLine($"Flag found, removed, and string decoded:");
                 Console.WriteLine(decoded + "\r\n");
 
+                // Checking inner flag for the edge case where the clear password started with the flag
                 if (decoded.StartsWith(_flag))
                 {
                     decoded = decoded.Substring(_flag.Length);
@@ -114,6 +117,7 @@ namespace SystemInfoClient.Classes
                     return encodedString;
                 }
             }
+            // If the flag is not present, then it's a clear password and there is no need to decode it
             else
             {
                 wasDecoded = false;
