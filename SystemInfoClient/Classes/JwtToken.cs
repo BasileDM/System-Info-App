@@ -67,7 +67,7 @@ namespace SystemInfoClient.Classes
         }
         public bool IsExpired()
         {
-            if(Payload != null)
+            if (Payload != null)
             {
                 int currentUnixTime = (int)DateTimeOffset.UtcNow.ToUnixTimeSeconds();
                 return Payload.Exp <= currentUnixTime;
@@ -87,7 +87,6 @@ namespace SystemInfoClient.Classes
         [JsonPropertyName("typ")]
         public string Typ { get; set; }
     }
-
     internal class JwtPayload
     {
         [JsonPropertyName("exp")]

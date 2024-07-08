@@ -1,10 +1,8 @@
 ﻿using System.Net.Http.Headers;
 using System.Text;
 using System.Runtime.Versioning;
-using System.Net;
 using SystemInfoClient.Utilities;
 using SystemInfoClient.Classes.System;
-using SystemInfoClient.Classes;
 
 namespace SystemInfoClient.Services
 {
@@ -12,12 +10,12 @@ namespace SystemInfoClient.Services
     internal class MachineService
     {
         private readonly string _apiUrl;
-        private readonly MachineClass Machine;
+        private readonly MachineClass _machine;
 
-        public MachineService(string apiUrl, SecurityService securityService, MachineClass machine)
+        public MachineService(string apiUrl, MachineClass machine)
         {
             _apiUrl = apiUrl ?? throw new Exception("Invalid API URL in settings.json");
-            Machine = machine;
+            _machine = machine;
         }
 
         public async Task<HttpResponseMessage> SendMachineInfoAsync(string token)
@@ -30,13 +28,13 @@ namespace SystemInfoClient.Services
 
             // Serialize machine into JSON content, build route string, and send
             // If the machine ID is 0 it is a new machine
-            var content = new StringContent(Machine.JsonSerialize(), Encoding.UTF8, "application/json");
+            var content = new StringContent(_machine.JsonSerialize(), Encoding.UTF8, "application/json");
 
-            string route = Machine.Id == 0 ?
+            string route = _machine.Id == 0 ?
                 $"{_apiUrl}api/Machines/Create" :
-                $"{_apiUrl}api/Machines/Update/{Machine.Id}";
+                $"{_apiUrl}api/Machines/Update/{_machine.Id}";
 
-            return Machine.Id == 0 ?
+            return _machine.Id == 0 ?
                 await client.PostAsync(route, content) :
                 await client.PutAsync(route, content);
         }
