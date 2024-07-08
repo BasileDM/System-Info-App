@@ -10,7 +10,7 @@ namespace SystemInfoClient.Classes
         public JwtPayload? Payload { get; private set; }
         public string? Signature { get; private set; }
 
-        public static JwtToken GetInstance(string jwt)
+        public static JwtToken? GetInstance(string jwt)
         {
             string[] parts = jwt.Split('.');
 
@@ -26,12 +26,14 @@ namespace SystemInfoClient.Classes
             var header = JsonSerializer.Deserialize<JwtHeader>(headerJson);
             var payload = JsonSerializer.Deserialize<JwtPayload>(payloadJson);
 
-            return new JwtToken
+            JwtToken token = new()
             {
                 Header = header,
                 Payload = payload,
                 Signature = signature
             };
+
+            return token;
         }
         private static string Base64UrlDecode(string base64Url)
         {
@@ -62,6 +64,18 @@ namespace SystemInfoClient.Classes
             string encodedPayload = Base64UrlEncode(payloadJson);
 
             return $"{encodedHeader}.{encodedPayload}.{Signature}";
+        }
+        public bool IsExpired()
+        {
+            if(Payload != null)
+            {
+                int currentUnixTime = (int)DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+                return Payload.Exp <= currentUnixTime;
+            }
+            else
+            {
+                return false;
+            }
         }
     }
 

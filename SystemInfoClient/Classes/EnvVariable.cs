@@ -41,10 +41,10 @@ namespace SystemInfoClient.Classes
             _flag = "54a7dV4o87.";
             _decodedValue = GetDecodedValue();
 
-            string decodedValue = _decodedValue;
-            if (decodedValue.Split(';').Length > 1)
+            string[] splitValue = _decodedValue.Split(";");
+            if (splitValue.Length > 1)
             {
-                Token = JwtToken.GetInstance(decodedValue.Split(';')[1]);
+                Token = JwtToken.GetInstance(splitValue[1]);
             }
         }
 

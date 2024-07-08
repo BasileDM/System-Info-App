@@ -24,9 +24,9 @@ namespace SystemInfoClient.Services
         public async Task<JwtToken> GetTokenAsync()
         {
             JwtToken? token = _envVariable.Token;
-            if (token == null)
+            if (token == null || token.IsExpired())
             {
-                Console.WriteLine("Token not found.");
+                ConsoleUtils.WriteColored("Token not found or expired.", ConsoleColor.Red);
                 token = await RequestTokenAsync();
             }
             else
