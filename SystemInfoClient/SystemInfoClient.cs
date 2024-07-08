@@ -10,31 +10,25 @@ namespace SystemInfoApi
     [SupportedOSPlatform("windows")]
     public class SystemInfoClient
     {
-        private static Settings _settings = null!;
-        private static MachineClass _machine = null!;
-        private static EnvVariable _env = null!;
-        private static SecurityService _securityService = null!;
-        private static MachineService _machineService = null!;
-
         public static async Task Main()
         {
             try
             {
                 // Instanciate required objects and services
-                _settings = Settings.GetInstance();
-                _env = new("SysInfoApp");
-                _machine = new(_settings);
-                _securityService = new(_settings.ApiUrl, _env);
-                _machineService = new(_settings.ApiUrl, _machine);
+                Settings settings = Settings.GetInstance();
+                EnvVariable env = new("SysInfoApp");
+                MachineClass machine = new(settings);
+                SecurityService security = new(settings.ApiUrl, env);
+                MachineService machineService = new(settings.ApiUrl, machine);
 
                 // Fetch JWT token
-                JwtToken token = await _securityService.GetTokenAsync();
+                JwtToken token = await security.GetTokenAsync();
 
                 // Send machine info to API route
-                HttpResponseMessage response = await _machineService.SendMachineInfoAsync(token.GetString());
+                HttpResponseMessage response = await machineService.SendMachineInfoAsync(token.GetString());
 
                 // Handle API response
-                await HandleResponseAsync(response);
+                await HandleResponseAsync(response, settings, security, machineService);
             }
             catch (Exception ex)
             {
@@ -42,7 +36,8 @@ namespace SystemInfoApi
             }
         }
 
-        private static async Task HandleResponseAsync(HttpResponseMessage response)
+        private static async Task HandleResponseAsync(
+            HttpResponseMessage response, Settings settings, SecurityService security, MachineService machineService)
         {
             try
             {
@@ -52,7 +47,7 @@ namespace SystemInfoApi
                     case HttpStatusCode.Created when response.Headers.Location != null:
                         string? newMachineId = MachineService.GetMachineIdFromResponse(response);
                         ConsoleUtils.LogResponseDetails(response);
-                        _settings.RewriteFileWithId(newMachineId);
+                        settings.RewriteFileWithId(newMachineId);
                         break;
 
                     // Machine update
@@ -65,16 +60,16 @@ namespace SystemInfoApi
                         ConsoleUtils.LogAuthorizationError(response);
 
                         // Try to obtain a new token
-                        JwtToken newToken = await _securityService.RequestTokenAsync();
+                        JwtToken newToken = await security.RequestTokenAsync();
 
                         // Send machine info with new token
-                        HttpResponseMessage retryResponse = await _machineService.SendMachineInfoAsync(newToken.GetString());
+                        HttpResponseMessage retryResponse = await machineService.SendMachineInfoAsync(newToken.GetString());
 
                         retryResponse.EnsureSuccessStatusCode();
                         ConsoleUtils.LogResponseDetails(retryResponse);
 
                         newMachineId = MachineService.GetMachineIdFromResponse(retryResponse);
-                        _settings.RewriteFileWithId(newMachineId);
+                        settings.RewriteFileWithId(newMachineId);
                         break;
 
                     // Generic
