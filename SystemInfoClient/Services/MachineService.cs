@@ -1,10 +1,8 @@
 ﻿using System.Net.Http.Headers;
 using System.Text;
-using SystemInfoClient.Classes.System;
 using System.Runtime.Versioning;
-using SystemInfoClient.Classes;
-using System.Net;
-using SystemInfoApi.Utilities;
+using SystemInfoClient.Utilities;
+using SystemInfoClient.Classes.System;
 
 namespace SystemInfoClient.Services
 {
@@ -12,15 +10,15 @@ namespace SystemInfoClient.Services
     internal class MachineService
     {
         private readonly string _apiUrl;
-        private readonly SecurityService _securityService;
+        private readonly MachineClass _machine;
 
-        public MachineService(string apiUrl, SecurityService securityService)
+        public MachineService(string apiUrl, MachineClass machine)
         {
             _apiUrl = apiUrl ?? throw new Exception("Invalid API URL in settings.json");
-            _securityService = securityService;
+            _machine = machine;
         }
 
-        public async Task<HttpResponseMessage> SendMachineInfoAsync(MachineClass machine, string token)
+        public async Task<HttpResponseMessage> SendMachineInfoAsync(string token)
         {
             ConsoleUtils.WriteColored("Sending machine info...", ConsoleColor.Yellow);
 
@@ -30,62 +28,17 @@ namespace SystemInfoClient.Services
 
             // Serialize machine into JSON content, build route string, and send
             // If the machine ID is 0 it is a new machine
-            var content = new StringContent(machine.JsonSerialize(), Encoding.UTF8, "application/json");
+            var content = new StringContent(_machine.JsonSerialize(), Encoding.UTF8, "application/json");
 
-            string route = machine.Id == 0 ?
+            string route = _machine.Id == 0 ?
                 $"{_apiUrl}api/Machines/Create" :
-                $"{_apiUrl}api/Machines/Update/{machine.Id}";
+                $"{_apiUrl}api/Machines/Update/{_machine.Id}";
 
-            return machine.Id == 0 ?
+            return _machine.Id == 0 ?
                 await client.PostAsync(route, content) :
                 await client.PutAsync(route, content);
         }
-        public async Task HandleResponseAsync(HttpResponseMessage response, MachineClass machine, SettingsClass settings)
-        {
-            switch (response.StatusCode)
-            {
-                // Machine creation
-                case HttpStatusCode.OK when response.Headers.Location != null:
-                    ConsoleUtils.LogSuccessDetails(response);
-                    UpdateSettingsWithId(response, settings);
-                    break;
-
-                // Machine update
-                case HttpStatusCode.Created:
-                    ConsoleUtils.LogSuccessDetails(response);
-                    break;
-
-                // Unauthorized
-                case HttpStatusCode.Unauthorized:
-                    ConsoleUtils.LogAuthorizationError(response);
-
-                    // Try to obtain a new token
-                    var newToken = await _securityService.RequestTokenAsync();
-
-                    // Send machine info with new token
-                    HttpResponseMessage retryResponse = await SendMachineInfoAsync(machine, newToken);
-
-                    retryResponse.EnsureSuccessStatusCode();
-                    ConsoleUtils.LogSuccessDetails(retryResponse);
-                    UpdateSettingsWithId(retryResponse, settings);
-                    break;
-
-                // Generic
-                default:
-                    var errorContent = await response.Content.ReadAsStringAsync();
-                    Console.WriteLine();
-                    Console.WriteLine($"{response.ReasonPhrase}: {errorContent}");
-                    break;
-            }
-        }
-        private static void UpdateSettingsWithId(HttpResponseMessage response, SettingsClass settings)
-        {
-            string newMachineId = GetMachineIdFromResponse(response);
-
-            if (newMachineId != settings.ParsedMachineId.ToString())
-                settings.RewriteFileWithId(newMachineId);
-        }
-        private static string GetMachineIdFromResponse(HttpResponseMessage response)
+        public static string? GetMachineIdFromResponse(HttpResponseMessage response)
         {
             // Parse the last element of the Location header in the response to get the new machine ID
             string machineId;
@@ -95,7 +48,7 @@ namespace SystemInfoClient.Services
             }
             else
             {
-                throw new InvalidDataException("Invalid API response's location header");
+                return null;
             }
 
             if (Int32.TryParse(machineId, out int parsedMachineId) && parsedMachineId > 0)

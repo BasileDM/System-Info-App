@@ -20,7 +20,7 @@ namespace SystemInfoApi.Services
                 var argon2 = new Argon2id(Encoding.UTF8.GetBytes(pass))
                 {
                     Salt = providedSalt,
-                    DegreeOfParallelism = 2,
+                    DegreeOfParallelism = 4,
                     Iterations = 4,
                     MemorySize = 512 * 512,
                 };
@@ -112,7 +112,7 @@ namespace SystemInfoApi.Services
                 throw new Exception("An unexpected error occurred while generating the JWT token.", ex);
             }
         }
-        public static int ValidateExpirationTime(string? time)
+        public static int ValidateExpirationSetting(string? time)
         {
             if (!string.IsNullOrEmpty(time) && Int32.TryParse(time, out int parsedTime))
             {
@@ -123,7 +123,7 @@ namespace SystemInfoApi.Services
                 throw new ArgumentException("Invalid token expiration time in appsettings.json");
             }
         }
-        public static string ValidateSecret(string? secret)
+        public static string ValidateSecretSetting(string? secret)
         {
             if (secret == null || secret.Length < 33)
             {
@@ -136,7 +136,7 @@ namespace SystemInfoApi.Services
                 return secret;
             }
         }
-        public static string ValidateIssuer(string? issuer)
+        public static string ValidateIssuerSetting(string? issuer)
         {
             if (issuer == null)
             {
@@ -147,7 +147,7 @@ namespace SystemInfoApi.Services
                 return issuer;
             }
         }
-        public static string ValidateApiPass(string? apiPass)
+        public static string ValidateApiPassSetting(string? apiPass)
         {
             if (apiPass != null && apiPass.Length >= 20)
             {
