@@ -27,13 +27,21 @@
                 Console.WriteLine($"Unexpected authorization error.");
             }
         }
-        public static void LogSuccessDetails(HttpResponseMessage response)
+        public static void LogResponseDetails(HttpResponseMessage response)
         {
             Console.WriteLine();
             WriteColored($"Machine data sent successfully.", ConsoleColor.Green);
             Console.WriteLine($"Code: {response.StatusCode}.");
             Console.WriteLine($"Time: {response.Headers.Date}.");
-            Console.WriteLine($"Location: {response.Headers.Location}.");
+
+            if (response.Headers.Location != null && !string.IsNullOrEmpty(response.Headers.Location.ToString()))
+            {
+                Console.WriteLine($"Location: {response.Headers.Location}.");
+            }
+            else
+            {
+                Console.WriteLine("Location: No location for machine updates.");
+            }
         }
     }
 }

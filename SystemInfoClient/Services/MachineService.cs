@@ -36,9 +36,6 @@ namespace SystemInfoClient.Services
                 $"{_apiUrl}api/Machines/Create" :
                 $"{_apiUrl}api/Machines/Update/{machine.Id}";
 
-            Console.WriteLine($"Route used: {route}");
-            Console.WriteLine($"ID machine: {machine.Id}");
-
             return machine.Id == 0 ?
                 await client.PostAsync(route, content) :
                 await client.PutAsync(route, content);
@@ -49,31 +46,27 @@ namespace SystemInfoClient.Services
             {
                 // Machine creation
                 case HttpStatusCode.Created when response.Headers.Location != null:
-                    Console.WriteLine("Creation detected.");
-                    ConsoleUtils.LogSuccessDetails(response);
+                    ConsoleUtils.LogResponseDetails(response);
                     UpdateSettingsWithId(response, settings);
                     break;
 
                 // Machine update
                 case HttpStatusCode.OK:
-                    Console.WriteLine("Update detected.");
-                    ConsoleUtils.LogSuccessDetails(response);
+                    ConsoleUtils.LogResponseDetails(response);
                     break;
 
                 // Unauthorized
                 case HttpStatusCode.Unauthorized:
-                    Console.WriteLine("Unauthorized detected.");
                     ConsoleUtils.LogAuthorizationError(response);
 
                     // Try to obtain a new token
                     JwtToken newToken = await _securityService.RequestTokenAsync();
 
                     // Send machine info with new token
-                    machine.LogJson();
                     HttpResponseMessage retryResponse = await SendMachineInfoAsync(machine, newToken.GetString());
 
                     retryResponse.EnsureSuccessStatusCode();
-                    ConsoleUtils.LogSuccessDetails(retryResponse);
+                    ConsoleUtils.LogResponseDetails(retryResponse);
                     UpdateSettingsWithId(retryResponse, settings);
                     break;
 
@@ -90,13 +83,7 @@ namespace SystemInfoClient.Services
             string? newMachineId = GetMachineIdFromResponse(response);
 
             if (newMachineId != settings.ParsedMachineId.ToString() && newMachineId != null)
-            {
                 settings.RewriteFileWithId(newMachineId);
-            }
-            else
-            {
-                Console.WriteLine("Machine ID not updated in settings.json: This is normal for a machine update.");
-            }
         }
         private static string? GetMachineIdFromResponse(HttpResponseMessage response)
         {

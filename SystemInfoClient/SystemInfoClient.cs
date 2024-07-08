@@ -19,7 +19,6 @@ namespace SystemInfoApi
 
                 // Create full machine with CustomerId, drives, os and apps info
                 MachineClass machine = new(settings);
-                machine.LogJson();
 
                 // Fetch JWT token
                 JwtToken token = await securityService.GetTokenAsync();
