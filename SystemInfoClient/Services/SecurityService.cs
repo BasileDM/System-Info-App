@@ -4,6 +4,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using SystemInfoClient.Classes;
 using SystemInfoClient.Utilities;
 
 namespace SystemInfoClient.Services

@@ -4,6 +4,7 @@ using System.Runtime.Versioning;
 using System.Net;
 using SystemInfoClient.Utilities;
 using SystemInfoClient.Classes.System;
+using SystemInfoClient.Classes;
 
 namespace SystemInfoClient.Services
 {
@@ -86,12 +87,18 @@ namespace SystemInfoClient.Services
         }
         private static void UpdateSettingsWithId(HttpResponseMessage response, Settings settings)
         {
-            string newMachineId = GetMachineIdFromResponse(response);
+            string? newMachineId = GetMachineIdFromResponse(response);
 
-            if (newMachineId != settings.ParsedMachineId.ToString())
+            if (newMachineId != settings.ParsedMachineId.ToString() && newMachineId != null)
+            {
                 settings.RewriteFileWithId(newMachineId);
+            }
+            else
+            {
+                Console.WriteLine("Machine ID not updated in settings.json: This is normal for a machine update.");
+            }
         }
-        private static string GetMachineIdFromResponse(HttpResponseMessage response)
+        private static string? GetMachineIdFromResponse(HttpResponseMessage response)
         {
             // Parse the last element of the Location header in the response to get the new machine ID
             string machineId;
@@ -101,7 +108,7 @@ namespace SystemInfoClient.Services
             }
             else
             {
-                throw new InvalidDataException("Invalid API response's location header");
+                return null;
             }
 
             if (Int32.TryParse(machineId, out int parsedMachineId) && parsedMachineId > 0)
