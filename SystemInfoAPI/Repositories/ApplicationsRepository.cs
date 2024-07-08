@@ -42,7 +42,8 @@ namespace SystemInfoApi.Repositories
                          {appsDrivesRTable.ProductName},
                          {appsDrivesRTable.ProductPrivatePart},
                          {appsDrivesRTable.ProductVersion},
-                         {appsDrivesRTable.SpecialBuild})
+                         {appsDrivesRTable.SpecialBuild},
+                         {appsDrivesRTable.AppRelationCreationDate})
                     VALUES 
                         (@id_client_machine_disque,
                          @id_client_machine_disque_app,
@@ -72,7 +73,8 @@ namespace SystemInfoApi.Repositories
                          @Product_Name,
                          @Product_Private_Part,
                          @Product_Version,
-                         @Special_Build);";
+                         @Special_Build
+                         @creationDate);";
 
                 using (SqlCommand cmd = new(query, conection, transaction))
                 {
@@ -105,6 +107,7 @@ namespace SystemInfoApi.Repositories
                     cmd.Parameters.AddWithValue("@Product_Private_Part", app.ProductPrivatePart);
                     cmd.Parameters.AddWithValue("@Product_Version", app.ProductVersion ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@Special_Build", app.SpecialBuild ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@creationDate", DateTime.UtcNow.ToLocalTime());
 
                     await cmd.ExecuteScalarAsync();
 

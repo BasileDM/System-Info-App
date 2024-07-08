@@ -184,6 +184,7 @@ namespace SystemInfoApi.Classes
         public string Id { get; } = "id_client_machine";
         public string CustomerId { get; } = "id_client";
         public string MachineName { get; } = "Nom_Machine";
+        public string MachineCreationDate { get; } = "Machine_Date_Creation";
     }
     public class DrivesTableNames
     {
@@ -200,6 +201,7 @@ namespace SystemInfoApi.Classes
         public string TotalSpace { get; } = "Espace_Total";
         public string FreeSpacePercentage { get; } = "Espace_Disponible_Pourcent";
         public string IsSystemDrive { get; } = "Is_System_Drive";
+        public string DriveCreationDate { get; } = "Disque_Date_Creation";
     }
     public class OsTableNames
     {
@@ -213,6 +215,7 @@ namespace SystemInfoApi.Classes
         public string ReleaseId { get; } = "Id_Release";
         public string CurrentBuild { get; } = "Build_Actuel";
         public string Ubr { get; } = "Update_Build_Revision";
+        public string OsCreationDate { get; } = "Os_Date_Creation";
     }
     public class AppsDrivesRelationTableNames
     {
@@ -246,6 +249,7 @@ namespace SystemInfoApi.Classes
         public string ProductPrivatePart { get; } = "Partie_Privee_Produit";
         public string ProductVersion { get; } = "Version_Produit";
         public string SpecialBuild { get; } = "Build_Special";
+        public string AppRelationCreationDate { get; } = "Application_Date_Creation";
     }
     public class ApplicationsTableNames
     {

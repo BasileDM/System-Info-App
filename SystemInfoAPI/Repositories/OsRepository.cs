@@ -21,9 +21,9 @@ namespace SystemInfoApi.Repositories
 
                 string query = @$"
                     INSERT INTO {otn.TableName}
-                        ({otn.DriveId}, {otn.Directory}, {otn.Architecture}, {otn.Version}, {otn.ProductName}, {otn.ReleaseId}, {otn.CurrentBuild}, {otn.Ubr})
+                        ({otn.DriveId}, {otn.Directory}, {otn.Architecture}, {otn.Version}, {otn.ProductName}, {otn.ReleaseId}, {otn.CurrentBuild}, {otn.Ubr}, {otn.OsCreationDate})
                     VALUES 
-                        (@driveId, @directory, @architecture, @version, @productName, @releaseId, @currentBuild, @ubr);
+                        (@driveId, @directory, @architecture, @version, @productName, @releaseId, @currentBuild, @ubr, @creationDate);
 
                     SELECT SCOPE_IDENTITY();";
 
@@ -37,6 +37,7 @@ namespace SystemInfoApi.Repositories
                     cmd.Parameters.AddWithValue("@releaseId", os.ReleaseId);
                     cmd.Parameters.AddWithValue("@currentBuild", os.CurrentBuild);
                     cmd.Parameters.AddWithValue("@ubr", os.Ubr);
+                    cmd.Parameters.AddWithValue("@creationDate", DateTime.UtcNow.ToLocalTime());
 
                     var newOsId = await cmd.ExecuteScalarAsync();
                     os.Id = Convert.ToInt32(newOsId);

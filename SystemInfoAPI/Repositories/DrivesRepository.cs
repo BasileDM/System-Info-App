@@ -21,9 +21,9 @@ namespace SystemInfoApi.Repositories
 
                 string query = @$"
                     INSERT INTO {dtn.TableName} 
-                        ({dtn.MachineId}, {dtn.DriveName}, {dtn.RootDirectory}, {dtn.Label}, {dtn.Type}, {dtn.Format}, {dtn.Size}, {dtn.FreeSpace}, {dtn.TotalSpace}, {dtn.FreeSpacePercentage}, {dtn.IsSystemDrive})
+                        ({dtn.MachineId}, {dtn.DriveName}, {dtn.RootDirectory}, {dtn.Label}, {dtn.Type}, {dtn.Format}, {dtn.Size}, {dtn.FreeSpace}, {dtn.TotalSpace}, {dtn.FreeSpacePercentage}, {dtn.IsSystemDrive}, {dtn.DriveCreationDate})
                     VALUES 
-                        (@machineId, @driveName, @rootDir, @label, @type, @format, @size, @freeSpace, @totalSpace, @freeSpacePer, @isSystemDrive);
+                        (@machineId, @driveName, @rootDir, @label, @type, @format, @size, @freeSpace, @totalSpace, @freeSpacePer, @isSystemDrive, @creationDate);
 
                     SELECT SCOPE_IDENTITY();";
 
@@ -40,6 +40,7 @@ namespace SystemInfoApi.Repositories
                     cmd.Parameters.AddWithValue("@totalSpace", drive.TotalSpace);
                     cmd.Parameters.AddWithValue("@freeSpacePer", drive.FreeSpacePercentage);
                     cmd.Parameters.AddWithValue("@isSystemDrive", drive.IsSystemDrive);
+                    cmd.Parameters.AddWithValue("@creationDate", DateTime.UtcNow.ToLocalTime());
 
                     var newDriveId = await cmd.ExecuteScalarAsync();
                     drive.Id = Convert.ToInt32(newDriveId);

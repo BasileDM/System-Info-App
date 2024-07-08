@@ -24,14 +24,15 @@ namespace SystemInfoApi.Repositories
             try
             {
                 string machineSql = @$"
-                    INSERT INTO {_machinesTable.TableName} ({_machinesTable.CustomerId}, {_machinesTable.MachineName}) 
-                    VALUES (@customerId, @machineName);
+                    INSERT INTO {_machinesTable.TableName} ({_machinesTable.CustomerId}, {_machinesTable.MachineName}, {_machinesTable.MachineCreationDate}) 
+                    VALUES (@customerId, @machineName, @creationDate);
 
                     SELECT SCOPE_IDENTITY();";
 
                 using SqlCommand cmd = new(machineSql, connection, transaction);
                 cmd.Parameters.AddWithValue("@customerId", machine.CustomerId);
                 cmd.Parameters.AddWithValue("@machineName", machine.Name);
+                cmd.Parameters.AddWithValue("@creationDate", DateTime.Now.ToLocalTime());
 
                 var newMachineId = await cmd.ExecuteScalarAsync();
 
