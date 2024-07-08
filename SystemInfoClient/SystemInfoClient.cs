@@ -82,7 +82,7 @@ namespace SystemInfoApi
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error during API response handling: " + ex.Message);
+                Console.WriteLine($"Error handling the API response: " + ex.Message);
             }
         }
     }
