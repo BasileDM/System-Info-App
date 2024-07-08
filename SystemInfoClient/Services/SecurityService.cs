@@ -96,7 +96,7 @@ namespace SystemInfoClient.Services
             var argon2 = new Argon2id(Encoding.UTF8.GetBytes(source))
             {
                 Salt = salt,
-                DegreeOfParallelism = 2,
+                DegreeOfParallelism = 4,
                 Iterations = 4,
                 MemorySize = 512 * 512
             };
