@@ -23,6 +23,8 @@ namespace SystemInfoApi.Repositories
         {
             try
             {
+                machine.CreationDate = DateTime.Now.ToLocalTime();
+
                 string machineSql = @$"
                     INSERT INTO {_machinesTable.TableName} ({_machinesTable.CustomerId}, {_machinesTable.MachineName}, {_machinesTable.MachineCreationDate}) 
                     VALUES (@customerId, @machineName, @creationDate);
@@ -32,7 +34,7 @@ namespace SystemInfoApi.Repositories
                 using SqlCommand cmd = new(machineSql, connection, transaction);
                 cmd.Parameters.AddWithValue("@customerId", machine.CustomerId);
                 cmd.Parameters.AddWithValue("@machineName", machine.Name);
-                cmd.Parameters.AddWithValue("@creationDate", DateTime.Now.ToLocalTime());
+                cmd.Parameters.AddWithValue("@creationDate", machine.CreationDate);
 
                 var newMachineId = await cmd.ExecuteScalarAsync();
 
@@ -53,15 +55,18 @@ namespace SystemInfoApi.Repositories
         {
             try
             {
+                machine.CreationDate = DateTime.Now.ToLocalTime();
+
                 string query = @$"
                     UPDATE {_machinesTable.TableName} 
-                    SET {_machinesTable.CustomerId} = @customerID, {_machinesTable.MachineName} = @machineName
+                    SET {_machinesTable.CustomerId} = @customerID, {_machinesTable.MachineName} = @machineName, {_machinesTable.MachineCreationDate} = @creationDate
                     WHERE {_machinesTable.Id} = @machineId;";
 
                 using SqlCommand cmd = new(query, connection, transaction);
                 cmd.Parameters.AddWithValue("@customerId", machine.CustomerId);
                 cmd.Parameters.AddWithValue("@machineName", machine.Name);
                 cmd.Parameters.AddWithValue("@machineId", machine.Id);
+                cmd.Parameters.AddWithValue("@creationDate", machine.CreationDate);
 
                 int rowsAffected = await cmd.ExecuteNonQueryAsync();
                 if (rowsAffected <= 0)

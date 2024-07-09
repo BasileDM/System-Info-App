@@ -17,6 +17,7 @@ namespace SystemInfoApi.Repositories
         {
             try
             {
+                drive.CreationDate = DateTime.Now.ToLocalTime();
                 var dtn = db.DrivesTableNames;
 
                 string query = @$"
@@ -40,7 +41,7 @@ namespace SystemInfoApi.Repositories
                     cmd.Parameters.AddWithValue("@totalSpace", drive.TotalSpace);
                     cmd.Parameters.AddWithValue("@freeSpacePer", drive.FreeSpacePercentage);
                     cmd.Parameters.AddWithValue("@isSystemDrive", drive.IsSystemDrive);
-                    cmd.Parameters.AddWithValue("@creationDate", DateTime.UtcNow.ToLocalTime());
+                    cmd.Parameters.AddWithValue("@creationDate", drive.CreationDate);
 
                     var newDriveId = await cmd.ExecuteScalarAsync();
                     drive.Id = Convert.ToInt32(newDriveId);
@@ -53,11 +54,11 @@ namespace SystemInfoApi.Repositories
                 throw new ApplicationException("An error occured inserting the drive into the database.", ex);
             }
         }
-
         public async Task<DriveModel> UpdateAsync(DriveModel drive, SqlConnection connection, SqlTransaction transaction)
         {
             try
             {
+                drive.CreationDate = DateTime.Now.ToLocalTime();
                 var dtn = db.DrivesTableNames;
 
                 string query = @$"
@@ -73,7 +74,8 @@ namespace SystemInfoApi.Repositories
                         {dtn.FreeSpace} = @freeSpace, 
                         {dtn.TotalSpace} = @totalSpace, 
                         {dtn.FreeSpacePercentage} = @freeSpacePer, 
-                        {dtn.IsSystemDrive} = @isSystemDrive
+                        {dtn.IsSystemDrive} = @isSystemDrive,
+                        {dtn.DriveCreationDate} = @creationDate
                     WHERE {dtn.MachineId} = @machineId
                     AND {dtn.DriveName} = @driveName
 
@@ -95,6 +97,7 @@ namespace SystemInfoApi.Repositories
                     cmd.Parameters.AddWithValue("@totalSpace", drive.TotalSpace);
                     cmd.Parameters.AddWithValue("@freeSpacePer", drive.FreeSpacePercentage);
                     cmd.Parameters.AddWithValue("@isSystemDrive", drive.IsSystemDrive);
+                    cmd.Parameters.AddWithValue("@creationDate", drive.CreationDate);
 
                     var obj = await cmd.ExecuteScalarAsync() ??
                         throw new ArgumentException("Drive not found.");

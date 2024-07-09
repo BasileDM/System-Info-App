@@ -17,6 +17,7 @@ namespace SystemInfoApi.Repositories
         {
             try
             {
+                os.CreationDate = DateTime.Now.ToLocalTime();
                 var otn = db.OsTableNames;
 
                 string query = @$"
@@ -37,7 +38,7 @@ namespace SystemInfoApi.Repositories
                     cmd.Parameters.AddWithValue("@releaseId", os.ReleaseId);
                     cmd.Parameters.AddWithValue("@currentBuild", os.CurrentBuild);
                     cmd.Parameters.AddWithValue("@ubr", os.Ubr);
-                    cmd.Parameters.AddWithValue("@creationDate", DateTime.UtcNow.ToLocalTime());
+                    cmd.Parameters.AddWithValue("@creationDate", os.CreationDate);
 
                     var newOsId = await cmd.ExecuteScalarAsync();
                     os.Id = Convert.ToInt32(newOsId);
@@ -54,8 +55,10 @@ namespace SystemInfoApi.Repositories
         {
             try
             {
+                os.CreationDate = DateTime.Now.ToLocalTime();
                 var otn = db.OsTableNames;
 
+                Console.WriteLine($"---- Os ID: {os.Id}\r\nos.driveID: {os.DriveId}");
                 string query = @$"
                     UPDATE {otn.TableName}
                     SET
@@ -66,8 +69,9 @@ namespace SystemInfoApi.Repositories
                         {otn.ProductName} = @productName, 
                         {otn.ReleaseId} = @releaseId, 
                         {otn.CurrentBuild} = @currentBuild, 
-                        {otn.Ubr} = @ubr
-                    WHERE {otn.Id} = @osId
+                        {otn.Ubr} = @ubr,
+                        {otn.OsCreationDate} = @creationDate
+                    WHERE {otn.DriveId} = @driveId
 
                     SELECT {otn.Id} 
                     FROM {otn.TableName}
@@ -83,7 +87,7 @@ namespace SystemInfoApi.Repositories
                     cmd.Parameters.AddWithValue("@releaseId", os.ReleaseId);
                     cmd.Parameters.AddWithValue("@currentBuild", os.CurrentBuild);
                     cmd.Parameters.AddWithValue("@ubr", os.Ubr);
-                    cmd.Parameters.AddWithValue("@osId", os.Id);
+                    cmd.Parameters.AddWithValue("@creationDate", os.CreationDate);
 
                     var obj = await cmd.ExecuteScalarAsync() ??
                         throw new ArgumentException("OS not found.");

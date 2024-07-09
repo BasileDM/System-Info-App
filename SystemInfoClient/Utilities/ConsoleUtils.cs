@@ -32,7 +32,17 @@
             Console.WriteLine();
             WriteColored($"Machine data sent successfully.", ConsoleColor.Green);
             Console.WriteLine($"Code: {response.StatusCode}.");
-            Console.WriteLine($"Time: {response.Headers.Date}.");
+
+            if (response.Headers.Date.HasValue)
+            {
+                var utcDate = response.Headers.Date.Value;
+                var localDate = utcDate.ToLocalTime();
+                Console.WriteLine($"Local time: {localDate}.");
+            }
+            else
+            {
+                Console.WriteLine("Local time: No time header was provided.");
+            }
 
             if (response.Headers.Location != null && !string.IsNullOrEmpty(response.Headers.Location.ToString()))
             {

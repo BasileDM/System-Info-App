@@ -10,6 +10,7 @@ namespace SystemInfoApi.Repositories
         {
             try
             {
+                app.CreationDate = DateTime.Now.ToLocalTime();
                 var appsDrivesRTable = db.AppsDrivesRelationTableNames;
 
                 string query = @$"
@@ -107,7 +108,7 @@ namespace SystemInfoApi.Repositories
                     cmd.Parameters.AddWithValue("@Product_Private_Part", app.ProductPrivatePart);
                     cmd.Parameters.AddWithValue("@Product_Version", app.ProductVersion ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@Special_Build", app.SpecialBuild ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@creationDate", DateTime.UtcNow.ToLocalTime());
+                    cmd.Parameters.AddWithValue("@creationDate", app.CreationDate);
 
                     await cmd.ExecuteScalarAsync();
 
@@ -127,6 +128,7 @@ namespace SystemInfoApi.Repositories
         {
             try
             {
+                app.CreationDate = DateTime.Now.ToLocalTime();
                 var appsDrivesRTable = db.AppsDrivesRelationTableNames;
 
                 string query = @$"
@@ -158,7 +160,8 @@ namespace SystemInfoApi.Repositories
                         {appsDrivesRTable.ProductName} = @Product_Name,
                         {appsDrivesRTable.ProductPrivatePart} = @Product_Private_Part,
                         {appsDrivesRTable.ProductVersion} = @Product_Version,
-                        {appsDrivesRTable.SpecialBuild} = @Special_Build
+                        {appsDrivesRTable.SpecialBuild} = @Special_Build,
+                        {appsDrivesRTable.AppRelationCreationDate} = @creationDate
                     WHERE {appsDrivesRTable.DriveId} = @id_client_machine_disque 
                     AND {appsDrivesRTable.AppId} = @id_client_machine_disque_app;";
 
@@ -193,6 +196,7 @@ namespace SystemInfoApi.Repositories
                     cmd.Parameters.AddWithValue("@Product_Private_Part", app.ProductPrivatePart);
                     cmd.Parameters.AddWithValue("@Product_Version", app.ProductVersion ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@Special_Build", app.SpecialBuild ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@creationDate", app.CreationDate);
 
                     int rowsAffected = await cmd.ExecuteNonQueryAsync();
                     if (rowsAffected <= 0)
