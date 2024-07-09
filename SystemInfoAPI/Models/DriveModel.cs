@@ -13,6 +13,7 @@
         public long TotalSpace { get; set; }
         public int FreeSpacePercentage { get; set; }
         public bool IsSystemDrive { get; set; }
+        public DateTime CreationDate { get; set; }
         public int MachineId { get; set; }  // Foreign key
         public OsModel? Os { get; set; }
         public List<ApplicationModel>? AppList { get; set; }

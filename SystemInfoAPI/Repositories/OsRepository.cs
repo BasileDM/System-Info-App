@@ -17,13 +17,14 @@ namespace SystemInfoApi.Repositories
         {
             try
             {
+                os.CreationDate = DateTime.Now.ToLocalTime();
                 var otn = db.OsTableNames;
 
                 string query = @$"
                     INSERT INTO {otn.TableName}
-                        ({otn.DriveId}, {otn.Directory}, {otn.Architecture}, {otn.Version}, {otn.ProductName}, {otn.ReleaseId}, {otn.CurrentBuild}, {otn.Ubr})
+                        ({otn.DriveId}, {otn.Directory}, {otn.Architecture}, {otn.Version}, {otn.ProductName}, {otn.ReleaseId}, {otn.CurrentBuild}, {otn.Ubr}, {otn.OsCreationDate})
                     VALUES 
-                        (@driveId, @directory, @architecture, @version, @productName, @releaseId, @currentBuild, @ubr);
+                        (@driveId, @directory, @architecture, @version, @productName, @releaseId, @currentBuild, @ubr, @creationDate);
 
                     SELECT SCOPE_IDENTITY();";
 
@@ -37,6 +38,7 @@ namespace SystemInfoApi.Repositories
                     cmd.Parameters.AddWithValue("@releaseId", os.ReleaseId);
                     cmd.Parameters.AddWithValue("@currentBuild", os.CurrentBuild);
                     cmd.Parameters.AddWithValue("@ubr", os.Ubr);
+                    cmd.Parameters.AddWithValue("@creationDate", os.CreationDate);
 
                     var newOsId = await cmd.ExecuteScalarAsync();
                     os.Id = Convert.ToInt32(newOsId);
@@ -53,6 +55,8 @@ namespace SystemInfoApi.Repositories
         {
             try
             {
+                os.CreationDate = DateTime.Now.ToLocalTime();
+                var ohtn = db.OsHistoryTableNames;
                 var otn = db.OsTableNames;
 
                 string query = @$"
@@ -65,8 +69,9 @@ namespace SystemInfoApi.Repositories
                         {otn.ProductName} = @productName, 
                         {otn.ReleaseId} = @releaseId, 
                         {otn.CurrentBuild} = @currentBuild, 
-                        {otn.Ubr} = @ubr
-                    WHERE {otn.Id} = @osId
+                        {otn.Ubr} = @ubr,
+                        {otn.OsCreationDate} = @creationDate
+                    WHERE {otn.DriveId} = @driveId
 
                     SELECT {otn.Id} 
                     FROM {otn.TableName}
@@ -82,7 +87,7 @@ namespace SystemInfoApi.Repositories
                     cmd.Parameters.AddWithValue("@releaseId", os.ReleaseId);
                     cmd.Parameters.AddWithValue("@currentBuild", os.CurrentBuild);
                     cmd.Parameters.AddWithValue("@ubr", os.Ubr);
-                    cmd.Parameters.AddWithValue("@osId", os.Id);
+                    cmd.Parameters.AddWithValue("@creationDate", os.CreationDate);
 
                     var obj = await cmd.ExecuteScalarAsync() ??
                         throw new ArgumentException("OS not found.");
@@ -95,6 +100,45 @@ namespace SystemInfoApi.Repositories
             catch (Exception ex)
             {
                 throw new ApplicationException($"An error occured inserting the OS into the database: {ex}", ex);
+            }
+        }
+        public async Task<int> InsertHistoryAsync(OsModel os, SqlConnection connection, SqlTransaction transaction, int historyDriveId)
+        {
+            try
+            {
+                os.CreationDate = DateTime.Now.ToLocalTime();
+                var ohtn = db.OsHistoryTableNames;
+
+                string query = @$"
+                    INSERT INTO {ohtn.TableName}
+                        ({ohtn.DriveId}, {ohtn.Directory}, {ohtn.Architecture}, {ohtn.Version}, {ohtn.ProductName}, {ohtn.ReleaseId}, {ohtn.CurrentBuild}, {ohtn.Ubr}, {ohtn.OsCreationDate})
+                    VALUES 
+                        (@driveId, @directory, @architecture, @version, @productName, @releaseId, @currentBuild, @ubr, @creationDate);
+
+                    SELECT SCOPE_IDENTITY();";
+
+                int historyOsId;
+                using (SqlCommand cmd = new(query, connection, transaction))
+                {
+                    cmd.Parameters.AddWithValue("@driveId", historyDriveId);
+                    cmd.Parameters.AddWithValue("@directory", os.Directory);
+                    cmd.Parameters.AddWithValue("@architecture", os.Architecture);
+                    cmd.Parameters.AddWithValue("@version", os.Version);
+                    cmd.Parameters.AddWithValue("@productName", os.ProductName);
+                    cmd.Parameters.AddWithValue("@releaseId", os.ReleaseId);
+                    cmd.Parameters.AddWithValue("@currentBuild", os.CurrentBuild);
+                    cmd.Parameters.AddWithValue("@ubr", os.Ubr);
+                    cmd.Parameters.AddWithValue("@creationDate", os.CreationDate);
+
+                    var obj = await cmd.ExecuteScalarAsync();
+                    historyOsId = Convert.ToInt32(obj);
+                }
+                return historyOsId;
+
+            }
+            catch (Exception ex)
+            {
+                throw new ApplicationException($"An error occured inserting the OS history into the database: {ex}", ex);
             }
         }
     }

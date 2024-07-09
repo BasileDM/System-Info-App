@@ -17,13 +17,14 @@ namespace SystemInfoApi.Repositories
         {
             try
             {
+                drive.CreationDate = DateTime.Now.ToLocalTime();
                 var dtn = db.DrivesTableNames;
 
-                string query = @$"
+                string query = @$"                    
                     INSERT INTO {dtn.TableName} 
-                        ({dtn.MachineId}, {dtn.DriveName}, {dtn.RootDirectory}, {dtn.Label}, {dtn.Type}, {dtn.Format}, {dtn.Size}, {dtn.FreeSpace}, {dtn.TotalSpace}, {dtn.FreeSpacePercentage}, {dtn.IsSystemDrive})
+                        ({dtn.MachineId}, {dtn.DriveName}, {dtn.RootDirectory}, {dtn.Label}, {dtn.Type}, {dtn.Format}, {dtn.Size}, {dtn.FreeSpace}, {dtn.TotalSpace}, {dtn.FreeSpacePercentage}, {dtn.IsSystemDrive}, {dtn.DriveCreationDate})
                     VALUES 
-                        (@machineId, @driveName, @rootDir, @label, @type, @format, @size, @freeSpace, @totalSpace, @freeSpacePer, @isSystemDrive);
+                        (@machineId, @driveName, @rootDir, @label, @type, @format, @size, @freeSpace, @totalSpace, @freeSpacePer, @isSystemDrive, @creationDate);
 
                     SELECT SCOPE_IDENTITY();";
 
@@ -40,6 +41,7 @@ namespace SystemInfoApi.Repositories
                     cmd.Parameters.AddWithValue("@totalSpace", drive.TotalSpace);
                     cmd.Parameters.AddWithValue("@freeSpacePer", drive.FreeSpacePercentage);
                     cmd.Parameters.AddWithValue("@isSystemDrive", drive.IsSystemDrive);
+                    cmd.Parameters.AddWithValue("@creationDate", drive.CreationDate);
 
                     var newDriveId = await cmd.ExecuteScalarAsync();
                     drive.Id = Convert.ToInt32(newDriveId);
@@ -52,11 +54,11 @@ namespace SystemInfoApi.Repositories
                 throw new ApplicationException("An error occured inserting the drive into the database.", ex);
             }
         }
-
         public async Task<DriveModel> UpdateAsync(DriveModel drive, SqlConnection connection, SqlTransaction transaction)
         {
             try
             {
+                drive.CreationDate = DateTime.Now.ToLocalTime();
                 var dtn = db.DrivesTableNames;
 
                 string query = @$"
@@ -72,11 +74,12 @@ namespace SystemInfoApi.Repositories
                         {dtn.FreeSpace} = @freeSpace, 
                         {dtn.TotalSpace} = @totalSpace, 
                         {dtn.FreeSpacePercentage} = @freeSpacePer, 
-                        {dtn.IsSystemDrive} = @isSystemDrive
+                        {dtn.IsSystemDrive} = @isSystemDrive,
+                        {dtn.DriveCreationDate} = @creationDate
                     WHERE {dtn.MachineId} = @machineId
                     AND {dtn.DriveName} = @driveName
 
-                    SELECT {dtn.Id} 
+                    SELECT {dtn.Id}
                     FROM {dtn.TableName}
                     WHERE {dtn.MachineId} = @machineId 
                     AND {dtn.DriveName} = @driveName";
@@ -94,6 +97,7 @@ namespace SystemInfoApi.Repositories
                     cmd.Parameters.AddWithValue("@totalSpace", drive.TotalSpace);
                     cmd.Parameters.AddWithValue("@freeSpacePer", drive.FreeSpacePercentage);
                     cmd.Parameters.AddWithValue("@isSystemDrive", drive.IsSystemDrive);
+                    cmd.Parameters.AddWithValue("@creationDate", drive.CreationDate);
 
                     var obj = await cmd.ExecuteScalarAsync() ??
                         throw new ArgumentException("Drive not found.");
@@ -105,6 +109,48 @@ namespace SystemInfoApi.Repositories
             catch (Exception ex)
             {
                 throw new ApplicationException($"An error occured inserting the drive into the database: {ex.Message}", ex);
+            }
+        }
+        public async Task<int> InsertHistoryAsync(DriveModel drive, SqlConnection connection, SqlTransaction transaction)
+        {
+            try
+            {
+                drive.CreationDate = DateTime.Now.ToLocalTime();
+                var dhtn = db.DrivesHistoryTableNames;
+
+                string query = @$"
+                INSERT INTO {dhtn.TableName}
+                    ({dhtn.MachineId}, {dhtn.DriveName}, {dhtn.RootDirectory}, {dhtn.Label}, {dhtn.Type}, {dhtn.Format}, {dhtn.Size}, {dhtn.FreeSpace}, {dhtn.TotalSpace}, {dhtn.FreeSpacePercentage}, {dhtn.IsSystemDrive}, {dhtn.DriveCreationDate})
+                VALUES
+                    (@machineId, @driveName, @rootDir, @label, @type, @format, @size, @freeSpace, @totalSpace, @freeSpacePer, @isSystemDrive, @creationDate);
+                SELECT SCOPE_IDENTITY();";
+
+                int newId;
+                using (SqlCommand cmd = new(query, connection, transaction))
+                {
+                    cmd.Parameters.AddWithValue("@machineId", drive.MachineId);
+                    cmd.Parameters.AddWithValue("@driveName", drive.Name);
+                    cmd.Parameters.AddWithValue("@rootDir", drive.RootDirectory);
+                    cmd.Parameters.AddWithValue("@label", drive.Label);
+                    cmd.Parameters.AddWithValue("@type", drive.Type);
+                    cmd.Parameters.AddWithValue("@format", drive.Format);
+                    cmd.Parameters.AddWithValue("@size", drive.Size);
+                    cmd.Parameters.AddWithValue("@freeSpace", drive.FreeSpace);
+                    cmd.Parameters.AddWithValue("@totalSpace", drive.TotalSpace);
+                    cmd.Parameters.AddWithValue("@freeSpacePer", drive.FreeSpacePercentage);
+                    cmd.Parameters.AddWithValue("@isSystemDrive", drive.IsSystemDrive);
+                    cmd.Parameters.AddWithValue("@creationDate", drive.CreationDate);
+
+                    var obj = await cmd.ExecuteScalarAsync() ??
+                        throw new ArgumentException("Drive not found.");
+
+                    newId = Convert.ToInt32(obj);
+                };
+                return newId;
+            }
+            catch (Exception ex)
+            {
+                throw new ApplicationException("An error occured inserting the drive history into the database.", ex);
             }
         }
     }
