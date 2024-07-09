@@ -31,6 +31,7 @@
         public int ProductPrivatePart { get; set; }
         public string? ProductVersion { get; set; }
         public string? SpecialBuild { get; set; }
+        public DateTime CreationDate { get; set; }
         public int DriveId { get; set; } // Foreign key
     }
 }

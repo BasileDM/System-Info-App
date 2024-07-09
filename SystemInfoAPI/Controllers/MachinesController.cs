@@ -69,7 +69,8 @@ namespace SystemInfoApi.Controllers
                 {
                     return NotFound($"Machine with ID {machineId} was not found.");
                 }
-                return CreatedAtRoute(nameof(GetById), new { machineId = updatedMachine.Id }, updatedMachine);
+
+                return Ok(updatedMachine);
             }
             catch (ArgumentException ex)
             {

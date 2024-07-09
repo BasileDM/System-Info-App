@@ -24,10 +24,10 @@ namespace SystemInfoApi.Controllers
             {
                 ConsoleUtils.LogAuthRequestInfo(request, HttpContext.Connection);
 
-                string validPass = AuthenticationService.ValidateApiPass(_config["ApiPassword"]);
-                string validSecret = AuthenticationService.ValidateSecret(_config["Jwt:Secret"]);
-                string validIssuer = AuthenticationService.ValidateIssuer(_config["Jwt:Issuer"]);
-                int validExpiration = AuthenticationService.ValidateExpirationTime(_config["Jwt:Expiration"]);
+                string validPass = AuthenticationService.ValidateApiPassSetting(_config["ApiPassword"]);
+                string validSecret = AuthenticationService.ValidateSecretSetting(_config["Jwt:Secret"]);
+                string validIssuer = AuthenticationService.ValidateIssuerSetting(_config["Jwt:Issuer"]);
+                int validExpiration = AuthenticationService.ValidateExpirationSetting(_config["Jwt:Expiration"]);
 
                 if (!AuthenticationService.VerifyPassword(validPass, request.Pass))
                 {

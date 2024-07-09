@@ -1,4 +1,4 @@
-﻿namespace SystemInfoApi.Utilities
+﻿namespace SystemInfoClient.Utilities
 {
     public class ConsoleUtils
     {
@@ -27,13 +27,31 @@
                 Console.WriteLine($"Unexpected authorization error.");
             }
         }
-        public static void LogSuccessDetails(HttpResponseMessage response)
+        public static void LogResponseDetails(HttpResponseMessage response)
         {
             Console.WriteLine();
             WriteColored($"Machine data sent successfully.", ConsoleColor.Green);
             Console.WriteLine($"Code: {response.StatusCode}.");
-            Console.WriteLine($"Time: {response.Headers.Date}.");
-            Console.WriteLine($"Location: {response.Headers.Location}.");
+
+            if (response.Headers.Date.HasValue)
+            {
+                var utcDate = response.Headers.Date.Value;
+                var localDate = utcDate.ToLocalTime();
+                Console.WriteLine($"Local time: {localDate}.");
+            }
+            else
+            {
+                Console.WriteLine("Local time: No time header was provided.");
+            }
+
+            if (response.Headers.Location != null && !string.IsNullOrEmpty(response.Headers.Location.ToString()))
+            {
+                Console.WriteLine($"Location: {response.Headers.Location}.");
+            }
+            else
+            {
+                Console.WriteLine("Location: No location for machine updates.");
+            }
         }
     }
 }

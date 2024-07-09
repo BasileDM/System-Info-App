@@ -4,7 +4,8 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using SystemInfoApi.Utilities;
+using SystemInfoClient.Classes;
+using SystemInfoClient.Utilities;
 
 namespace SystemInfoClient.Services
 {
@@ -12,76 +13,38 @@ namespace SystemInfoClient.Services
     internal class SecurityService
     {
         private readonly string _apiUrl;
-        private readonly string _envName = "SysInfoApp";
-        private readonly string _flag = "54a7dV4o87.";
-        private string EnvValue
-        {
-            get
-            {
-                string base64 = Environment.GetEnvironmentVariable(_envName, EnvironmentVariableTarget.User) ??
-                                Environment.GetEnvironmentVariable(_envName, EnvironmentVariableTarget.Machine) ??
-                                throw new NullReferenceException("Could not find API key.");
+        private readonly EnvVariable _envVariable;
 
-                string decoded = DecodeStringIfFlagged(base64, out bool wasDecoded);
-                if (wasDecoded)
-                {
-                    return decoded;
-                }
-                else // If the flag is not found then the password is not yet hashed
-                {
-                    string hash = HashString(base64);
-                    string encoded = EncodeString(hash);
-                    Environment.SetEnvironmentVariable(_envName, encoded, EnvironmentVariableTarget.User);
-                    return hash;
-                }
-            }
-        }
-        private string? Token
-        {
-            get
-            {
-                string[] splitValues = EnvValue.Split(";");
-                return splitValues.Length > 1 ? splitValues[1] : null;
-            }
-            set
-            {
-                string newValue = $"{EnvValue.Split(";")[0]};{value}";
-                Environment.SetEnvironmentVariable(_envName, EncodeString(newValue), EnvironmentVariableTarget.User);
-            }
-        }
-
-        public SecurityService(string apiUrl)
+        public SecurityService(string apiUrl, EnvVariable envVariable)
         {
             _apiUrl = apiUrl ?? throw new Exception("Invalid API URL in settings.json");
+            _envVariable = envVariable;
         }
 
-        public async Task<string> GetTokenAsync()
+        public async Task<JwtToken> GetTokenAsync()
         {
-            string? token = Token;
-            if (token == null)
+            JwtToken? token = _envVariable.Token;
+            if (token == null || token.IsExpired())
             {
-                Console.WriteLine("Token not found.");
+                ConsoleUtils.WriteColored("Token not found or expired.", ConsoleColor.Red);
                 token = await RequestTokenAsync();
             }
             else
             {
-                Console.WriteLine($"Token found: \r\n{token}");
+                Console.WriteLine($"Token found: \r\n{token.GetString()}");
             }
 
             return token;
         }
-        public async Task<string> RequestTokenAsync()
+        public async Task<JwtToken> RequestTokenAsync()
         {
             try
             {
                 ConsoleUtils.WriteColored("Requesting new token...", ConsoleColor.Yellow);
-                string hash = EnvValue.Split(";")[0];
+                string hash = _envVariable.Hash;
 
                 // Prepare and send request
                 HttpClient client = HttpClientFactory.CreateHttpClient();
-
-                Console.WriteLine($"Token requested with: ");
-                Console.WriteLine($"Hash: {hash}");
 
                 var authRequest = new { Pass = hash };
                 var content = new StringContent(JsonSerializer.Serialize(authRequest), Encoding.UTF8, "application/json");
@@ -98,9 +61,9 @@ namespace SystemInfoClient.Services
                 {
                     ConsoleUtils.WriteColored($"Token obtained with success: ", ConsoleColor.Green);
                     Console.WriteLine(tokenResponse.Token);
-
-                    Token = tokenResponse.Token;
-                    return tokenResponse.Token;
+                    JwtToken token = JwtToken.GetInstance(tokenResponse.Token);
+                    _envVariable.Token = token;
+                    return token;
                 }
                 else
                 {
@@ -123,59 +86,7 @@ namespace SystemInfoClient.Services
                 throw new Exception("An unexpected error occurred while obtaining the authentication token.", ex);
             }
         }
-        private string EncodeString(string source)
-        {
-            string flaggedSource = _flag + source; 
-            byte[] bytes = Encoding.UTF8.GetBytes(flaggedSource);
-            string base64 = Convert.ToBase64String(bytes);
-            string flagged = _flag + base64;
-            return flagged;
-        }
-        private string DecodeStringIfFlagged(string encodedString, out bool wasDecoded)
-        {
-            if (encodedString.StartsWith(_flag))
-            {
-                wasDecoded = true;
-                string unflagged = encodedString.Substring(_flag.Length);
-                Console.WriteLine($"Decoding env variable...");
-                byte[] bytes;
-
-                try
-                {
-                    bytes = Convert.FromBase64String(unflagged);
-                }
-                catch (FormatException)
-                {
-                    // If the env variable can't be converted from base64 even though the flag was detected...
-                    // ...it's a clear password, starting with the flag by accident.
-                    wasDecoded = false;
-                    return encodedString;
-                }
-
-                string decoded = Encoding.UTF8.GetString(bytes);
-                Console.WriteLine($"Flag found, removed and string decoded:");
-                Console.WriteLine(decoded + "\r\n");
-
-                if (decoded.StartsWith(_flag))
-                {
-                    // Remove the inner flag before returning the decoded string
-                    decoded = decoded.Substring(_flag.Length);
-                    return decoded;
-                }
-                else
-                {
-                    // If the inner flag is not present, it means the original string was not encoded by the app
-                    wasDecoded = false;
-                    return encodedString;
-                }
-            }
-            else
-            {
-                wasDecoded = false;
-                return encodedString;
-            }
-        }
-        private static string HashString(string source)
+        public static string HashString(string source)
         {
             Console.WriteLine($"Hashing string: {source}");
 
@@ -185,7 +96,7 @@ namespace SystemInfoClient.Services
             var argon2 = new Argon2id(Encoding.UTF8.GetBytes(source))
             {
                 Salt = salt,
-                DegreeOfParallelism = 2,
+                DegreeOfParallelism = 4,
                 Iterations = 4,
                 MemorySize = 512 * 512
             };

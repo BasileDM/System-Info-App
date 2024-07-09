@@ -10,6 +10,7 @@ namespace SystemInfoApi.Repositories
         {
             try
             {
+                app.CreationDate = DateTime.Now.ToLocalTime();
                 var appsDrivesRTable = db.AppsDrivesRelationTableNames;
 
                 string query = @$"
@@ -42,7 +43,8 @@ namespace SystemInfoApi.Repositories
                          {appsDrivesRTable.ProductName},
                          {appsDrivesRTable.ProductPrivatePart},
                          {appsDrivesRTable.ProductVersion},
-                         {appsDrivesRTable.SpecialBuild})
+                         {appsDrivesRTable.SpecialBuild},
+                         {appsDrivesRTable.AppRelationCreationDate})
                     VALUES 
                         (@id_client_machine_disque,
                          @id_client_machine_disque_app,
@@ -72,7 +74,8 @@ namespace SystemInfoApi.Repositories
                          @Product_Name,
                          @Product_Private_Part,
                          @Product_Version,
-                         @Special_Build);";
+                         @Special_Build,
+                         @creationDate);";
 
                 using (SqlCommand cmd = new(query, conection, transaction))
                 {
@@ -105,6 +108,7 @@ namespace SystemInfoApi.Repositories
                     cmd.Parameters.AddWithValue("@Product_Private_Part", app.ProductPrivatePart);
                     cmd.Parameters.AddWithValue("@Product_Version", app.ProductVersion ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@Special_Build", app.SpecialBuild ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@creationDate", app.CreationDate);
 
                     await cmd.ExecuteScalarAsync();
 
@@ -124,6 +128,7 @@ namespace SystemInfoApi.Repositories
         {
             try
             {
+                app.CreationDate = DateTime.Now.ToLocalTime();
                 var appsDrivesRTable = db.AppsDrivesRelationTableNames;
 
                 string query = @$"
@@ -155,7 +160,8 @@ namespace SystemInfoApi.Repositories
                         {appsDrivesRTable.ProductName} = @Product_Name,
                         {appsDrivesRTable.ProductPrivatePart} = @Product_Private_Part,
                         {appsDrivesRTable.ProductVersion} = @Product_Version,
-                        {appsDrivesRTable.SpecialBuild} = @Special_Build
+                        {appsDrivesRTable.SpecialBuild} = @Special_Build,
+                        {appsDrivesRTable.AppRelationCreationDate} = @creationDate
                     WHERE {appsDrivesRTable.DriveId} = @id_client_machine_disque 
                     AND {appsDrivesRTable.AppId} = @id_client_machine_disque_app;";
 
@@ -190,6 +196,7 @@ namespace SystemInfoApi.Repositories
                     cmd.Parameters.AddWithValue("@Product_Private_Part", app.ProductPrivatePart);
                     cmd.Parameters.AddWithValue("@Product_Version", app.ProductVersion ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@Special_Build", app.SpecialBuild ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@creationDate", app.CreationDate);
 
                     int rowsAffected = await cmd.ExecuteNonQueryAsync();
                     if (rowsAffected <= 0)
@@ -200,6 +207,125 @@ namespace SystemInfoApi.Repositories
 
                     return app;
                 };
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message, ex);
+            }
+        }
+        public async Task<int> InsertHistoryAsync(ApplicationModel app, SqlConnection conection, SqlTransaction transaction, int driveHistoryId)
+        {
+            try
+            {
+                app.CreationDate = DateTime.Now.ToLocalTime();
+                var appsDrivesRHistoryTable = db.AppsDrivesRelationHistoryTableNames;
+
+                string query = @$"
+                    INSERT INTO {appsDrivesRHistoryTable.TableName}
+                        ({appsDrivesRHistoryTable.DriveId},
+                         {appsDrivesRHistoryTable.AppId},
+                         {appsDrivesRHistoryTable.Comments},
+                         {appsDrivesRHistoryTable.CompanyName},
+                         {appsDrivesRHistoryTable.FileBuildPart},
+                         {appsDrivesRHistoryTable.FileDescription},
+                         {appsDrivesRHistoryTable.FileMajorPart},
+                         {appsDrivesRHistoryTable.FileMinorPart},
+                         {appsDrivesRHistoryTable.FileName},
+                         {appsDrivesRHistoryTable.FilePrivatePart},
+                         {appsDrivesRHistoryTable.FileVersion},
+                         {appsDrivesRHistoryTable.InternalName},
+                         {appsDrivesRHistoryTable.IsDebug},
+                         {appsDrivesRHistoryTable.IsPatched},
+                         {appsDrivesRHistoryTable.IsPreRelease},
+                         {appsDrivesRHistoryTable.IsPrivateBuild},
+                         {appsDrivesRHistoryTable.IsSpecialBuild},
+                         {appsDrivesRHistoryTable.Language},
+                         {appsDrivesRHistoryTable.Copyright},
+                         {appsDrivesRHistoryTable.Trademarks},
+                         {appsDrivesRHistoryTable.OriginalFilename},
+                         {appsDrivesRHistoryTable.PrivateBuild},
+                         {appsDrivesRHistoryTable.ProductBuildPart},
+                         {appsDrivesRHistoryTable.ProductMajorPart},
+                         {appsDrivesRHistoryTable.ProductMinorPart},
+                         {appsDrivesRHistoryTable.ProductName},
+                         {appsDrivesRHistoryTable.ProductPrivatePart},
+                         {appsDrivesRHistoryTable.ProductVersion},
+                         {appsDrivesRHistoryTable.SpecialBuild},
+                         {appsDrivesRHistoryTable.AppRelationCreationDate})
+                    VALUES 
+                        (@id_client_machine_disque,
+                         @id_client_machine_disque_app,
+                         @Comments,
+                         @Company_Name,
+                         @File_Build_Part,
+                         @File_Description,
+                         @File_Major_Part,
+                         @File_Minor_Part,
+                         @File_Name,
+                         @File_Private_Part,
+                         @File_Version,
+                         @Internal_Name,
+                         @Is_Debug,
+                         @Is_Patched,
+                         @Is_Pre_Release,
+                         @Is_Private_Build,
+                         @Is_Special_Build,
+                         @Language,
+                         @Legal_Copyright,
+                         @Legal_Trademarks,
+                         @Original_Filename,
+                         @Private_Build,
+                         @Product_Build_Part,
+                         @Product_Major_Part,
+                         @Product_Minor_Part,
+                         @Product_Name,
+                         @Product_Private_Part,
+                         @Product_Version,
+                         @Special_Build,
+                         @creationDate);";
+
+                int historyAppId;
+                using (SqlCommand cmd = new(query, conection, transaction))
+                {
+                    cmd.Parameters.AddWithValue("@id_client_machine_disque", driveHistoryId);
+                    cmd.Parameters.AddWithValue("@id_client_machine_disque_app", app.Id);
+                    cmd.Parameters.AddWithValue("@Comments", app.Comments ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@Company_Name", app.CompanyName ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@File_Build_Part", app.FileBuildPart);
+                    cmd.Parameters.AddWithValue("@File_Description", app.FileDescription ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@File_Major_Part", app.FileMajorPart);
+                    cmd.Parameters.AddWithValue("@File_Minor_Part", app.FileMinorPart);
+                    cmd.Parameters.AddWithValue("@File_Name", app.FileName ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@File_Private_Part", app.FilePrivatePart);
+                    cmd.Parameters.AddWithValue("@File_Version", app.FileVersion ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@Internal_Name", app.InternalName ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@Is_Debug", app.IsDebug);
+                    cmd.Parameters.AddWithValue("@Is_Patched", app.IsPatched);
+                    cmd.Parameters.AddWithValue("@Is_Pre_Release", app.IsPreRelease);
+                    cmd.Parameters.AddWithValue("@Is_Private_Build", app.IsPrivateBuild);
+                    cmd.Parameters.AddWithValue("@Is_Special_Build", app.IsSpecialBuild);
+                    cmd.Parameters.AddWithValue("@Language", app.Language ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@Legal_Copyright", app.LegalCopyright ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@Legal_Trademarks", app.LegalTrademarks ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@Original_Filename", app.OriginalFilename ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@Private_Build", app.PrivateBuild ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@Product_Build_Part", app.ProductBuildPart);
+                    cmd.Parameters.AddWithValue("@Product_Major_Part", app.ProductMajorPart);
+                    cmd.Parameters.AddWithValue("@Product_Minor_Part", app.ProductMinorPart);
+                    cmd.Parameters.AddWithValue("@Product_Name", app.ProductName ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@Product_Private_Part", app.ProductPrivatePart);
+                    cmd.Parameters.AddWithValue("@Product_Version", app.ProductVersion ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@Special_Build", app.SpecialBuild ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@creationDate", app.CreationDate);
+
+                    var obj = await cmd.ExecuteScalarAsync();
+                    historyAppId = Convert.ToInt32(obj);
+                };
+                return historyAppId;
+            }
+            catch (SqlException ex) when (ex.Number == 547) // Foreign key violation error number
+            {
+                throw new ArgumentException($"Error for app {app.Name}. App Id {app.Id} is invalid or does not exist in the database.");
             }
             catch (Exception ex)
             {

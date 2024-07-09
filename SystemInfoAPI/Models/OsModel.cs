@@ -10,6 +10,7 @@
         public string? ReleaseId { get; set; }
         public string? CurrentBuild { get; set; }
         public string? Ubr { get; set; }
+        public DateTime CreationDate { get; set; }
         public int DriveId { get; set; }  // Foreign key
     }
 }
