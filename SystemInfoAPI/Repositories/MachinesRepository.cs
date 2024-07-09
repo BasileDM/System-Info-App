@@ -145,6 +145,7 @@ namespace SystemInfoApi.Repositories
                         machine.Id = Convert.ToInt32(reader["Machine_Id"]);
                         machine.Name = (string)reader["Machine_Name"];
                         machine.CustomerId = Convert.ToInt32(reader["Customer_Id"]);
+                        machine.CreationDate = Convert.ToDateTime(reader["Machine_Creation_Date"]);
 
                         if (reader["Drive_Id"] != DBNull.Value)
                         {
@@ -200,6 +201,7 @@ namespace SystemInfoApi.Repositories
                     SELECT Machine.{_machinesTable.CustomerId} AS Customer_Id,
                         Machine.{_machinesTable.Id} AS Machine_Id,
                         Machine.{_machinesTable.MachineName} AS Machine_Name, 
+                        Machine.{_machinesTable.MachineCreationDate} AS Machine_Creation_Date,
                         Drive.{_drivesTable.Id} AS Drive_Id, 
                         Drive.{_drivesTable.DriveName} AS Drive_Name, 
                         {_drivesTable.RootDirectory}, 
@@ -211,6 +213,7 @@ namespace SystemInfoApi.Repositories
                         {_drivesTable.TotalSpace}, 
                         {_drivesTable.FreeSpacePercentage}, 
                         {_drivesTable.IsSystemDrive}, 
+                        Drive.{_drivesTable.DriveCreationDate} AS Drive_Creation_Date,
                         {_osTable.Id} AS Os_Id, 
                         {_osTable.Directory}, 
                         {_osTable.Architecture}, 
@@ -219,6 +222,7 @@ namespace SystemInfoApi.Repositories
                         {_osTable.ReleaseId}, 
                         {_osTable.CurrentBuild}, 
                         {_osTable.Ubr},
+                        Os.{_osTable.OsCreationDate} AS Os_Creation_Date,
 	                    App.{_appsTable.Id} AS Application_Id,
 	                    App.{_appsTable.AppName} AS Application_Name,
 	                    {_appsDrivesRTable.Comments},
@@ -247,7 +251,8 @@ namespace SystemInfoApi.Repositories
 	                    AppRelation.{_appsDrivesRTable.ProductName} AS App_Product_Name,
 	                    {_appsDrivesRTable.ProductPrivatePart},
 	                    {_appsDrivesRTable.ProductVersion},
-	                    {_appsDrivesRTable.SpecialBuild}
+	                    {_appsDrivesRTable.SpecialBuild},
+                        AppRelation.{_appsDrivesRTable.AppRelationCreationDate} AS App_Drive_Relation_Creation_Date
                     FROM {machinesTableName} AS Machine
                     LEFT OUTER JOIN {drivesTableName} AS Drive
                     ON Machine.{_machinesTable.Id} = Drive.{_drivesTable.MachineId}
@@ -276,6 +281,7 @@ namespace SystemInfoApi.Repositories
                     FreeSpacePercentage = Convert.ToInt32(reader[$"{_drivesTable.FreeSpacePercentage}"]),
                     IsSystemDrive = Convert.ToBoolean(reader[$"{_drivesTable.IsSystemDrive}"]),
                     MachineId = Convert.ToInt32(reader["Machine_Id"]),
+                    CreationDate = Convert.ToDateTime(reader["Drive_Creation_Date"]),
                     AppList = []
                 };
             }
@@ -291,7 +297,8 @@ namespace SystemInfoApi.Repositories
                     ReleaseId = (string)(reader[$"{_osTable.ReleaseId}"]),
                     CurrentBuild = (string)(reader[$"{_osTable.CurrentBuild}"]),
                     Ubr = (string)(reader[$"{_osTable.Ubr}"]),
-                    DriveId = Convert.ToInt32(reader["Drive_Id"])
+                    DriveId = Convert.ToInt32(reader["Drive_Id"]),
+                    CreationDate = Convert.ToDateTime(reader["Os_Creation_Date"])
                 };
             }
             ApplicationModel CreateApplicationFromReader(SqlDataReader reader)
@@ -328,6 +335,7 @@ namespace SystemInfoApi.Repositories
                     ProductVersion = (string)reader[$"{_appsDrivesRTable.ProductVersion}"],
                     SpecialBuild = (string)reader[$"{_appsDrivesRTable.SpecialBuild}"],
                     DriveId = Convert.ToInt32(reader["Drive_Id"]),
+                    CreationDate = Convert.ToDateTime(reader["App_Drive_Relation_Creation_Date"])
                 };
             }
         }

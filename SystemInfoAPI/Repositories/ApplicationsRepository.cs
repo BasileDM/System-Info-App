@@ -73,7 +73,7 @@ namespace SystemInfoApi.Repositories
                          @Product_Name,
                          @Product_Private_Part,
                          @Product_Version,
-                         @Special_Build
+                         @Special_Build,
                          @creationDate);";
 
                 using (SqlCommand cmd = new(query, conection, transaction))
