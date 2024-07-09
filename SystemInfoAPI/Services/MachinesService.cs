@@ -33,18 +33,27 @@ namespace SystemInfoApi.Services
                     drive.MachineId = updatedMachine.Id;
                     DriveModel updatedDrive = await drivesRepository.InsertAsync(drive, connection, transaction);
 
+                    // Create drive history
+                    int historyDriveId = await drivesRepository.InsertHistoryAsync(drive, connection, transaction);
+
                     if (drive.IsSystemDrive && drive.Os != null)
                     {
                         // Set new driveId on OS and insert
                         drive.Os.DriveId = updatedDrive.Id;
                         OsModel updatedOs = await osRepository.InsertAsync(drive.Os, connection, transaction);
                         updatedDrive.Os = updatedOs;
+
+                        // Create OS history
+                        await osRepository.InsertHistoryAsync(drive.Os, connection, transaction, historyDriveId);
                     }
 
                     foreach (ApplicationModel app in drive.AppList)
                     {
                         app.DriveId = updatedDrive.Id;
                         await appRepository.InsertAsync(app, connection, transaction);
+
+                        // Create app history
+                        await appRepository.InsertHistoryAsync(app, connection, transaction, historyDriveId);
                     }
 
                     updatedDrivesList.Add(updatedDrive);
