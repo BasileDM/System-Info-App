@@ -26,12 +26,13 @@ namespace SystemInfoClient.Services
             JwtToken? token = _envVariable.Token;
             if (token == null || token.IsExpired())
             {
-                ConsoleUtils.WriteColored("Token not found or expired.", ConsoleColor.Red);
+                ConsoleUtils.WriteColored(token == null ? "Token not found." : "Token expired.", ConsoleColor.Red);
                 token = await RequestTokenAsync();
             }
             else
             {
-                Console.WriteLine($"Token found: \r\n{token.GetString()}");
+                ConsoleUtils.WriteColored($"Token found:", ConsoleColor.DarkGreen);
+                Console.WriteLine(token.GetString());
             }
 
             return token;

@@ -27,7 +27,8 @@ namespace SystemInfoApi.Utilities
         {
             Console.WriteLine();
             WriteColored($"New token requested from: {connectionInfo.RemoteIpAddress?.ToString()} ...", ConsoleColor.Yellow);
-            Console.WriteLine($"Request Content: \r\nHash: {request.Pass}");
+            Console.WriteLine($"Request Content:");
+            Console.WriteLine($"Full hash: {request.Pass}");
         }
         public static void LogGetMachineByIdRequest(int machineId)
         {

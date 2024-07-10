@@ -91,10 +91,11 @@ namespace SystemInfoApi.Services
                     expires: DateTime.UtcNow.AddMinutes(expirationTime),
                     signingCredentials: credentials);
 
-                Console.WriteLine($"Encoding token content:\r\n{SecurityToken}");
+                Console.WriteLine($"Token content:\r\n{SecurityToken}");
                 string encodedToken = new JwtSecurityTokenHandler().WriteToken(SecurityToken);
-                Console.WriteLine($"Sending encoded token:\r\n{encodedToken}");
+                Console.WriteLine($"Encoded token:\r\n{encodedToken}");
 
+                ConsoleUtils.WriteColored("Sending token...", ConsoleColor.Yellow);
                 return encodedToken;
             }
             catch (ArgumentNullException ex)
