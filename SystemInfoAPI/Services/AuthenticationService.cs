@@ -2,6 +2,7 @@
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Text;
+using SystemInfoApi.Utilities;
 
 namespace SystemInfoApi.Services
 {
@@ -30,12 +31,12 @@ namespace SystemInfoApi.Services
 
                 if (SecureCompare(providedPass, computedPass))
                 {
-                    Console.WriteLine("Password is valid.");
+                    ConsoleUtils.WriteColored("Password is valid.", ConsoleColor.Green);
                     return true;
                 }
                 else
                 {
-                    Console.WriteLine("Invalid password.");
+                    ConsoleUtils.WriteColored("Invalid password.", ConsoleColor.Red);
                     return false;
                 }
             }

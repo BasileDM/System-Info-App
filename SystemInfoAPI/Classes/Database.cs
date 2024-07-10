@@ -138,7 +138,7 @@ namespace SystemInfoApi.Classes
             await connection.OpenAsync();
             var transaction = connection.BeginTransaction();
             connection.StatisticsEnabled = true;
-            Console.WriteLine("\r\nNew database transaction initiated.");
+            Console.WriteLine("New database transaction initiated.");
 
             var currentColor = Console.ForegroundColor;
 
@@ -173,7 +173,6 @@ namespace SystemInfoApi.Classes
                 {
                     Console.WriteLine($"{stat.Key} : {stat.Value}");
                 }
-                Console.WriteLine();
             }
         }
     }

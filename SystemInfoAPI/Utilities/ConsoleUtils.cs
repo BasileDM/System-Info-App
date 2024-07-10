@@ -12,23 +12,49 @@ namespace SystemInfoApi.Utilities
             Console.WriteLine(message);
             Console.ResetColor();
         }
-        public static void LogCreationInfo(RouteValueDictionary? routeValues, MachineModel newMachine, IUrlHelper Url)
+
+        public static void LogMachineCreationRequest()
         {
-            string? location = Url.Action(nameof(MachinesController.GetById), new { machineId = routeValues["machineId"] });
             Console.WriteLine();
-            Console.WriteLine("A new machine has been created in the database.");
+            WriteColored("New machine creation request...", ConsoleColor.Yellow);
+        }
+        public static void LogUpdateRequest(int machineId)
+        {
+            Console.WriteLine();
+            WriteColored($"Issuing request to update a machine with ID: {machineId}...", ConsoleColor.Yellow);
+        }
+        public static void LogAuthRequestInfo(AuthRequest request, ConnectionInfo connectionInfo)
+        {
+            Console.WriteLine();
+            WriteColored($"New token requested from: {connectionInfo.RemoteIpAddress?.ToString()} ...", ConsoleColor.Yellow);
+            Console.WriteLine($"Request Content: \r\nHash: {request.Pass}");
+        }
+        public static void LogGetMachineByIdRequest(int machineId)
+        {
+            Console.WriteLine();
+            WriteColored($"Issuing request to get a machine by ID. Id: {machineId}", ConsoleColor.Yellow);
+        }
+
+        public static void LogMachineCreation(RouteValueDictionary? routeValues, MachineModel newMachine, IUrlHelper Url)
+        {
+            Console.WriteLine();
+            WriteColored("A new machine has been created in the database.", ConsoleColor.Green);
             Console.WriteLine($"Time: {DateTime.Now.ToLocalTime()}");
             Console.WriteLine($"Customer ID: {newMachine.CustomerId}");
             Console.WriteLine($"Machine ID: {newMachine.Id}");
             Console.WriteLine($"Machine name: {newMachine.Name}");
             Console.WriteLine($"Drives amount: {newMachine.Drives.Count}");
+            string? location = Url.Action(nameof(MachinesController.GetById), new { machineId = routeValues["machineId"] });
             Console.WriteLine($"Location: {location}");
         }
-        public static void LogAuthRequestInfo(AuthRequest request, ConnectionInfo connectionInfo)
+        public static void LogAppCreation(string appName, int appId, int appDriveId)
         {
-            Console.WriteLine();
-            Console.WriteLine($"New token requested from: {connectionInfo.RemoteIpAddress?.ToString()}");
-            Console.WriteLine($"Request Content: \r\nHash: {request.Pass}");
+            WriteColored($"Creating new app relation '{appName}' (id {appId}) on drive {appDriveId}.", ConsoleColor.Green);
+        }
+
+        public static void LogMachineUpdate(MachineModel machine)
+        {
+            WriteColored($"Machine {machine.Id} has been updated.", ConsoleColor.DarkYellow);
         }
     }
 }

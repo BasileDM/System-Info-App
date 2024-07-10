@@ -2,6 +2,7 @@
 using SystemInfoApi.Classes;
 using SystemInfoApi.Models;
 using SystemInfoApi.Repositories;
+using SystemInfoApi.Utilities;
 
 namespace SystemInfoApi.Services
 {
@@ -104,7 +105,7 @@ namespace SystemInfoApi.Services
                             // If not, create instead of update
                             if (!await appRepository.DoesAppDriveRelationExist(app.Id, app.DriveId, connection, transaction))
                             {
-                                Console.WriteLine($"App {app.Name} with id n°{app.Id} is new on drive {app.DriveId}. Inserting a new relation.");
+                                ConsoleUtils.LogAppCreation(app.Name, app.Id, app.DriveId);
                                 await appRepository.InsertAsync(app, connection, transaction);
                             }
                             else
@@ -118,7 +119,6 @@ namespace SystemInfoApi.Services
                     updatedDrivesList.Add(drive);
                 }
                 machine.Drives = updatedDrivesList;
-                Console.WriteLine($"Machine {machine.Id} has been updated.");
 
                 return machine;
             });

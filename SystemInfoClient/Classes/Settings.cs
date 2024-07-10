@@ -1,5 +1,6 @@
 ﻿using System.Text.Json;
 using System.Text.Json.Serialization;
+using SystemInfoClient.Utilities;
 
 namespace SystemInfoClient.Classes
 {
@@ -96,7 +97,8 @@ namespace SystemInfoClient.Classes
                     string json = GetJson();
 
                     File.WriteAllText(path, json);
-                    Console.WriteLine($"New machine id: {newMachineId}\r\n New settings.json content:\r\n{json}");
+                    Console.WriteLine($"Settings.json file rewritten with: MachineId:{newMachineId}");
+                    //Console.WriteLine($"Json content : \r\n{json}");
                 }
                 catch (Exception ex)
                 {
