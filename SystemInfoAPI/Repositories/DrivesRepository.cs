@@ -22,15 +22,16 @@ namespace SystemInfoApi.Repositories
 
                 string query = @$"                    
                     INSERT INTO {dtn.TableName} 
-                        ({dtn.MachineId}, {dtn.DriveName}, {dtn.RootDirectory}, {dtn.Label}, {dtn.Type}, {dtn.Format}, {dtn.Size}, {dtn.FreeSpace}, {dtn.TotalSpace}, {dtn.FreeSpacePercentage}, {dtn.IsSystemDrive}, {dtn.DriveCreationDate})
+                        ({dtn.MachineId}, {dtn.SerialNumber}, {dtn.DriveName}, {dtn.RootDirectory}, {dtn.Label}, {dtn.Type}, {dtn.Format}, {dtn.Size}, {dtn.FreeSpace}, {dtn.TotalSpace}, {dtn.FreeSpacePercentage}, {dtn.IsSystemDrive}, {dtn.DriveCreationDate})
                     VALUES 
-                        (@machineId, @driveName, @rootDir, @label, @type, @format, @size, @freeSpace, @totalSpace, @freeSpacePer, @isSystemDrive, @creationDate);
+                        (@machineId, @serial, @driveName, @rootDir, @label, @type, @format, @size, @freeSpace, @totalSpace, @freeSpacePer, @isSystemDrive, @creationDate);
 
                     SELECT SCOPE_IDENTITY();";
 
                 using (SqlCommand cmd = new(query, connection, transaction))
                 {
                     cmd.Parameters.AddWithValue("@machineId", drive.MachineId);
+                    cmd.Parameters.AddWithValue("@serial", drive.SerialNumber);
                     cmd.Parameters.AddWithValue("@driveName", drive.Name);
                     cmd.Parameters.AddWithValue("@rootDir", drive.RootDirectory);
                     cmd.Parameters.AddWithValue("@label", drive.Label);
@@ -51,7 +52,7 @@ namespace SystemInfoApi.Repositories
             }
             catch (Exception ex)
             {
-                throw new ApplicationException("An error occured inserting the drive into the database.", ex);
+                throw new ApplicationException($"An error occured inserting the drive into the database: {ex.Message}", ex);
             }
         }
         public async Task<DriveModel> UpdateAsync(DriveModel drive, SqlConnection connection, SqlTransaction transaction)
@@ -65,6 +66,7 @@ namespace SystemInfoApi.Repositories
                     UPDATE {dtn.TableName}
                     SET 
                         {dtn.MachineId} = @machineId, 
+                        {dtn.SerialNumber} = @serial,
                         {dtn.DriveName} = @driveName, 
                         {dtn.RootDirectory} = @rootDir, 
                         {dtn.Label} = @label, 
@@ -87,6 +89,7 @@ namespace SystemInfoApi.Repositories
                 using (SqlCommand cmd = new(query, connection, transaction))
                 {
                     cmd.Parameters.AddWithValue("@machineId", drive.MachineId);
+                    cmd.Parameters.AddWithValue("@serial", drive.SerialNumber);
                     cmd.Parameters.AddWithValue("@driveName", drive.Name);
                     cmd.Parameters.AddWithValue("@rootDir", drive.RootDirectory ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@label", drive.Label ?? (object)DBNull.Value);
@@ -108,7 +111,7 @@ namespace SystemInfoApi.Repositories
             }
             catch (Exception ex)
             {
-                throw new ApplicationException($"An error occured inserting the drive into the database: {ex.Message}", ex);
+                throw new ApplicationException($"An error occured updating the drive in the database: {ex.Message}", ex);
             }
         }
         public async Task<int> InsertHistoryAsync(DriveModel drive, SqlConnection connection, SqlTransaction transaction)
@@ -120,15 +123,16 @@ namespace SystemInfoApi.Repositories
 
                 string query = @$"
                 INSERT INTO {dhtn.TableName}
-                    ({dhtn.MachineId}, {dhtn.DriveName}, {dhtn.RootDirectory}, {dhtn.Label}, {dhtn.Type}, {dhtn.Format}, {dhtn.Size}, {dhtn.FreeSpace}, {dhtn.TotalSpace}, {dhtn.FreeSpacePercentage}, {dhtn.IsSystemDrive}, {dhtn.DriveCreationDate})
+                    ({dhtn.MachineId}, {dhtn.SerialNumber}, {dhtn.DriveName}, {dhtn.RootDirectory}, {dhtn.Label}, {dhtn.Type}, {dhtn.Format}, {dhtn.Size}, {dhtn.FreeSpace}, {dhtn.TotalSpace}, {dhtn.FreeSpacePercentage}, {dhtn.IsSystemDrive}, {dhtn.DriveCreationDate})
                 VALUES
-                    (@machineId, @driveName, @rootDir, @label, @type, @format, @size, @freeSpace, @totalSpace, @freeSpacePer, @isSystemDrive, @creationDate);
+                    (@machineId, @serial, @driveName, @rootDir, @label, @type, @format, @size, @freeSpace, @totalSpace, @freeSpacePer, @isSystemDrive, @creationDate);
                 SELECT SCOPE_IDENTITY();";
 
                 int newId;
                 using (SqlCommand cmd = new(query, connection, transaction))
                 {
                     cmd.Parameters.AddWithValue("@machineId", drive.MachineId);
+                    cmd.Parameters.AddWithValue("@serial", drive.SerialNumber);
                     cmd.Parameters.AddWithValue("@driveName", drive.Name);
                     cmd.Parameters.AddWithValue("@rootDir", drive.RootDirectory);
                     cmd.Parameters.AddWithValue("@label", drive.Label);

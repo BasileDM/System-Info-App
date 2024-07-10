@@ -28,26 +28,24 @@ namespace SystemInfoClient.Classes.System
                 {
                     List<AppClass> driveAppsList = [];
 
-                    if (drive.IsReady)
-                    {
-                        if (settings.ApplicationsList != null)
-                        {
-                            foreach (var appSettings in settings.ApplicationsList)
-                            {
-                                if (appSettings.Value.Path != null && appSettings.Value.Path.Contains(drive.RootDirectory.ToString()))
-                                {
-                                    AppClass appClass = new(appSettings);
-                                    driveAppsList.Add(appClass);
-                                }
-                            }
-                        }
-                        bool isSystemDriveBool = drive.Name == systemDrive;
-                        Drives.Add(new DriveClass(drive, isSystemDriveBool, driveAppsList));
-                    }
-                    else
+                    if (!drive.IsReady)
                     {
                         throw new DriveNotFoundException("Error with drive ready state.");
                     }
+
+                    if (settings.ApplicationsList != null)
+                    {
+                        foreach (var appSettings in settings.ApplicationsList)
+                        {
+                            if (appSettings.Value.Path != null && appSettings.Value.Path.Contains(drive.RootDirectory.ToString()))
+                            {
+                                AppClass appClass = new(appSettings);
+                                driveAppsList.Add(appClass);
+                            }
+                        }
+                    }
+                    bool isSystemDriveBool = drive.Name == systemDrive;
+                    Drives.Add(new DriveClass(drive, isSystemDriveBool, driveAppsList));
                 }
             }
             catch (Exception ex)

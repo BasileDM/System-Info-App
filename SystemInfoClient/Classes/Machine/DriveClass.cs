@@ -1,10 +1,12 @@
 ﻿using System.Runtime.Versioning;
+using System.Management;
 
 namespace SystemInfoClient.Classes.System
 {
     [SupportedOSPlatform("windows")]
     public class DriveClass
     {
+        public string SerialNumber { get; set; }
         public string Name { get; set; }
         public string RootDirectory { get; set; }
         public string? Label { get; set; }
@@ -22,6 +24,7 @@ namespace SystemInfoClient.Classes.System
         {
             try
             {
+                SerialNumber = GetSerialNumber(drive);
                 Name = drive.Name;
                 RootDirectory = drive.RootDirectory.ToString();
                 Label = drive.VolumeLabel;
@@ -34,7 +37,6 @@ namespace SystemInfoClient.Classes.System
                 IsSystemDrive = isSystemDrive;
                 Os = IsSystemDrive ? new OsClass() : null;
                 AppList = appList;
-
             }
             catch (Exception ex)
             {
@@ -75,6 +77,28 @@ namespace SystemInfoClient.Classes.System
             else
             {
                 return (int)((double)availableFreeSpace / totalSize * 100);
+            }
+        }
+        private static string GetSerialNumber(DriveInfo drive)
+        {
+            try
+            {
+                string serialNumber = string.Empty;
+                ManagementObjectSearcher searcher = 
+                    new($"SELECT * FROM Win32_LogicalDisk WHERE DeviceID='{drive.Name.Replace("\\", "")}'");
+
+                foreach (ManagementObject disk in searcher.Get().Cast<ManagementObject>())
+                {
+                    serialNumber = disk["VolumeSerialNumber"].ToString() ?? 
+                        throw new Exception("Failed to retrieve the drive serial number: ");
+                    break;
+                }
+
+                return serialNumber;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error: " + ex.Message);
             }
         }
     }

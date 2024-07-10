@@ -196,6 +196,7 @@ namespace SystemInfoApi.Classes
         public string TableName { get; } = "Client_Machine_Disque";
         public string Id { get; } = "id_client_machine_disque";
         public string MachineId { get; } = "id_client_machine";
+        public string SerialNumber { get; } = "Numero_Serie_Logique";
         public string DriveName { get; } = "Nom_Disque";
         public string RootDirectory { get; } = "Dossier_Racine";
         public string Label { get; } = "Label";
@@ -267,6 +268,7 @@ namespace SystemInfoApi.Classes
         public string TableName { get; } = "Client_Machine_Disque_Historique";
         public string Id { get; } = "id_client_machine_disque_historique";
         public string MachineId { get; } = "id_client_machine";
+        public string SerialNumber { get; } = "Numero_Serie_Logique";
         public string DriveName { get; } = "Nom_Disque";
         public string RootDirectory { get; } = "Dossier_Racine";
         public string Label { get; } = "Label";
