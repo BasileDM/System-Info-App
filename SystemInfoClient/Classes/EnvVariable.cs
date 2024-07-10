@@ -102,8 +102,8 @@ namespace SystemInfoClient.Classes
                 }
 
                 string decoded = Encoding.UTF8.GetString(bytes);
-                Console.WriteLine($"Flag found, removed, and string decoded:");
-                Console.WriteLine(decoded + "\r\n");
+                Console.WriteLine($"Outter flag found and removed. Decoded result:");
+                Console.WriteLine(decoded);
 
                 // Checking inner flag for the edge case where the clear password started with the flag
                 if (decoded.StartsWith(_flag))

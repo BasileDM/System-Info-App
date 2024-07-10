@@ -40,7 +40,7 @@ namespace SystemInfoClient.Services
         {
             try
             {
-                ConsoleUtils.WriteColored("Requesting new token...", ConsoleColor.Yellow);
+                ConsoleUtils.LogTokenRequest();
                 string hash = _envVariable.Hash;
 
                 // Prepare and send request

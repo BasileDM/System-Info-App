@@ -20,7 +20,7 @@ namespace SystemInfoClient.Services
 
         public async Task<HttpResponseMessage> SendMachineInfoAsync(string token)
         {
-            ConsoleUtils.WriteColored("Sending machine info...", ConsoleColor.Yellow);
+            ConsoleUtils.LogMachineRequest();
 
             // Build HTTP Client and add authorization header with token
             HttpClient client = HttpClientFactory.CreateHttpClient();

@@ -8,6 +8,18 @@
             Console.WriteLine(message);
             Console.ResetColor();
         }
+
+        public static void LogTokenRequest()
+        {
+            Console.WriteLine();
+            WriteColored("Requesting new token...", ConsoleColor.Yellow);
+        }
+        public static void LogMachineRequest()
+        {
+            Console.WriteLine();
+            WriteColored("Sending machine info...", ConsoleColor.Yellow);
+        }
+
         public static void LogAuthorizationError(HttpResponseMessage response)
         {
             WriteColored("Authorization error.", ConsoleColor.Red);
@@ -29,8 +41,15 @@
         }
         public static void LogResponseDetails(HttpResponseMessage response)
         {
-            Console.WriteLine();
-            WriteColored($"Machine data sent successfully.", ConsoleColor.Green);
+            if (response.StatusCode == System.Net.HttpStatusCode.Created)
+            {
+                WriteColored($"Machine successfully created.", ConsoleColor.Green);
+            }
+            if (response.StatusCode == System.Net.HttpStatusCode.OK)
+            {
+                WriteColored($"Machine successfully updated.", ConsoleColor.DarkYellow);
+            }
+
             Console.WriteLine($"Code: {response.StatusCode}.");
 
             if (response.Headers.Date.HasValue)
