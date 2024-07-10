@@ -69,8 +69,6 @@ namespace SystemInfoApi.Services
             {
                 await machinesRepository.UpdateAsync(machine, connection, transaction);
 
-                int[] driveHistoryIds = new int[machine.Drives.Count];
-
                 // Update machine's drives list
                 List<DriveModel> updatedDrivesList = [];
                 foreach(DriveModel drive in machine.Drives)
