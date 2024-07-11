@@ -97,8 +97,7 @@ namespace SystemInfoClient.Classes
                     string json = GetJson();
 
                     File.WriteAllText(path, json);
-                    Console.WriteLine($"Settings.json file rewritten with: MachineId:{newMachineId}");
-                    //Console.WriteLine($"Json content : \r\n{json}");
+                    ConsoleUtils.LogJsonFileRewrite(newMachineId, json);
                 }
                 catch (Exception ex)
                 {

@@ -1,6 +1,5 @@
 {
-  "MachineId": "1004",
-  "CustomerId": "1",
+  "CustomerId": "2",
   "ApiUrl": "https://localhost:7056/",
   "ApplicationsList": {
     "VisualStudio": {

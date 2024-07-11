@@ -9,22 +9,30 @@ namespace SystemInfoApi.Utilities
 {
     public class ConsoleUtils
     {
-        private readonly static bool _logTransactionStats = false;
-        private readonly static bool _logAuthRequestContent = false;
+        // Master switch: true, switches all logs to true | false, all logs to false | null, logs will keep their values.
+        private readonly static bool? _logsMasterSwitch = true;
 
-        private readonly static bool _logTokenContent = false;
-        private readonly static bool _logEncodedToken = false;
-        private readonly static bool _logHashSalt = false;
+        private readonly static bool _logTransactionStats = SetProperty(true);
+        private readonly static bool _logAuthRequestContent = SetProperty(true);
+
+        private readonly static bool _logTokenContent = SetProperty(true);
+        private readonly static bool _logEncodedToken = SetProperty(true);
+        private readonly static bool _logHashSalt = SetProperty(true);
 
         public readonly static ConsoleColor _requestColor = ConsoleColor.Yellow;
         public readonly static ConsoleColor _creationColor = ConsoleColor.Green;
         public readonly static ConsoleColor _updateColor = ConsoleColor.DarkYellow;
         public readonly static ConsoleColor _deletionColor = ConsoleColor.DarkRed;
 
-        public readonly static ConsoleColor _successColor = ConsoleColor.Green;
+        public readonly static ConsoleColor _successColor = ConsoleColor.DarkGreen;
         public readonly static ConsoleColor _errorColor = ConsoleColor.Red;
 
         // UTILS
+        private static bool SetProperty(bool value)
+        {
+            // Returns the set property value, or false if _disableAllLogs is true.
+            return _logsMasterSwitch ?? value;
+        }
         public static void WriteLineColored(string message, ConsoleColor color)
         {
             Console.ForegroundColor = color;
@@ -92,15 +100,13 @@ namespace SystemInfoApi.Utilities
         {
             string totalTime = GetExecutionTimeString(startTime);
 
-            Console.WriteLine();
             WriteLineColored($"Machine {newMachine.Id} has been created in {totalTime}.", _creationColor);
-            Console.WriteLine($"Time: {DateTime.Now.ToLocalTime()}");
-            Console.WriteLine($"Customer ID: {newMachine.CustomerId}");
-            Console.WriteLine($"Machine ID: {newMachine.Id}");
-            Console.WriteLine($"Machine name: {newMachine.Name}");
-            Console.WriteLine($"Drives amount: {newMachine.Drives.Count}");
+            Console.WriteLine($@"  Time: {DateTime.Now.ToLocalTime()}");
+            Console.WriteLine($@"  Customer ID: {newMachine.CustomerId}");
+            Console.WriteLine($@"  Machine name: {newMachine.Name}");
+            Console.WriteLine($@"  Drives amount: {newMachine.Drives.Count}");
             string? location = Url.Action(nameof(MachinesController.GetById), new { machineId = routeValues["machineId"] });
-            Console.WriteLine($"Location: {location}");
+            Console.WriteLine($@"  Location: {location}");
         }
         public static void LogAppCreation(string appName, int appId, int appDriveId)
         {
@@ -117,6 +123,8 @@ namespace SystemInfoApi.Utilities
         // Misc logs
         public static void LogTransactionStats(SqlConnection connection)
         {
+            WriteLineColored("Transaction successful.", _successColor);
+
             if (!_logTransactionStats) return;
             var stats = connection.RetrieveStatistics();
             Console.WriteLine("Transaction stats:");

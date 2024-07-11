@@ -1,10 +1,15 @@
-﻿namespace SystemInfoClient.Utilities
+﻿using SystemInfoClient.Classes;
+
+namespace SystemInfoClient.Utilities
 {
-    public class ConsoleUtils
+    internal class ConsoleUtils
     {
-        private readonly static bool _logTokenString = false;
-        public readonly static bool _logDecodingProcess = false;
-        private readonly static bool _logHashingProcess = false;
+        private readonly static bool? _logsMasterSwitch = true;
+
+        private readonly static bool _logTokenString = SetProperty(true);
+        public readonly static bool _logDecodingProcess = SetProperty(true);
+        private readonly static bool _logHashingProcess = SetProperty(true);
+        private readonly static bool _logJsonSettingsContent = SetProperty(true);
 
         public readonly static ConsoleColor _requestColor = ConsoleColor.Yellow;
         public readonly static ConsoleColor _creationColor = ConsoleColor.Green;
@@ -15,6 +20,11 @@
         public readonly static ConsoleColor _errorColor = ConsoleColor.Red;
 
         // UTILS
+        private static bool SetProperty(bool value)
+        {
+            // Returns the set property value, or false if _disableAllLogs is true.
+            return _logsMasterSwitch ?? value;
+        }
         public static void WriteColored(string message, ConsoleColor color)
         {
             Console.ForegroundColor = color;
@@ -40,18 +50,18 @@
         public static void LogTokenRequest()
         {
             Console.WriteLine();
-            WriteColored("Requesting new token...", ConsoleColor.Yellow);
+            WriteColored("Requesting new token...", _requestColor);
         }
         public static void LogMachineRequest()
         {
             Console.WriteLine();
-            WriteColored("Sending machine info...", ConsoleColor.Yellow);
+            WriteColored("Sending machine info...", _requestColor);
         }
 
         // Response info logs
         public static void LogAuthorizationError(HttpResponseMessage response)
         {
-            WriteColored("Authorization error.", ConsoleColor.Red);
+            WriteColored("Authorization error.", _errorColor);
             if (response.Headers.WwwAuthenticate.Count > 0)
             {
                 var wwwAuthHeader = response.Headers.WwwAuthenticate.ToString();
@@ -72,33 +82,33 @@
         {
             if (response.StatusCode == System.Net.HttpStatusCode.Created)
             {
-                WriteColored($"Machine successfully created.", ConsoleColor.Green);
+                WriteColored($"Machine successfully created.", _successColor);
             }
             if (response.StatusCode == System.Net.HttpStatusCode.OK)
             {
-                WriteColored($"Machine successfully updated.", ConsoleColor.DarkYellow);
+                WriteColored($"Machine successfully updated.", _updateColor);
             }
 
-            Console.WriteLine($"Code: {response.StatusCode}.");
+            Console.WriteLine($"  Code: {response.StatusCode}.");
 
             if (response.Headers.Date.HasValue)
             {
                 var utcDate = response.Headers.Date.Value;
                 var localDate = utcDate.ToLocalTime();
-                Console.WriteLine($"Local time: {localDate}.");
+                Console.WriteLine($"  Local time: {localDate}.");
             }
             else
             {
-                Console.WriteLine("Local time: No time header was provided.");
+                Console.WriteLine("  Local time: No time header was provided.");
             }
 
             if (response.Headers.Location != null && !string.IsNullOrEmpty(response.Headers.Location.ToString()))
             {
-                Console.WriteLine($"Location: {response.Headers.Location}.");
+                Console.WriteLine($"  Location: {response.Headers.Location}.");
             }
             else
             {
-                Console.WriteLine("Location: No location for machine updates.");
+                Console.WriteLine("  Location: No location for machine updates.");
             }
         }
         public static void LogTokenReceptionSuccess(string token)
@@ -108,6 +118,19 @@
         }
 
         // Misc logs
+        public static void LogJsonFileRewrite(string newMachineId, string json)
+        {
+            Console.WriteLine($"Settings.json file rewritten with MachineId : {newMachineId}");
+
+            if (!_logJsonSettingsContent) return;
+            Console.WriteLine($"Json content :");
+            Console.WriteLine(json);
+        }
+        public static void LogEnvTokenSuccess(JwtToken token)
+        {
+            WriteColored($"Token found.", _successColor);
+            if (_logTokenString) Console.WriteLine(token.GetString());
+        }
         public static void LogHashingProcess(string source, byte[] salt, byte[] hash, string concat)
         {
             if (!_logHashingProcess) return;

@@ -146,7 +146,6 @@ namespace SystemInfoApi.Classes
             {
                 T result = await operation(connection, transaction);
                 await transaction.CommitAsync();
-                ConsoleUtils.WriteLineColored("Database transaction successful.", ConsoleColor.Green);
                 return result;
             }
             catch (ArgumentException ex)
