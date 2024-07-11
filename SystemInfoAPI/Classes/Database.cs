@@ -138,7 +138,7 @@ namespace SystemInfoApi.Classes
             await connection.OpenAsync();
             var transaction = connection.BeginTransaction();
             connection.StatisticsEnabled = true;
-            Console.WriteLine("New database transaction initiated...");
+            if (ConsoleUtils._logTransactionNotice) Console.WriteLine("New database transaction initiated...");
 
             var currentColor = Console.ForegroundColor;
 

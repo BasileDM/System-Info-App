@@ -4,7 +4,7 @@ namespace SystemInfoClient.Utilities
 {
     internal class ConsoleUtils
     {
-        private readonly static bool? _logsMasterSwitch = null;
+        private readonly static bool? _logsMasterSwitch = false;
 
         private readonly static bool _logTokenString = SetProperty(true);
         public readonly static bool _logDecodingProcess = SetProperty(false);

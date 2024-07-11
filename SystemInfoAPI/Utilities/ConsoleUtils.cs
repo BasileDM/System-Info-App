@@ -9,11 +9,16 @@ namespace SystemInfoApi.Utilities
 {
     public class ConsoleUtils
     {
-        // Master switch: true, switches all logs to true | false, all logs to false | null, logs will keep their values.
-        private readonly static bool? _logsMasterSwitch = null;
+        // Master switch:
+        // true, switches all logs to true
+        // false, all logs to false
+        // null, logs will keep the value provided in SetProperty(value).
+        private readonly static bool? _logsMasterSwitch = false;
 
+        public readonly static bool _logTransactionNotice = SetProperty(true);
         private readonly static bool _logTransactionStats = SetProperty(true);
         private readonly static bool _logAuthRequestContent = SetProperty(false);
+        private readonly static bool _logCreationDetails = SetProperty(true);
 
         private readonly static bool _logTokenContent = SetProperty(true);
         private readonly static bool _logEncodedToken = SetProperty(false);
@@ -101,6 +106,8 @@ namespace SystemInfoApi.Utilities
             string totalTime = GetExecutionTimeString(startTime);
 
             WriteLineColored($"Machine {newMachine.Id} has been created in {totalTime}.", _creationColor);
+
+            if (!_logCreationDetails) return;
             Console.WriteLine($@"  Time: {DateTime.Now.ToLocalTime()}");
             Console.WriteLine($@"  Customer ID: {newMachine.CustomerId}");
             Console.WriteLine($@"  Machine name: {newMachine.Name}");
@@ -123,6 +130,7 @@ namespace SystemInfoApi.Utilities
         // Misc logs
         public static void LogTransactionStats(SqlConnection connection)
         {
+            if (!_logTransactionNotice) return;
             WriteLineColored("Transaction successful.", _successColor);
 
             if (!_logTransactionStats) return;
