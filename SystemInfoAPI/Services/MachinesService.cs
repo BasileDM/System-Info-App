@@ -70,7 +70,7 @@ namespace SystemInfoApi.Services
                 await machinesRepository.UpdateAsync(machine, connection, transaction);
 
                 // Get the current machine from the DB for comparison.
-                MachineModel existingMachine = await machinesRepository.GetByIdAsync(machine.Id, connection);
+                MachineModel existingMachine = await machinesRepository.GetByIdAsync(machine.Id, connection, transaction);
 
                 // Process drives
                 var existingDrivesDict = machine.Drives.ToDictionary(d => d.SerialNumber); // Serial as alt identifier.
@@ -158,8 +158,10 @@ namespace SystemInfoApi.Services
         }
         public async Task<MachineModel> GetByIdAsync(int machineId)
         {
-            await using SqlConnection connection = CreateConnection();
-            return await machinesRepository.GetByIdAsync(machineId, connection);
+            return await MakeTransactionAsync(async (connection, transaction) =>
+            {
+                return await machinesRepository.GetByIdAsync(machineId, connection, transaction);
+            });
         }
         public async Task<List<MachineModel>> GetAllAsync()
         {

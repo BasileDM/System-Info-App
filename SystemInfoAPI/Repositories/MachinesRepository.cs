@@ -131,7 +131,7 @@ namespace SystemInfoApi.Repositories
         /// <returns>
         ///   A <see cref="MachineModel"/> instantiated from the data from the DB.
         /// </returns>
-        public async Task<MachineModel> GetByIdAsync(int id, SqlConnection connection)
+        public async Task<MachineModel> GetByIdAsync(int id, SqlConnection connection, SqlTransaction transaction)
         {
             try
             {
@@ -139,8 +139,7 @@ namespace SystemInfoApi.Repositories
                 List<DriveModel> drivesList = [];
                 string query = GetQuery();
 
-                await connection.OpenAsync();
-                using (SqlCommand cmd = new(query, connection))
+                using (SqlCommand cmd = new(query, connection, transaction))
                 {
                     cmd.Parameters.AddWithValue("@Id", id);
 
@@ -188,10 +187,6 @@ namespace SystemInfoApi.Repositories
             catch (Exception ex)
             {
                 throw new ApplicationException($"Could not retrieve data from the database: {ex.Message}. FULL EXCEPTION: {ex}", ex);
-            }
-            finally
-            {
-                await connection.CloseAsync();
             }
 
             string GetQuery()

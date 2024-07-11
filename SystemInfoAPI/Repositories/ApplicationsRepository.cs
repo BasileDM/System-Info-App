@@ -6,7 +6,7 @@ namespace SystemInfoApi.Repositories
 {
     public class ApplicationsRepository(Database db)
     {
-        public async Task<ApplicationModel> InsertAsync(ApplicationModel app, SqlConnection conection, SqlTransaction transaction)
+        public async Task<ApplicationModel> InsertAsync(ApplicationModel app, SqlConnection connection, SqlTransaction transaction)
         {
             try
             {
@@ -77,7 +77,7 @@ namespace SystemInfoApi.Repositories
                          @Special_Build,
                          @creationDate);";
 
-                using (SqlCommand cmd = new(query, conection, transaction))
+                using (SqlCommand cmd = new(query, connection, transaction))
                 {
                     cmd.Parameters.AddWithValue("@id_client_machine_disque", app.DriveId);
                     cmd.Parameters.AddWithValue("@id_client_machine_disque_app", app.Id);
@@ -213,7 +213,7 @@ namespace SystemInfoApi.Repositories
                 throw new Exception(ex.Message, ex);
             }
         }
-        public async Task<int> InsertHistoryAsync(ApplicationModel app, SqlConnection conection, SqlTransaction transaction, int driveHistoryId)
+        public async Task<int> InsertHistoryAsync(ApplicationModel app, SqlConnection connection, SqlTransaction transaction, int driveHistoryId)
         {
             try
             {
@@ -285,7 +285,7 @@ namespace SystemInfoApi.Repositories
                          @creationDate);";
 
                 int historyAppId;
-                using (SqlCommand cmd = new(query, conection, transaction))
+                using (SqlCommand cmd = new(query, connection, transaction))
                 {
                     cmd.Parameters.AddWithValue("@id_client_machine_disque", driveHistoryId);
                     cmd.Parameters.AddWithValue("@id_client_machine_disque_app", app.Id);
