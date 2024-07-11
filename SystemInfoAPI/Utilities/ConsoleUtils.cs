@@ -10,14 +10,14 @@ namespace SystemInfoApi.Utilities
     public class ConsoleUtils
     {
         // Master switch: true, switches all logs to true | false, all logs to false | null, logs will keep their values.
-        private readonly static bool? _logsMasterSwitch = true;
+        private readonly static bool? _logsMasterSwitch = null;
 
         private readonly static bool _logTransactionStats = SetProperty(true);
-        private readonly static bool _logAuthRequestContent = SetProperty(true);
+        private readonly static bool _logAuthRequestContent = SetProperty(false);
 
         private readonly static bool _logTokenContent = SetProperty(true);
-        private readonly static bool _logEncodedToken = SetProperty(true);
-        private readonly static bool _logHashSalt = SetProperty(true);
+        private readonly static bool _logEncodedToken = SetProperty(false);
+        private readonly static bool _logHashSalt = SetProperty(false);
 
         public readonly static ConsoleColor _requestColor = ConsoleColor.Yellow;
         public readonly static ConsoleColor _creationColor = ConsoleColor.Green;

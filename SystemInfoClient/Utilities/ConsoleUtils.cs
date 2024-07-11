@@ -4,12 +4,12 @@ namespace SystemInfoClient.Utilities
 {
     internal class ConsoleUtils
     {
-        private readonly static bool? _logsMasterSwitch = true;
+        private readonly static bool? _logsMasterSwitch = null;
 
         private readonly static bool _logTokenString = SetProperty(true);
-        public readonly static bool _logDecodingProcess = SetProperty(true);
+        public readonly static bool _logDecodingProcess = SetProperty(false);
         private readonly static bool _logHashingProcess = SetProperty(true);
-        private readonly static bool _logJsonSettingsContent = SetProperty(true);
+        private readonly static bool _logJsonSettingsContent = SetProperty(false);
 
         public readonly static ConsoleColor _requestColor = ConsoleColor.Yellow;
         public readonly static ConsoleColor _creationColor = ConsoleColor.Green;
