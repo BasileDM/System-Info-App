@@ -16,7 +16,8 @@ namespace SystemInfoApi.Controllers
         [Consumes("application/json")]
         public async Task<ActionResult<MachineModel>> Create([FromBody] MachineModel machine)
         {
-            ConsoleUtils.LogMachineCreationRequest();
+            DateTime startTime = DateTime.Now;
+            ConsoleUtils.LogMachineCreationRequest(HttpContext.Connection);
             if (!ModelState.IsValid)
             {
                 Console.WriteLine("Failed to validate model: " + ModelState);
@@ -28,7 +29,7 @@ namespace SystemInfoApi.Controllers
                 MachineModel newMachine = await machinesService.InsertFullMachineAsync(machine);
                 CreatedAtActionResult response = CreatedAtAction(nameof(GetById), new { machineId = newMachine.Id }, newMachine);
 
-                ConsoleUtils.LogMachineCreation(response.RouteValues, newMachine, Url);
+                ConsoleUtils.LogMachineCreation(response.RouteValues, newMachine, Url, startTime);
                 return response;
             }
             catch (ArgumentException)
@@ -48,7 +49,8 @@ namespace SystemInfoApi.Controllers
         [Consumes("application/json")]
         public async Task<ActionResult<MachineModel>> Update(int machineId, [FromBody] MachineModel machine)
         {
-            ConsoleUtils.LogUpdateRequest(machine.Id);
+            var startTime = DateTime.Now;
+            ConsoleUtils.LogUpdateRequest(machine.Id, HttpContext.Connection);
 
             if (!ModelState.IsValid)
             {
@@ -71,7 +73,7 @@ namespace SystemInfoApi.Controllers
                     return NotFound($"Machine with ID {machineId} was not found.");
                 }
 
-                ConsoleUtils.LogMachineUpdate(updatedMachine);
+                ConsoleUtils.LogMachineUpdate(updatedMachine, startTime);
                 return Ok(updatedMachine);
             }
             catch (ArgumentException ex)
@@ -109,7 +111,7 @@ namespace SystemInfoApi.Controllers
         [HttpGet("{machineId:int:min(0)}", Name = nameof(GetById))]
         public async Task<ActionResult<MachineModel>> GetById(int machineId)
         {
-            ConsoleUtils.LogGetMachineByIdRequest(machineId);
+            ConsoleUtils.LogGetMachineByIdRequest(machineId, HttpContext.Connection);
             MachineModel machine = await machinesService.GetByIdAsync(machineId);
 
             if (machine.Id != 0)

@@ -332,28 +332,5 @@ namespace SystemInfoApi.Repositories
                 throw new Exception(ex.Message, ex);
             }
         }
-        public async Task<bool> DoesAppDriveRelationExist(int appId, int driveId, SqlConnection connection, SqlTransaction transaction)
-        {
-            AppsDrivesRelationTableNames appsDrivesRTable = db.AppsDrivesRelationTableNames;
-
-            string query = @$"
-                SELECT COUNT(1)
-                FROM {appsDrivesRTable.TableName}
-                WHERE {appsDrivesRTable.DriveId} = @driveId
-                AND {appsDrivesRTable.AppId} = @appId;";
-
-            using SqlCommand cmd = new(query, connection, transaction);
-            cmd.Parameters.AddWithValue("@driveId", driveId);
-            cmd.Parameters.AddWithValue("@appId", appId);
-
-            int relationExists = (int)await cmd.ExecuteScalarAsync();
-
-            if (relationExists == 0)
-            {
-                return false;
-            }
-
-            return true;
-        }
     }
 }

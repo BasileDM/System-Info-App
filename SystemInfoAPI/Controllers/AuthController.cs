@@ -22,7 +22,7 @@ namespace SystemInfoApi.Controllers
         {
             try
             {
-                ConsoleUtils.LogAuthRequestInfo(request, HttpContext.Connection);
+                ConsoleUtils.LogAuthRequest(request, HttpContext.Connection);
 
                 string validPass = AuthenticationService.ValidateApiPassSetting(_config["ApiPassword"]);
                 string validSecret = AuthenticationService.ValidateSecretSetting(_config["Jwt:Secret"]);
