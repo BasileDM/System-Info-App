@@ -1,7 +1,7 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using System.Collections;
 using System.Data.SqlClient;
+using System.IdentityModel.Tokens.Jwt;
 using SystemInfoApi.Controllers;
 using SystemInfoApi.Models;
 
@@ -9,8 +9,23 @@ namespace SystemInfoApi.Utilities
 {
     public class ConsoleUtils
     {
+        private readonly static bool _logTransactionStats = false;
+        private readonly static bool _logAuthRequestContent = false;
+
+        private readonly static bool _logTokenContent = false;
+        private readonly static bool _logEncodedToken = false;
+        private readonly static bool _logHashSalt = false;
+
+        public readonly static ConsoleColor _requestColor = ConsoleColor.Yellow;
+        public readonly static ConsoleColor _creationColor = ConsoleColor.Green;
+        public readonly static ConsoleColor _updateColor = ConsoleColor.DarkYellow;
+        public readonly static ConsoleColor _deletionColor = ConsoleColor.DarkRed;
+
+        public readonly static ConsoleColor _successColor = ConsoleColor.Green;
+        public readonly static ConsoleColor _errorColor = ConsoleColor.Red;
+
         // UTILS
-        public static void WriteColored(string message, ConsoleColor color)
+        public static void WriteLineColored(string message, ConsoleColor color)
         {
             Console.ForegroundColor = color;
             Console.WriteLine(message);
@@ -29,48 +44,56 @@ namespace SystemInfoApi.Utilities
                 return $"{Math.Truncate(elapsedSeconds * 1000) / 1000} second(s)";
             }
         }
-        private static void LogOriginIp(ConnectionInfo connectionInfo)
-        {
-            var ipv4 = connectionInfo.RemoteIpAddress?.MapToIPv4().ToString();
-            var ipv6 = connectionInfo.RemoteIpAddress?.MapToIPv6().ToString();
-            Console.WriteLine($"Origin: {ipv4} | {ipv6}");
-        }
 
         // LOGS
-        // Requests
+        // Recieving requests logs
         public static void LogMachineCreationRequest(ConnectionInfo connectionInfo)
         {
             Console.WriteLine();
-            WriteColored("New machine creation request...", ConsoleColor.Yellow);
-            LogOriginIp(connectionInfo);
+            WriteLineColored("New machine creation request...", _requestColor);
+            LogRequestIpOrigin(connectionInfo);
         }
         public static void LogUpdateRequest(int machineId, ConnectionInfo connectionInfo)
         {
             Console.WriteLine();
-            WriteColored($"Issuing request to update a machine with ID: {machineId}...", ConsoleColor.Yellow);
-            LogOriginIp(connectionInfo);
+            WriteLineColored($"Issuing request to update machine {machineId}...", _requestColor);
+            LogRequestIpOrigin(connectionInfo);
         }
         public static void LogAuthRequest(AuthRequest request, ConnectionInfo connectionInfo)
         {
             Console.WriteLine();
-            WriteColored($"Issuing new token request...", ConsoleColor.Yellow);
-            LogOriginIp(connectionInfo);
+            WriteLineColored($"Issuing new token request...", _requestColor);
+            LogRequestIpOrigin(connectionInfo);
+
+            if (!_logAuthRequestContent) return;
             Console.WriteLine($"Request Content:");
             Console.WriteLine($"Full hash: {request.Pass}");
         }
         public static void LogGetMachineByIdRequest(int machineId, ConnectionInfo connectionInfo)
         {
             Console.WriteLine();
-            WriteColored($"Issuing request to get a machine by ID. Id: {machineId}", ConsoleColor.Yellow);
-            LogOriginIp(connectionInfo);
+            WriteLineColored($"Issuing request to get a machine with Id '{machineId}'", _requestColor);
+            LogRequestIpOrigin(connectionInfo);
         }
-        // Create
+        
+        // Sending requests logs
+        public static void LogSendingToken(string encodedToken)
+        {
+            if (!_logEncodedToken) goto request;
+            Console.WriteLine($"Encoded token:");
+            Console.WriteLine(encodedToken);
+
+        request:
+            ConsoleUtils.WriteLineColored("Sending token...", _requestColor);
+        }
+
+        // Creation logs
         public static void LogMachineCreation(RouteValueDictionary? routeValues, MachineModel newMachine, IUrlHelper Url, DateTime startTime)
         {
             string totalTime = GetExecutionTimeString(startTime);
 
             Console.WriteLine();
-            WriteColored($"Machine {newMachine.Id} has been created in {totalTime}.", ConsoleColor.Green);
+            WriteLineColored($"Machine {newMachine.Id} has been created in {totalTime}.", _creationColor);
             Console.WriteLine($"Time: {DateTime.Now.ToLocalTime()}");
             Console.WriteLine($"Customer ID: {newMachine.CustomerId}");
             Console.WriteLine($"Machine ID: {newMachine.Id}");
@@ -81,23 +104,44 @@ namespace SystemInfoApi.Utilities
         }
         public static void LogAppCreation(string appName, int appId, int appDriveId)
         {
-            WriteColored($"Creating new app relation '{appName}' (id {appId}) on drive {appDriveId}.", ConsoleColor.Green);
+            WriteLineColored($"Creating new app relation '{appName}' (id {appId}) on drive {appDriveId}.", _creationColor);
         }
-        // Update
+        
+        // Update logs
         public static void LogMachineUpdate(MachineModel machine, DateTime startTime)
         {
             string totalTime = GetExecutionTimeString(startTime);
-            WriteColored($"Machine {machine.Id} has been updated in {totalTime}.", ConsoleColor.DarkYellow);
+            WriteLineColored($"Machine {machine.Id} has been updated in {totalTime}.", _updateColor);
         }
-        // Misc
+
+        // Misc logs
         public static void LogTransactionStats(SqlConnection connection)
         {
+            if (!_logTransactionStats) return;
             var stats = connection.RetrieveStatistics();
             Console.WriteLine("Transaction stats:");
             foreach (DictionaryEntry stat in stats)
             {
                 Console.WriteLine($@"  {stat.Key} : {stat.Value}");
             }
+        }
+        private static void LogRequestIpOrigin(ConnectionInfo connectionInfo)
+        {
+            var ipv4 = connectionInfo.RemoteIpAddress?.MapToIPv4().ToString();
+            var ipv6 = connectionInfo.RemoteIpAddress?.MapToIPv6().ToString();
+            Console.WriteLine($"Origin: {ipv4} | {ipv6}");
+        }
+        public static void LogTokenContent(JwtSecurityToken securityToken)
+        {
+            if (!_logTokenContent) return;
+            Console.WriteLine($"Token content:");
+            Console.WriteLine(securityToken);
+        }
+        public static void LogHashSalt(string hash, byte[] salt)
+        {
+            if (!_logHashSalt) return;
+            Console.WriteLine($"Provided pass hash: {hash}");
+            Console.WriteLine($"Provided salt: {Convert.ToHexString(salt)}");
         }
     }
 }

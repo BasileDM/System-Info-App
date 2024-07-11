@@ -58,12 +58,12 @@ namespace SystemInfoClient.Services
                 var jsonResponse = await response.Content.ReadAsStringAsync();
                 TokenResponse? tokenResponse = JsonSerializer.Deserialize<TokenResponse>(jsonResponse);
 
-                if (tokenResponse?.Token != null)
+                if (tokenResponse != null && tokenResponse.Token != null)
                 {
-                    ConsoleUtils.WriteColored($"Token obtained with success: ", ConsoleColor.Green);
-                    Console.WriteLine(tokenResponse.Token);
-                    JwtToken token = JwtToken.GetInstance(tokenResponse.Token);
+                    JwtToken token = JwtToken.GetInstance(tokenResponse.Token) ?? throw new Exception("Null token.");
                     _envVariable.Token = token;
+
+                    ConsoleUtils.LogTokenReceptionSuccess(tokenResponse.Token);
                     return token;
                 }
                 else
@@ -89,10 +89,7 @@ namespace SystemInfoClient.Services
         }
         public static string HashString(string source)
         {
-            Console.WriteLine($"Hashing string: {source}");
-
             byte[] salt = RandomNumberGenerator.GetBytes(128 / 8);
-            Console.WriteLine($"Salt: {Convert.ToHexString(salt)}");
 
             var argon2 = new Argon2id(Encoding.UTF8.GetBytes(source))
             {
@@ -102,7 +99,6 @@ namespace SystemInfoClient.Services
                 MemorySize = 512 * 512
             };
             byte[] hash = argon2.GetBytes(64);
-            Console.WriteLine($"Hash: {Convert.ToBase64String(hash)}");
 
             // Concatenate the salt and hash
             byte[] saltAndHash = new byte[salt.Length + hash.Length];
@@ -110,7 +106,8 @@ namespace SystemInfoClient.Services
             Buffer.BlockCopy(hash, 0, saltAndHash, salt.Length, hash.Length);
 
             string hashSaltConcatString = Convert.ToBase64String(saltAndHash);
-            Console.WriteLine($"Concat salt and hash: {hashSaltConcatString}");
+
+            ConsoleUtils.LogHashingProcess(source, salt, hash, hashSaltConcatString);
             return hashSaltConcatString;
         }
     }

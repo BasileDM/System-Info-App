@@ -14,6 +14,8 @@ namespace SystemInfoApi
         {
             try
             {
+                var startTime = DateTime.Now;
+
                 // Instanciate required objects and services
                 Settings settings = Settings.GetInstance();
                 EnvVariable env = new("SysInfoApp");
@@ -28,7 +30,7 @@ namespace SystemInfoApi
                 HttpResponseMessage response = await machineService.SendMachineInfoAsync(token.GetString());
 
                 // Handle API response
-                await HandleResponseAsync(response, settings, security, machineService);
+                await HandleResponseAsync(response, settings, security, machineService, startTime);
             }
             catch (Exception ex)
             {
@@ -37,7 +39,7 @@ namespace SystemInfoApi
         }
 
         private static async Task HandleResponseAsync(
-            HttpResponseMessage response, Settings settings, SecurityService security, MachineService machineService)
+            HttpResponseMessage response, Settings settings, SecurityService security, MachineService machineService, DateTime startTime)
         {
             try
             {
@@ -79,6 +81,7 @@ namespace SystemInfoApi
                         Console.WriteLine($"{response.ReasonPhrase}: {errorContent}");
                         break;
                 }
+                ConsoleUtils.LogTotalExecutionTime(startTime);
             }
             catch (Exception ex)
             {

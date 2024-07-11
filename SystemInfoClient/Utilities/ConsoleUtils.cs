@@ -2,13 +2,41 @@
 {
     public class ConsoleUtils
     {
+        private readonly static bool _logTokenString = false;
+        public readonly static bool _logDecodingProcess = false;
+        private readonly static bool _logHashingProcess = false;
+
+        public readonly static ConsoleColor _requestColor = ConsoleColor.Yellow;
+        public readonly static ConsoleColor _creationColor = ConsoleColor.Green;
+        public readonly static ConsoleColor _updateColor = ConsoleColor.DarkYellow;
+        public readonly static ConsoleColor _deletionColor = ConsoleColor.DarkRed;
+
+        public readonly static ConsoleColor _successColor = ConsoleColor.Green;
+        public readonly static ConsoleColor _errorColor = ConsoleColor.Red;
+
+        // UTILS
         public static void WriteColored(string message, ConsoleColor color)
         {
             Console.ForegroundColor = color;
             Console.WriteLine(message);
             Console.ResetColor();
         }
+        private static string GetExecutionTimeString(DateTime startTime)
+        {
+            var elapsed = (DateTime.Now - startTime).TotalMilliseconds;
+            if (elapsed < 100)
+            {
+                return $"{(int)elapsed}ms";
+            }
+            else
+            {
+                var elapsedSeconds = elapsed / 1000;
+                return $"{Math.Truncate(elapsedSeconds * 1000) / 1000} second(s)";
+            }
+        }
 
+        // LOGS
+        // Sending requests logs
         public static void LogTokenRequest()
         {
             Console.WriteLine();
@@ -20,6 +48,7 @@
             WriteColored("Sending machine info...", ConsoleColor.Yellow);
         }
 
+        // Response info logs
         public static void LogAuthorizationError(HttpResponseMessage response)
         {
             WriteColored("Authorization error.", ConsoleColor.Red);
@@ -71,6 +100,33 @@
             {
                 Console.WriteLine("Location: No location for machine updates.");
             }
+        }
+        public static void LogTokenReceptionSuccess(string token)
+        {
+            WriteColored($"Token obtained with success.", _successColor);
+            if (_logTokenString) Console.WriteLine(token);
+        }
+
+        // Misc logs
+        public static void LogHashingProcess(string source, byte[] salt, byte[] hash, string concat)
+        {
+            if (!_logHashingProcess) return;
+            Console.WriteLine($"Hashing string: {source}");
+            Console.WriteLine($"Salt: {Convert.ToHexString(salt)}");
+            Console.WriteLine($"Hash: {Convert.ToBase64String(hash)}");
+            Console.WriteLine($"Concat salt and hash: {concat}");
+        }
+        public static void LogEnvDecodingProcess(string decoded)
+        {
+            if (!_logDecodingProcess) return;
+            Console.WriteLine($"Decoding env variable...");
+            Console.WriteLine($"Outter flag found and removed. Decoded result:");
+            Console.WriteLine(decoded);
+        }
+        public static void LogTotalExecutionTime(DateTime startTime)
+        {
+            Console.WriteLine();
+            Console.WriteLine($"Total execution time: {GetExecutionTimeString(startTime)}");
         }
     }
 }

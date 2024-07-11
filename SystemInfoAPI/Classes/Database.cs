@@ -146,20 +146,20 @@ namespace SystemInfoApi.Classes
             {
                 T result = await operation(connection, transaction);
                 await transaction.CommitAsync();
-                ConsoleUtils.WriteColored("Database transaction successful.", ConsoleColor.Green);
+                ConsoleUtils.WriteLineColored("Database transaction successful.", ConsoleColor.Green);
                 return result;
             }
             catch (ArgumentException ex)
             {
                 await transaction.RollbackAsync();
-                ConsoleUtils.WriteColored("Rolling back transaction due to an argument error:\r\n" + ex.Message, ConsoleColor.Red);
+                ConsoleUtils.WriteLineColored("Rolling back transaction due to an argument error:\r\n" + ex.Message, ConsoleColor.Red);
                 throw new ArgumentException("Error finalising the transaction with the database.", ex.Message);
             }
             catch (Exception ex)
             {
                 await transaction.RollbackAsync();
 
-                ConsoleUtils.WriteColored("Rolling back transaction due to an argument error:\r\n" + ex.Message, ConsoleColor.Red);
+                ConsoleUtils.WriteLineColored("Rolling back transaction due to an argument error:\r\n" + ex.Message, ConsoleColor.Red);
                 throw new ApplicationException("Error finalising the transaction with the database.", ex);
             }
             finally

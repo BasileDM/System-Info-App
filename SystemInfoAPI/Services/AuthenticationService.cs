@@ -15,8 +15,7 @@ namespace SystemInfoApi.Services
                 var (Hash, Salt) = DecodeSaltAndHash(providedHash, 16, 64);
                 string providedPass = Hash;
                 byte[] providedSalt = Salt;
-                Console.WriteLine($"Provided pass hash: {providedPass}");
-                Console.WriteLine($"Provided salt: {Convert.ToHexString(providedSalt)}");
+                ConsoleUtils.LogHashSalt(providedPass, providedSalt);
 
                 var argon2 = new Argon2id(Encoding.UTF8.GetBytes(pass))
                 {
@@ -31,12 +30,12 @@ namespace SystemInfoApi.Services
 
                 if (SecureCompare(providedPass, computedPass))
                 {
-                    ConsoleUtils.WriteColored("Password is valid.", ConsoleColor.Green);
+                    ConsoleUtils.WriteLineColored("Password is valid.", ConsoleUtils._successColor);
                     return true;
                 }
                 else
                 {
-                    ConsoleUtils.WriteColored("Invalid password.", ConsoleColor.Red);
+                    ConsoleUtils.WriteLineColored("Invalid password.", ConsoleUtils._errorColor);
                     return false;
                 }
             }
@@ -86,16 +85,15 @@ namespace SystemInfoApi.Services
                 var secretKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret));
                 var credentials = new SigningCredentials(secretKey, SecurityAlgorithms.HmacSha256);
 
-                var SecurityToken = new JwtSecurityToken(
+                var securityToken = new JwtSecurityToken(
                     issuer: issuer,
                     expires: DateTime.UtcNow.AddMinutes(expirationTime),
                     signingCredentials: credentials);
 
-                Console.WriteLine($"Token content:\r\n{SecurityToken}");
-                string encodedToken = new JwtSecurityTokenHandler().WriteToken(SecurityToken);
-                Console.WriteLine($"Encoded token:\r\n{encodedToken}");
+                ConsoleUtils.LogTokenContent(securityToken);
+                string encodedToken = new JwtSecurityTokenHandler().WriteToken(securityToken);
 
-                ConsoleUtils.WriteColored("Sending token...", ConsoleColor.Yellow);
+                ConsoleUtils.LogSendingToken(encodedToken);
                 return encodedToken;
             }
             catch (ArgumentNullException ex)

@@ -1,6 +1,7 @@
 ﻿using System.Runtime.Versioning;
 using System.Text;
 using SystemInfoClient.Services;
+using SystemInfoClient.Utilities;
 
 namespace SystemInfoClient.Classes
 {
@@ -87,7 +88,6 @@ namespace SystemInfoClient.Classes
             {
                 wasDecoded = true;
                 string unflagged = encodedString.Substring(_flag.Length);
-                Console.WriteLine($"Decoding env variable...");
                 byte[] bytes;
 
                 try
@@ -102,8 +102,7 @@ namespace SystemInfoClient.Classes
                 }
 
                 string decoded = Encoding.UTF8.GetString(bytes);
-                Console.WriteLine($"Outter flag found and removed. Decoded result:");
-                Console.WriteLine(decoded);
+                ConsoleUtils.LogEnvDecodingProcess(decoded);
 
                 // Checking inner flag for the edge case where the clear password started with the flag
                 if (decoded.StartsWith(_flag))
@@ -121,7 +120,8 @@ namespace SystemInfoClient.Classes
             else
             {
                 wasDecoded = false;
-                Console.WriteLine($"Flag not detected, not decoding.");
+                if (ConsoleUtils._logDecodingProcess) 
+                    Console.WriteLine($"Flag not detected, not decoding.");
                 return encodedString;
             }
         }

@@ -142,8 +142,8 @@ namespace SystemInfoApi.Repositories
                 using (SqlCommand cmd = new(query, connection, transaction))
                 {
                     cmd.Parameters.AddWithValue("@Id", id);
-
                     using SqlDataReader reader = await cmd.ExecuteReaderAsync();
+
                     while (await reader.ReadAsync())
                     {
                         machine.Id = Convert.ToInt32(reader["Machine_Id"]);
@@ -163,8 +163,7 @@ namespace SystemInfoApi.Repositories
 
                                 if (drive.IsSystemDrive && reader["Os_Id"] != DBNull.Value)
                                 {
-                                    OsModel os = CreateOsFromReader(reader);
-                                    drive.Os = os;
+                                    drive.Os = CreateOsFromReader(reader);
                                 } 
 
                                 // Add drive to the list of drives
