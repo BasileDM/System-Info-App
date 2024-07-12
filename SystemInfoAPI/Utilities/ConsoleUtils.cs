@@ -14,7 +14,7 @@ namespace SystemInfoApi.Utilities
         // true, switches all logs to true
         // false, all logs to false
         // null, logs will keep the value provided in SetProperty(value).
-        private readonly static bool? _logsMasterSwitch = true;
+        private readonly static bool? _logsMasterSwitch = false;
         public readonly static bool _logTransactionNotice = SetProperty(true);
         private readonly static bool _logTransactionStats = SetProperty(true);
         private readonly static bool _logAuthRequestContent = SetProperty(false);
@@ -51,57 +51,49 @@ namespace SystemInfoApi.Utilities
             Console.Write(message);
             Console.ResetColor();
         }
-        private static string GetExecutionTimeString(DateTime startTime)
+        private static int GetExecutionTimeInMs(DateTime startTime)
         {
-            var elapsed = (DateTime.Now - startTime).TotalMilliseconds;
-            if (elapsed < 100)
-            {
-                return $"{(int)elapsed}ms";
-            }
-            else
-            {
-                var elapsedSeconds = elapsed / 1000;
-                return $"{Math.Truncate(elapsedSeconds * 1000) / 1000} second(s)";
-            }
+            var elapsed = (DateTime.Now.ToLocalTime() - startTime).TotalMilliseconds;
+            return (int)elapsed;
         }
 
         // LOGS
         // Recieving requests logs
-        public static void LogMachineCreationRequest(ConnectionInfo connectionInfo)
+        public static void LogMachineCreationRequest(ConnectionInfo connectionInfo, DateTime startTime)
         {
             Console.WriteLine();
             WriteColored("New machine creation request...", _requestColor);
-            LogTimeStamp();
+            LogTimeStamp(startTime);
             LogRequestIpOrigin(connectionInfo);
         }
-        public static void LogUpdateRequest(int machineId, ConnectionInfo connectionInfo)
+        public static void LogUpdateRequest(int machineId, ConnectionInfo connectionInfo, DateTime startTime)
         {
             Console.WriteLine();
             WriteColored($"Issuing request to update machine {machineId}...", _requestColor);
-            LogTimeStamp();
+            LogTimeStamp(startTime);
             LogRequestIpOrigin(connectionInfo);
         }
-        public static void LogAuthRequest(AuthRequest request, ConnectionInfo connectionInfo)
+        public static void LogAuthRequest(AuthRequest request, ConnectionInfo connectionInfo, DateTime startTime)
         {
             Console.WriteLine();
             WriteColored($"Issuing new token request...", _requestColor);
-            LogTimeStamp();
+            LogTimeStamp(startTime);
             LogRequestIpOrigin(connectionInfo);
 
             if (!_logAuthRequestContent) return;
             Console.WriteLine($"Request Content:");
             Console.WriteLine($"Full hash: {request.Pass}");
         }
-        public static void LogGetMachineByIdRequest(int machineId, ConnectionInfo connectionInfo)
+        public static void LogGetMachineByIdRequest(int machineId, ConnectionInfo connectionInfo, DateTime startTime)
         {
             Console.WriteLine();
             WriteColored($"Issuing request to get a machine with Id '{machineId}'", _requestColor);
-            LogTimeStamp();
+            LogTimeStamp(startTime);
             LogRequestIpOrigin(connectionInfo);
         }
-        public static void LogTimeStamp()
+        public static void LogTimeStamp(DateTime startTime)
         {
-            string timeStamp = DateTime.Now.ToLocalTime().ToString();
+            string timeStamp = startTime.ToString();
             WriteColored($@" ({timeStamp})", _timeStampColor);
         }
         
@@ -119,9 +111,8 @@ namespace SystemInfoApi.Utilities
         // Creation logs
         public static void LogMachineCreation(RouteValueDictionary? routeValues, MachineModel newMachine, IUrlHelper Url, DateTime startTime)
         {
-            string totalTime = GetExecutionTimeString(startTime);
-
-            WriteLineColored($"Machine {newMachine.Id} has been created in {totalTime}.", _creationColor);
+            WriteColored($"Machine {newMachine.Id} has been created.", _creationColor);
+            WriteLineColored($@" ({GetExecutionTimeInMs(startTime)}ms)", _timeStampColor);
 
             if (!_logCreationDetails) return;
             Console.WriteLine($@"  Time: {DateTime.Now.ToLocalTime()}");
@@ -139,8 +130,8 @@ namespace SystemInfoApi.Utilities
         // Update logs
         public static void LogMachineUpdate(MachineModel machine, DateTime startTime)
         {
-            string totalTime = GetExecutionTimeString(startTime);
-            WriteLineColored($"Machine {machine.Id} has been updated in {totalTime}.", _updateColor);
+            WriteColored($"Machine {machine.Id} has been updated.", _updateColor);
+            WriteLineColored($@" ({GetExecutionTimeInMs(startTime)}ms)", _timeStampColor);
         }
 
         // Misc logs

@@ -16,8 +16,8 @@ namespace SystemInfoApi.Controllers
         [Consumes("application/json")]
         public async Task<ActionResult<MachineModel>> Create([FromBody] MachineModel machine)
         {
-            DateTime startTime = DateTime.Now;
-            ConsoleUtils.LogMachineCreationRequest(HttpContext.Connection);
+            DateTime startTime = DateTime.Now.ToLocalTime();
+            ConsoleUtils.LogMachineCreationRequest(HttpContext.Connection, startTime);
             if (!ModelState.IsValid)
             {
                 Console.WriteLine("Failed to validate model: " + ModelState);
@@ -49,8 +49,8 @@ namespace SystemInfoApi.Controllers
         [Consumes("application/json")]
         public async Task<ActionResult<MachineModel>> Update(int machineId, [FromBody] MachineModel machine)
         {
-            var startTime = DateTime.Now;
-            ConsoleUtils.LogUpdateRequest(machine.Id, HttpContext.Connection);
+            var startTime = DateTime.Now.ToLocalTime();
+            ConsoleUtils.LogUpdateRequest(machine.Id, HttpContext.Connection, startTime);
 
             if (!ModelState.IsValid)
             {
@@ -111,7 +111,8 @@ namespace SystemInfoApi.Controllers
         [HttpGet("{machineId:int:min(0)}", Name = nameof(GetById))]
         public async Task<ActionResult<MachineModel>> GetById(int machineId)
         {
-            ConsoleUtils.LogGetMachineByIdRequest(machineId, HttpContext.Connection);
+            var startTime = DateTime.Now.ToLocalTime();
+            ConsoleUtils.LogGetMachineByIdRequest(machineId, HttpContext.Connection, startTime);
             MachineModel machine = await machinesService.GetByIdAsync(machineId);
 
             if (machine.Id != 0)

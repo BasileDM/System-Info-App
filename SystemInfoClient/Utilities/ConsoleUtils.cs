@@ -9,7 +9,7 @@ namespace SystemInfoClient.Utilities
         // true, switches all logs to true
         // false, all logs to false
         // null, logs will keep the value provided in SetProperty(value).
-        private readonly static bool? _logsMasterSwitch = true;
+        private readonly static bool? _logsMasterSwitch = false;
         private readonly static bool _logTokenString = SetProperty(true);
         public readonly static bool _logDecodingProcess = SetProperty(false);
         public readonly static bool _logEnvVariableSetting = SetProperty(false);

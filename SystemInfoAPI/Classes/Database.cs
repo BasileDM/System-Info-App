@@ -140,8 +140,6 @@ namespace SystemInfoApi.Classes
             connection.StatisticsEnabled = true;
             if (ConsoleUtils._logTransactionNotice) Console.WriteLine("New database transaction initiated...");
 
-            var currentColor = Console.ForegroundColor;
-
             try
             {
                 T result = await operation(connection, transaction);
@@ -151,14 +149,14 @@ namespace SystemInfoApi.Classes
             catch (ArgumentException ex)
             {
                 await transaction.RollbackAsync();
-                ConsoleUtils.WriteLineColored("Rolling back transaction due to an argument error:\r\n" + ex.Message, ConsoleColor.Red);
+                ConsoleUtils.WriteLineColored("Rolling back transaction due to an argument error:\r\n" + ex.Message, ConsoleUtils._errorColor);
                 throw new ArgumentException("Error finalising the transaction with the database.", ex.Message);
             }
             catch (Exception ex)
             {
                 await transaction.RollbackAsync();
 
-                ConsoleUtils.WriteLineColored("Rolling back transaction due to an argument error:\r\n" + ex.Message, ConsoleColor.Red);
+                ConsoleUtils.WriteLineColored("Rolling back transaction due to an argument error:\r\n" + ex.Message, ConsoleUtils._errorColor);
                 throw new ApplicationException("Error finalising the transaction with the database.", ex);
             }
             finally
