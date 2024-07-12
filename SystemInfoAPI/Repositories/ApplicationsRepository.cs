@@ -1,4 +1,5 @@
-﻿using System.Data.SqlClient;
+﻿using Microsoft.AspNetCore.Mvc;
+using System.Data.SqlClient;
 using SystemInfoApi.Classes;
 using SystemInfoApi.Models;
 
@@ -330,6 +331,29 @@ namespace SystemInfoApi.Repositories
             catch (Exception ex)
             {
                 throw new Exception(ex.Message, ex);
+            }
+        }
+        public async Task<int> DeleteByIdAsync(SqlConnection connection, SqlTransaction transaction, int appId, int driveId)
+        {
+            // ----------------------------------------- WIP
+            var dtn = db.ApplicationsTableNames;
+            string query = @$"
+                DELETE FROM {dtn.TableName}
+                WHERE {dtn.Id} = @id;";
+
+            using (SqlCommand cmd = new(query, connection, transaction))
+            {
+                cmd.Parameters.AddWithValue("@id", appId);
+            }
+
+
+            try
+            {
+                return appId;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Failed to delete app {appId}:" + ex);
             }
         }
     }

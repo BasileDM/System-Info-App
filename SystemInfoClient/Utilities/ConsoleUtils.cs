@@ -6,13 +6,13 @@ namespace SystemInfoClient.Utilities
     internal class ConsoleUtils
     {
         // Master switch:
-        // true, switches all logs to true
-        // false, all logs to false
-        // null, logs will keep the value provided in SetProperty(value).
-        private readonly static bool? _logsMasterSwitch = false;
+        // true: switches all logs to true
+        // false: all logs to false
+        // null: logs will keep the value provided in SetProperty(value).
+        private readonly static bool? _logsMasterSwitch = null;
         private readonly static bool _logTokenString = SetProperty(true);
         public readonly static bool _logDecodingProcess = SetProperty(false);
-        public readonly static bool _logEnvVariableSetting = SetProperty(false);
+        public readonly static bool _logEnvVariableSetting = SetProperty(true);
         private readonly static bool _logHashingProcess = SetProperty(true);
         private readonly static bool _logJsonSettingsContent = SetProperty(false);
 

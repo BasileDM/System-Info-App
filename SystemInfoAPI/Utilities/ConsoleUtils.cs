@@ -11,10 +11,10 @@ namespace SystemInfoApi.Utilities
     public class ConsoleUtils
     {
         // Master switch:
-        // true, switches all logs to true
-        // false, all logs to false
-        // null, logs will keep the value provided in SetProperty(value).
-        private readonly static bool? _logsMasterSwitch = false;
+        // true: switches all logs to true
+        // false: all logs to false
+        // null: logs will keep the value provided in SetProperty(value).
+        private readonly static bool? _logsMasterSwitch = null;
         public readonly static bool _logTransactionNotice = SetProperty(true);
         private readonly static bool _logTransactionStats = SetProperty(true);
         private readonly static bool _logAuthRequestContent = SetProperty(false);
@@ -62,21 +62,21 @@ namespace SystemInfoApi.Utilities
         public static void LogMachineCreationRequest(ConnectionInfo connectionInfo, DateTime startTime)
         {
             Console.WriteLine();
-            WriteColored("New machine creation request...", _requestColor);
+            WriteColored("Issuing machine creation request...", _requestColor);
             LogTimeStamp(startTime);
             LogRequestIpOrigin(connectionInfo);
         }
         public static void LogUpdateRequest(int machineId, ConnectionInfo connectionInfo, DateTime startTime)
         {
             Console.WriteLine();
-            WriteColored($"Issuing request to update machine {machineId}...", _requestColor);
+            WriteColored($"Issuing update request for machine {machineId}...", _requestColor);
             LogTimeStamp(startTime);
             LogRequestIpOrigin(connectionInfo);
         }
         public static void LogAuthRequest(AuthRequest request, ConnectionInfo connectionInfo, DateTime startTime)
         {
             Console.WriteLine();
-            WriteColored($"Issuing new token request...", _requestColor);
+            WriteColored($"Issuing token request...", _requestColor);
             LogTimeStamp(startTime);
             LogRequestIpOrigin(connectionInfo);
 
@@ -87,7 +87,7 @@ namespace SystemInfoApi.Utilities
         public static void LogGetMachineByIdRequest(int machineId, ConnectionInfo connectionInfo, DateTime startTime)
         {
             Console.WriteLine();
-            WriteColored($"Issuing request to get a machine with Id '{machineId}'", _requestColor);
+            WriteColored($"Issuing get request for machine {machineId}...", _requestColor);
             LogTimeStamp(startTime);
             LogRequestIpOrigin(connectionInfo);
         }
