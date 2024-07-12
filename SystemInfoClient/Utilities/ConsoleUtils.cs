@@ -18,7 +18,6 @@ namespace SystemInfoClient.Utilities
 
         private static readonly Stopwatch _stopwatch = new();
         private static long _totalTime = 0;
-        private static bool _envWarningLogged = false;
 
         public readonly static ConsoleColor _requestColor = ConsoleColor.Yellow;
         public readonly static ConsoleColor _creationColor = ConsoleColor.Green;
@@ -188,11 +187,13 @@ namespace SystemInfoClient.Utilities
             if (success == true)
             {
                 if (!_logEnvVariableSetting) return;
-                Console.WriteLine("Env variable set.");
+                Console.Write("Env variable set.");
+                LogElapsedTime();
             }
             else
             {
-                WriteLColored("Failed setting environment variable.", ConsoleUtils._errorColor);
+                WriteColored("Failed setting environment variable.", _errorColor);
+                LogElapsedTime();
             }
         }
         public static void LogHashingProcess(string source, byte[] salt, byte[] hash, string concat)

@@ -179,7 +179,7 @@ namespace SystemInfoApi.Utilities
         public static void LogPassProcessTime(Stopwatch stopwatch)
         {
             string elapsed = stopwatch.ElapsedMilliseconds.ToString();
-            WriteLineColored($@"Pass processing: {elapsed}ms", _timeStampColor);
+            WriteLineColored($@" ({elapsed}ms)", _timeStampColor);
             stopwatch.Stop();
             stopwatch.Reset();
         }

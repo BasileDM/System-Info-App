@@ -34,13 +34,14 @@ namespace SystemInfoApi.Services
 
                 if (SecureCompare(providedPass, computedPass))
                 {
+                    ConsoleUtils.WriteColored("Password is valid.", ConsoleUtils._successColor);
                     ConsoleUtils.LogPassProcessTime(stopwatch);
-                    ConsoleUtils.WriteLineColored("Password is valid.", ConsoleUtils._successColor);
                     return true;
                 }
                 else
                 {
                     ConsoleUtils.WriteLineColored("Invalid password.", ConsoleUtils._errorColor);
+                    ConsoleUtils.LogPassProcessTime(stopwatch);
                     return false;
                 }
             }
