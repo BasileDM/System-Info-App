@@ -9,14 +9,13 @@ namespace SystemInfoClient.Utilities
         // true, switches all logs to true
         // false, all logs to false
         // null, logs will keep the value provided in SetProperty(value).
-        private readonly static bool? _logsMasterSwitch = null;
+        private readonly static bool? _logsMasterSwitch = true;
         private readonly static bool _logTokenString = SetProperty(true);
         public readonly static bool _logDecodingProcess = SetProperty(false);
         public readonly static bool _logEnvVariableSetting = SetProperty(false);
         private readonly static bool _logHashingProcess = SetProperty(true);
         private readonly static bool _logJsonSettingsContent = SetProperty(false);
 
-        private static Timer? _timer;
         private static readonly Stopwatch _stopwatch = new();
         private static long _totalTime = 0;
         private static bool _envWarningLogged = false;
@@ -183,21 +182,18 @@ namespace SystemInfoClient.Utilities
         {
             if (!_logEnvVariableSetting) return;
             Console.WriteLine("Setting env variable...");
-            _timer = new(CheckEnvSettingElapsedTime, null, 0, 1000);
         }
-        private static void CheckEnvSettingElapsedTime(object? state)
+        public static void StopLogEnvVariableSetting(bool success)
         {
-            if (_stopwatch.ElapsedMilliseconds > 3000 && !_envWarningLogged)
+            if (success == true)
             {
-                Console.WriteLine("WARNING: Setting the environment variable is taking some time. This can be caused by some open applications (e.g. Chrome).");
-                _envWarningLogged = true;
+                if (!_logEnvVariableSetting) return;
+                Console.WriteLine("Env variable set.");
             }
-        }
-        public static void StopLogEnvVariableSetting()
-        {
-            if (!_logEnvVariableSetting) return;
-            Console.WriteLine("Env variable set.");
-            _timer?.Dispose();
+            else
+            {
+                WriteLColored("Failed setting environment variable.", ConsoleUtils._errorColor);
+            }
         }
         public static void LogHashingProcess(string source, byte[] salt, byte[] hash, string concat)
         {

@@ -59,10 +59,10 @@ namespace SystemInfoClient.Services
 
                 if (tokenResponse != null && tokenResponse.Token != null)
                 {
+                    ConsoleUtils.LogTokenReceptionSuccess(tokenResponse.Token);
+
                     JwtToken token = JwtToken.GetInstance(tokenResponse.Token) ?? throw new Exception("Null token.");
                     _envVariable.Token = token;
-
-                    ConsoleUtils.LogTokenReceptionSuccess(tokenResponse.Token);
                     return token;
                 }
                 else

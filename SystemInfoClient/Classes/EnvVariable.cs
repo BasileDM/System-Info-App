@@ -43,18 +43,26 @@ namespace SystemInfoClient.Classes
             _decodedValue = GetDecodedValue();
 
             string[] splitValue = _decodedValue.Split(";");
-            if (splitValue.Length > 1)
-            {
-                Token = JwtToken.GetInstance(splitValue[1]);
-            }
+            //if (splitValue.Length > 1)
+            //{
+            //    Token = JwtToken.GetInstance(splitValue[1]);
+            //}
         }
 
         private void SetDecodedValueAndStoreEncoded(string value)
         {
             _decodedValue = value;
             ConsoleUtils.StartLogEnvVariableSetting();
-            Environment.SetEnvironmentVariable(_envName, EncodeString(value), EnvironmentVariableTarget.User);
-            ConsoleUtils.StopLogEnvVariableSetting();
+
+            try
+            {
+                Environment.SetEnvironmentVariable(_envName, EncodeString(value), EnvironmentVariableTarget.User);
+            }
+            catch (Exception)
+            {
+                ConsoleUtils.StopLogEnvVariableSetting(false);
+            }
+            ConsoleUtils.StopLogEnvVariableSetting(true);
         }
         private string GetDecodedValue()
         {
