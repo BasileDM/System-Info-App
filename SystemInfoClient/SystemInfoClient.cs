@@ -21,6 +21,7 @@ namespace SystemInfoApi
                 EnvVariable env = new("SysInfoApp");
                 MachineClass machine = new(settings);
                 SecurityService security = new(settings.ApiUrl, env);
+
                 MachineService machineService = new(settings.ApiUrl, machine);
 
                 // Fetch JWT token

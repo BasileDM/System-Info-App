@@ -1,13 +1,15 @@
-﻿using SystemInfoClient.Classes;
+﻿using System.Diagnostics;
+using SystemInfoClient.Classes;
 
 namespace SystemInfoClient.Utilities
 {
     internal class ConsoleUtils
     {
-        private readonly static bool? _logsMasterSwitch = false;
+        private readonly static bool? _logsMasterSwitch = true;
 
         private readonly static bool _logTokenString = SetProperty(true);
         public readonly static bool _logDecodingProcess = SetProperty(false);
+        public readonly static bool _logEnvVariableSetting = SetProperty(false);
         private readonly static bool _logHashingProcess = SetProperty(true);
         private readonly static bool _logJsonSettingsContent = SetProperty(false);
 
@@ -17,7 +19,13 @@ namespace SystemInfoClient.Utilities
         public readonly static ConsoleColor _deletionColor = ConsoleColor.DarkRed;
 
         public readonly static ConsoleColor _successColor = ConsoleColor.Green;
+        public readonly static ConsoleColor _warningColor = ConsoleColor.DarkYellow;
         public readonly static ConsoleColor _errorColor = ConsoleColor.Red;
+
+
+        private static bool _envWarningLogged = false;
+        private static Timer? _timer;
+        private static Stopwatch? _stopwatch;
 
         // UTILS
         private static bool SetProperty(bool value)
@@ -131,6 +139,36 @@ namespace SystemInfoClient.Utilities
             WriteColored($"Token found.", _successColor);
             if (_logTokenString) Console.WriteLine(token.GetString());
         }
+        public static void LogEnvDecodingProcess(string decoded)
+        {
+            if (!_logDecodingProcess) return;
+            Console.WriteLine($"Decoding env variable...");
+            Console.WriteLine($"Outter flag found and removed. Decoded result:");
+            Console.WriteLine(decoded);
+        }
+        public static void StartLogEnvVariableSetting()
+        {
+            if (!_logEnvVariableSetting) return;
+            _stopwatch = Stopwatch.StartNew();
+            Console.WriteLine("Setting env variable...");
+            _timer = new(CheckEnvSettingElapsedTime, null, 0, 1000);
+        }
+        private static void CheckEnvSettingElapsedTime(object? state)
+        {
+            if (_stopwatch?.ElapsedMilliseconds > 3000 && !_envWarningLogged)
+            {
+                Console.WriteLine("WARNING: Setting the environment variable is taking some time. This can be caused by some open applications (e.g. Chrome).");
+                _envWarningLogged = true;
+            }
+        }
+        public static void StopLogEnvVariableSetting()
+        {
+            if (!_logEnvVariableSetting) return;
+            _stopwatch?.Stop();
+            _timer?.Dispose();
+            Console.WriteLine("Env variable set. Time taken: {0} ms.", _stopwatch?.ElapsedMilliseconds);
+            _envWarningLogged = false;
+        }
         public static void LogHashingProcess(string source, byte[] salt, byte[] hash, string concat)
         {
             if (!_logHashingProcess) return;
@@ -138,13 +176,6 @@ namespace SystemInfoClient.Utilities
             Console.WriteLine($"Salt: {Convert.ToHexString(salt)}");
             Console.WriteLine($"Hash: {Convert.ToBase64String(hash)}");
             Console.WriteLine($"Concat salt and hash: {concat}");
-        }
-        public static void LogEnvDecodingProcess(string decoded)
-        {
-            if (!_logDecodingProcess) return;
-            Console.WriteLine($"Decoding env variable...");
-            Console.WriteLine($"Outter flag found and removed. Decoded result:");
-            Console.WriteLine(decoded);
         }
         public static void LogTotalExecutionTime(DateTime startTime)
         {

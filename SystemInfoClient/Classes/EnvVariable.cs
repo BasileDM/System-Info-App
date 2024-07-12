@@ -52,7 +52,9 @@ namespace SystemInfoClient.Classes
         private void SetDecodedValueAndStoreEncoded(string value)
         {
             _decodedValue = value;
+            ConsoleUtils.StartLogEnvVariableSetting();
             Environment.SetEnvironmentVariable(_envName, EncodeString(value), EnvironmentVariableTarget.User);
+            ConsoleUtils.StopLogEnvVariableSetting();
         }
         private string GetDecodedValue()
         {
