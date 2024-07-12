@@ -1,5 +1,6 @@
 ﻿using Konscious.Security.Cryptography;
 using Microsoft.IdentityModel.Tokens;
+using System.Diagnostics;
 using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 using SystemInfoApi.Utilities;
@@ -12,6 +13,9 @@ namespace SystemInfoApi.Services
         {
             try
             {
+                Stopwatch stopwatch = new();
+                stopwatch.Start();
+
                 var (Hash, Salt) = DecodeSaltAndHash(providedHash, 16, 64);
                 string providedPass = Hash;
                 byte[] providedSalt = Salt;
@@ -30,6 +34,7 @@ namespace SystemInfoApi.Services
 
                 if (SecureCompare(providedPass, computedPass))
                 {
+                    ConsoleUtils.LogPassProcessTime(stopwatch);
                     ConsoleUtils.WriteLineColored("Password is valid.", ConsoleUtils._successColor);
                     return true;
                 }

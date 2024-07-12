@@ -14,7 +14,7 @@ namespace SystemInfoApi.Utilities
         // true, switches all logs to true
         // false, all logs to false
         // null, logs will keep the value provided in SetProperty(value).
-        private readonly static bool? _logsMasterSwitch = false;
+        private readonly static bool? _logsMasterSwitch = true;
         public readonly static bool _logTransactionNotice = SetProperty(true);
         private readonly static bool _logTransactionStats = SetProperty(true);
         private readonly static bool _logAuthRequestContent = SetProperty(false);
@@ -24,9 +24,6 @@ namespace SystemInfoApi.Utilities
         private readonly static bool _logEncodedToken = SetProperty(false);
         private readonly static bool _logHashSalt = SetProperty(false);
 
-        private static Timer? _timer;
-        private static Stopwatch? _stopwatch;
-
         public readonly static ConsoleColor _requestColor = ConsoleColor.Yellow;
         public readonly static ConsoleColor _creationColor = ConsoleColor.Green;
         public readonly static ConsoleColor _updateColor = ConsoleColor.DarkYellow;
@@ -34,6 +31,7 @@ namespace SystemInfoApi.Utilities
 
         public readonly static ConsoleColor _successColor = ConsoleColor.DarkGreen;
         public readonly static ConsoleColor _errorColor = ConsoleColor.Red;
+        public readonly static ConsoleColor _timeStampColor = ConsoleColor.DarkGray;
 
         // UTILS
         private static bool SetProperty(bool value)
@@ -45,6 +43,12 @@ namespace SystemInfoApi.Utilities
         {
             Console.ForegroundColor = color;
             Console.WriteLine(message);
+            Console.ResetColor();
+        }
+        public static void WriteColored(string message, ConsoleColor color)
+        {
+            Console.ForegroundColor = color;
+            Console.Write(message);
             Console.ResetColor();
         }
         private static string GetExecutionTimeString(DateTime startTime)
@@ -66,19 +70,22 @@ namespace SystemInfoApi.Utilities
         public static void LogMachineCreationRequest(ConnectionInfo connectionInfo)
         {
             Console.WriteLine();
-            WriteLineColored("New machine creation request...", _requestColor);
+            WriteColored("New machine creation request...", _requestColor);
+            LogTimeStamp();
             LogRequestIpOrigin(connectionInfo);
         }
         public static void LogUpdateRequest(int machineId, ConnectionInfo connectionInfo)
         {
             Console.WriteLine();
-            WriteLineColored($"Issuing request to update machine {machineId}...", _requestColor);
+            WriteColored($"Issuing request to update machine {machineId}...", _requestColor);
+            LogTimeStamp();
             LogRequestIpOrigin(connectionInfo);
         }
         public static void LogAuthRequest(AuthRequest request, ConnectionInfo connectionInfo)
         {
             Console.WriteLine();
-            WriteLineColored($"Issuing new token request...", _requestColor);
+            WriteColored($"Issuing new token request...", _requestColor);
+            LogTimeStamp();
             LogRequestIpOrigin(connectionInfo);
 
             if (!_logAuthRequestContent) return;
@@ -88,8 +95,14 @@ namespace SystemInfoApi.Utilities
         public static void LogGetMachineByIdRequest(int machineId, ConnectionInfo connectionInfo)
         {
             Console.WriteLine();
-            WriteLineColored($"Issuing request to get a machine with Id '{machineId}'", _requestColor);
+            WriteColored($"Issuing request to get a machine with Id '{machineId}'", _requestColor);
+            LogTimeStamp();
             LogRequestIpOrigin(connectionInfo);
+        }
+        public static void LogTimeStamp()
+        {
+            string timeStamp = DateTime.Now.ToLocalTime().ToString();
+            WriteColored($@" ({timeStamp})", _timeStampColor);
         }
         
         // Sending requests logs
@@ -148,6 +161,7 @@ namespace SystemInfoApi.Utilities
         {
             var ipv4 = connectionInfo.RemoteIpAddress?.MapToIPv4().ToString();
             var ipv6 = connectionInfo.RemoteIpAddress?.MapToIPv6().ToString();
+            Console.WriteLine();
             Console.WriteLine($"Origin: {ipv4} | {ipv6}");
         }
         public static void LogTokenContent(JwtSecurityToken securityToken)
@@ -161,6 +175,13 @@ namespace SystemInfoApi.Utilities
             if (!_logHashSalt) return;
             Console.WriteLine($"Provided pass hash: {hash}");
             Console.WriteLine($"Provided salt: {Convert.ToHexString(salt)}");
+        }
+        public static void LogPassProcessTime(Stopwatch stopwatch)
+        {
+            string elapsed = stopwatch.ElapsedMilliseconds.ToString();
+            WriteLineColored($@"Pass processing: {elapsed}ms", _timeStampColor);
+            stopwatch.Stop();
+            stopwatch.Reset();
         }
     }
 }
