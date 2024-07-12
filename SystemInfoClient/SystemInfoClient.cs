@@ -17,6 +17,7 @@ namespace SystemInfoApi
                 var startTime = DateTime.Now;
 
                 // Instanciate required objects and services
+                ConsoleUtils.StartWatch();
                 Settings settings = Settings.GetInstance();
                 EnvVariable env = new("SysInfoApp");
                 MachineClass machine = new(settings);

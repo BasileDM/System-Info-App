@@ -5,13 +5,21 @@ namespace SystemInfoClient.Utilities
 {
     internal class ConsoleUtils
     {
-        private readonly static bool? _logsMasterSwitch = true;
-
+        // Master switch:
+        // true, switches all logs to true
+        // false, all logs to false
+        // null, logs will keep the value provided in SetProperty(value).
+        private readonly static bool? _logsMasterSwitch = null;
         private readonly static bool _logTokenString = SetProperty(true);
         public readonly static bool _logDecodingProcess = SetProperty(false);
         public readonly static bool _logEnvVariableSetting = SetProperty(false);
         private readonly static bool _logHashingProcess = SetProperty(true);
         private readonly static bool _logJsonSettingsContent = SetProperty(false);
+
+        private static Timer? _timer;
+        private static readonly Stopwatch _stopwatch = new();
+        private static long _totalTime = 0;
+        private static bool _envWarningLogged = false;
 
         public readonly static ConsoleColor _requestColor = ConsoleColor.Yellow;
         public readonly static ConsoleColor _creationColor = ConsoleColor.Green;
@@ -22,21 +30,22 @@ namespace SystemInfoClient.Utilities
         public readonly static ConsoleColor _warningColor = ConsoleColor.DarkYellow;
         public readonly static ConsoleColor _errorColor = ConsoleColor.Red;
 
-
-        private static bool _envWarningLogged = false;
-        private static Timer? _timer;
-        private static Stopwatch? _stopwatch;
-
         // UTILS
         private static bool SetProperty(bool value)
         {
             // Returns the set property value, or false if _disableAllLogs is true.
             return _logsMasterSwitch ?? value;
         }
-        public static void WriteColored(string message, ConsoleColor color)
+        public static void WriteLColored(string message, ConsoleColor color)
         {
             Console.ForegroundColor = color;
             Console.WriteLine(message);
+            Console.ResetColor();
+        }
+        public static void WriteColored(string message, ConsoleColor color)
+        {
+            Console.ForegroundColor = color;
+            Console.Write(message);
             Console.ResetColor();
         }
         private static string GetExecutionTimeString(DateTime startTime)
@@ -52,24 +61,36 @@ namespace SystemInfoClient.Utilities
                 return $"{Math.Truncate(elapsedSeconds * 1000) / 1000} second(s)";
             }
         }
+        private static void LogElapsedTime()
+        {
+            _totalTime += _stopwatch.ElapsedMilliseconds;
+            string elapsed = _stopwatch.ElapsedMilliseconds.ToString();
+            WriteLColored($@" ({elapsed}ms | {_totalTime}ms)", ConsoleColor.DarkGray);
+            _stopwatch.Restart();
+        }
+        public static void StartWatch()
+        {
+            _stopwatch.Start();
+        }
 
         // LOGS
         // Sending requests logs
         public static void LogTokenRequest()
         {
             Console.WriteLine();
-            WriteColored("Requesting new token...", _requestColor);
+            WriteLColored("Requesting new token...", _requestColor);
         }
         public static void LogMachineRequest()
         {
             Console.WriteLine();
-            WriteColored("Sending machine info...", _requestColor);
+            WriteLColored("Sending machine info...", _requestColor);
         }
 
         // Response info logs
         public static void LogAuthorizationError(HttpResponseMessage response)
         {
             WriteColored("Authorization error.", _errorColor);
+            LogElapsedTime();
             if (response.Headers.WwwAuthenticate.Count > 0)
             {
                 var wwwAuthHeader = response.Headers.WwwAuthenticate.ToString();
@@ -91,10 +112,12 @@ namespace SystemInfoClient.Utilities
             if (response.StatusCode == System.Net.HttpStatusCode.Created)
             {
                 WriteColored($"Machine successfully created.", _successColor);
+                LogElapsedTime();
             }
             if (response.StatusCode == System.Net.HttpStatusCode.OK)
             {
                 WriteColored($"Machine successfully updated.", _updateColor);
+                LogElapsedTime();
             }
 
             Console.WriteLine($"  Code: {response.StatusCode}.");
@@ -122,13 +145,15 @@ namespace SystemInfoClient.Utilities
         public static void LogTokenReceptionSuccess(string token)
         {
             WriteColored($"Token obtained with success.", _successColor);
+            LogElapsedTime();
             if (_logTokenString) Console.WriteLine(token);
         }
 
         // Misc logs
         public static void LogJsonFileRewrite(string newMachineId, string json)
         {
-            Console.WriteLine($"Settings.json file rewritten with MachineId : {newMachineId}");
+            Console.Write($"Settings.json file rewritten with MachineId : {newMachineId}");
+            LogElapsedTime();
 
             if (!_logJsonSettingsContent) return;
             Console.WriteLine($"Json content :");
@@ -137,25 +162,32 @@ namespace SystemInfoClient.Utilities
         public static void LogEnvTokenSuccess(JwtToken token)
         {
             WriteColored($"Token found.", _successColor);
+            LogElapsedTime();
             if (_logTokenString) Console.WriteLine(token.GetString());
+        }
+        public static void LogEnvTokenExpired(JwtToken? token)
+        {
+            ConsoleUtils.WriteColored(
+                token == null ? "Token not found." : "Token expired.", ConsoleUtils._errorColor);
+            LogElapsedTime();
         }
         public static void LogEnvDecodingProcess(string decoded)
         {
             if (!_logDecodingProcess) return;
             Console.WriteLine($"Decoding env variable...");
             Console.WriteLine($"Outter flag found and removed. Decoded result:");
-            Console.WriteLine(decoded);
+            Console.Write(decoded);
+            LogElapsedTime();
         }
         public static void StartLogEnvVariableSetting()
         {
             if (!_logEnvVariableSetting) return;
-            _stopwatch = Stopwatch.StartNew();
             Console.WriteLine("Setting env variable...");
             _timer = new(CheckEnvSettingElapsedTime, null, 0, 1000);
         }
         private static void CheckEnvSettingElapsedTime(object? state)
         {
-            if (_stopwatch?.ElapsedMilliseconds > 3000 && !_envWarningLogged)
+            if (_stopwatch.ElapsedMilliseconds > 3000 && !_envWarningLogged)
             {
                 Console.WriteLine("WARNING: Setting the environment variable is taking some time. This can be caused by some open applications (e.g. Chrome).");
                 _envWarningLogged = true;
@@ -164,10 +196,8 @@ namespace SystemInfoClient.Utilities
         public static void StopLogEnvVariableSetting()
         {
             if (!_logEnvVariableSetting) return;
-            _stopwatch?.Stop();
+            Console.WriteLine("Env variable set.");
             _timer?.Dispose();
-            Console.WriteLine("Env variable set. Time taken: {0} ms.", _stopwatch?.ElapsedMilliseconds);
-            _envWarningLogged = false;
         }
         public static void LogHashingProcess(string source, byte[] salt, byte[] hash, string concat)
         {
@@ -175,12 +205,14 @@ namespace SystemInfoClient.Utilities
             Console.WriteLine($"Hashing string: {source}");
             Console.WriteLine($"Salt: {Convert.ToHexString(salt)}");
             Console.WriteLine($"Hash: {Convert.ToBase64String(hash)}");
-            Console.WriteLine($"Concat salt and hash: {concat}");
+            Console.Write($"Concat salt and hash: {concat}");
+            LogElapsedTime();
         }
         public static void LogTotalExecutionTime(DateTime startTime)
         {
             Console.WriteLine();
-            Console.WriteLine($"Total execution time: {GetExecutionTimeString(startTime)}");
+            Console.Write($"Total execution time: {GetExecutionTimeString(startTime)}");
+            LogElapsedTime();
         }
     }
 }

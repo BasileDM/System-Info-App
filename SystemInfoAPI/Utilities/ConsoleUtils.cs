@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System.Collections;
 using System.Data.SqlClient;
+using System.Diagnostics;
 using System.IdentityModel.Tokens.Jwt;
 using SystemInfoApi.Controllers;
 using SystemInfoApi.Models;
@@ -14,7 +15,6 @@ namespace SystemInfoApi.Utilities
         // false, all logs to false
         // null, logs will keep the value provided in SetProperty(value).
         private readonly static bool? _logsMasterSwitch = false;
-
         public readonly static bool _logTransactionNotice = SetProperty(true);
         private readonly static bool _logTransactionStats = SetProperty(true);
         private readonly static bool _logAuthRequestContent = SetProperty(false);
@@ -23,6 +23,9 @@ namespace SystemInfoApi.Utilities
         private readonly static bool _logTokenContent = SetProperty(true);
         private readonly static bool _logEncodedToken = SetProperty(false);
         private readonly static bool _logHashSalt = SetProperty(false);
+
+        private static Timer? _timer;
+        private static Stopwatch? _stopwatch;
 
         public readonly static ConsoleColor _requestColor = ConsoleColor.Yellow;
         public readonly static ConsoleColor _creationColor = ConsoleColor.Green;
