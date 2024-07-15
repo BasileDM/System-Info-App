@@ -332,7 +332,7 @@ namespace SystemInfoApi.Repositories
                 throw new Exception(ex.Message, ex);
             }
         }
-        public async Task<int> DeleteRelationAsync(int appId, int driveId, SqlConnection connection, SqlTransaction transaction)
+        public async Task<int> DeleteDriveRelationAsync(int appId, int driveId, SqlConnection connection, SqlTransaction transaction)
         {
             var appsDrivesRTable = db.AppsDrivesRelationTableNames;
             string query = @$"
@@ -342,21 +342,19 @@ namespace SystemInfoApi.Repositories
 
             try
             {
-                object? result;
                 using (SqlCommand cmd = new(query, connection, transaction))
                 {
                     cmd.Parameters.AddWithValue("@appId", appId);
                     cmd.Parameters.AddWithValue("@driveId", driveId);
 
-                    result = await cmd.ExecuteScalarAsync();
+                    await cmd.ExecuteNonQueryAsync();
                 }
 
-                Console.WriteLine($"Result of scalar cmd: {result}");// remove this and make command nonquery
-                return appId;
+                return driveId;
             }
             catch (Exception ex)
             {
-                throw new Exception($"Failed to delete app {appId}:" + ex);
+                throw new Exception($"Failed to delete app {appId} relation to drive {driveId}:" + ex);
             }
         }
     }

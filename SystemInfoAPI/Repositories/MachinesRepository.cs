@@ -201,7 +201,8 @@ namespace SystemInfoApi.Repositories
                         Machine.{_machinesTable.Id} AS Machine_Id,
                         Machine.{_machinesTable.MachineName} AS Machine_Name, 
                         Machine.{_machinesTable.MachineCreationDate} AS Machine_Creation_Date,
-                        Drive.{_drivesTable.Id} AS Drive_Id, 
+                        Drive.{_drivesTable.Id} AS Drive_Id,
+                        Drive.{_drivesTable.SerialNumber},
                         Drive.{_drivesTable.DriveName} AS Drive_Name, 
                         {_drivesTable.RootDirectory}, 
                         {_drivesTable.Label}, 
@@ -269,6 +270,7 @@ namespace SystemInfoApi.Repositories
                 return new DriveModel()
                 {
                     Id = Convert.ToInt32(reader["Drive_Id"]),
+                    SerialNumber = (string)reader[$"{_drivesTable.SerialNumber}"],
                     Name = (string)reader["Drive_Name"],
                     RootDirectory = (string)reader[$"{_drivesTable.RootDirectory}"],
                     Label = (string)reader[$"{_drivesTable.Label}"],

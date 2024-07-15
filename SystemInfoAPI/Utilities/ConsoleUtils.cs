@@ -130,9 +130,9 @@ namespace SystemInfoApi.Utilities
         {
             WriteLineColored($"Deleting app relation '{appName}' (id {appId}) on drive {appDriveId}.", _deletionColor);
         }
-        public static void LogDriveCreation(string DriveName, int driveId, string serial)
+        public static void LogDriveCreation(string DriveName, string serial)
         {
-            WriteLineColored($"Creating new drive '{DriveName}' (id: {driveId} | Serial: {serial}).", _creationColor);
+            WriteLineColored($"Creating new drive '{DriveName}' (Serial: {serial}).", _creationColor);
         }
         public static void LogDriveDeletion(string DriveName, int driveId, string serial)
         {

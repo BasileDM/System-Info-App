@@ -145,9 +145,7 @@ namespace SystemInfoApi.Repositories
                     cmd.Parameters.AddWithValue("@isSystemDrive", drive.IsSystemDrive);
                     cmd.Parameters.AddWithValue("@creationDate", drive.CreationDate);
 
-                    var obj = await cmd.ExecuteScalarAsync() ??
-                        throw new ArgumentException("Drive not found.");
-
+                    var obj = await cmd.ExecuteScalarAsync();
                     newId = Convert.ToInt32(obj);
                 };
                 return newId;
@@ -166,20 +164,18 @@ namespace SystemInfoApi.Repositories
 
             try
             {
-                object? result;
                 using (SqlCommand cmd = new(query, connection, transaction))
                 {
                     cmd.Parameters.AddWithValue("@driveId", driveId);
 
-                    result = await cmd.ExecuteScalarAsync();
+                    await cmd.ExecuteNonQueryAsync();
                 }
 
-                Console.WriteLine($"Result of scalar cmd: {result}"); // remove this and make command nonquery
                 return driveId;
             }
             catch (Exception ex)
             {
-                throw new Exception($"Failed to delete app {driveId}:" + ex);
+                throw new Exception($"Failed to delete drive {driveId}:" + ex);
             }
         }
     }
