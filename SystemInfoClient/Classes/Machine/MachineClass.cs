@@ -30,7 +30,7 @@ namespace SystemInfoClient.Classes.System
 
                     if (!drive.IsReady)
                     {
-                        throw new DriveNotFoundException("Error with drive ready state.");
+                        break;
                     }
 
                     if (settings.ApplicationsList != null)
@@ -50,7 +50,7 @@ namespace SystemInfoClient.Classes.System
             }
             catch (Exception ex)
             {
-                throw new ApplicationException("Error instantiating the machine.", ex);
+                throw new ApplicationException("Error instantiating the machine." + ex , ex);
             }
         }
 

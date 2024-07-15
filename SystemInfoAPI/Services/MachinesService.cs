@@ -149,12 +149,12 @@ namespace SystemInfoApi.Services
                 }
             }
 
-            async Task ProcessAppsAsync(DriveModel drive, DriveModel existingDrive, int historyDriveId, SqlConnection connection, SqlTransaction transaction)
+            async Task ProcessAppsAsync(DriveModel drive, DriveModel? existingDrive, int historyDriveId, SqlConnection connection, SqlTransaction transaction)
             {
                 // If the drive already exists we can do comparisons
                 if (existingDrive != null)
                 {
-                    var existingAppsDict = existingDrive?.AppList?.ToDictionary(app => app.Id) ?? [];
+                    var existingAppsDict = existingDrive?.AppList?.ToDictionary(app => app.Id) ?? new Dictionary<int, ApplicationModel>();
 
                     foreach (ApplicationModel app in drive.AppList)
                     {
@@ -182,7 +182,7 @@ namespace SystemInfoApi.Services
                         await appRepository.DeleteDriveRelationAsync(appToDelete.Id, existingDrive.Id, connection, transaction);
                     } 
                 }
-                // If the drive is null (a new one) we can create all the apps
+                // If the existing drive is null, the current drive is a new one, and we can create all the apps
                 else
                 {
                     foreach (ApplicationModel app in drive.AppList)
