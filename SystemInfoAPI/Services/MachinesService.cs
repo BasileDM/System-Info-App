@@ -91,6 +91,7 @@ namespace SystemInfoApi.Services
                     else
                     {
                         // Create a new drive
+                        ConsoleUtils.LogDriveCreation(drive.Name, drive.Id, drive.SerialNumber);
                         updatedDrive = await drivesRepository.InsertAsync(drive, connection, transaction);
                     }
 
@@ -111,8 +112,9 @@ namespace SystemInfoApi.Services
                     }
 
                     // Update each drive's app with drive Id
-                    var existingAppList = existingMachine.Drives.ElementAt(driveIndex).AppList;
-                    var existingAppDict = existingAppList.ToDictionary(a => a.Id);
+                    var existingDrive = existingMachine.Drives.ElementAt(driveIndex);
+                    var existingAppList = existingDrive.AppList;
+                    Dictionary<int, ApplicationModel> existingAppDict = existingAppList.ToDictionary(a => a.Id);
                     if (drive.AppList != null)
                     {
                         foreach (ApplicationModel app in drive.AppList)
@@ -137,19 +139,22 @@ namespace SystemInfoApi.Services
 
                     }
                     // Delete remaining old apps not in the new list
-                    //foreach (var appToDelete in existingAppDict.Values)
-                    //{
-                    //    await appRepository.DeleteAsync(appToDelete.Id, connection, transaction);
-                    //}
+                    foreach (var appToDelete in existingAppDict.Values)
+                    {
+                        ConsoleUtils.LogAppDeletion(appToDelete.Name, appToDelete.Id, existingDrive.Id);
+                        await appRepository.DeleteRelationAsync(
+                            appToDelete.Id, existingDrive.Id, connection, transaction);
+                    }
                     updatedDrivesList.Add(drive);
                     driveIndex++;
                 }
 
                 // Delete remaining old drives not in the new list
-                //foreach (var driveToDelete in existingDrivesDict.Values)
-                //{
-                //    await drivesRepository.DeleteAsync(driveToDelete.Id, connection, transaction);
-                //}
+                foreach (var driveToDelete in existingDrivesDict.Values)
+                {
+                    ConsoleUtils.LogDriveDeletion(driveToDelete.Name, driveToDelete.Id, driveToDelete.SerialNumber);
+                    await drivesRepository.DeleteAsync(driveToDelete.Id, connection, transaction);
+                }
 
                 machine.Drives = updatedDrivesList;
 

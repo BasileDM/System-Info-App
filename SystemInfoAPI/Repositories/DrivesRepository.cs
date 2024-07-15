@@ -157,5 +157,30 @@ namespace SystemInfoApi.Repositories
                 throw new ApplicationException("An error occured inserting the drive history into the database.", ex);
             }
         }
+        public async Task<int> DeleteAsync(int driveId, SqlConnection connection, SqlTransaction transaction)
+        {
+            var dt = db.DrivesTableNames;
+            string query = @$"
+                DELETE FROM {dt.TableName}
+                WHERE {dt.Id} = @driveId;";
+
+            try
+            {
+                object? result;
+                using (SqlCommand cmd = new(query, connection, transaction))
+                {
+                    cmd.Parameters.AddWithValue("@driveId", driveId);
+
+                    result = await cmd.ExecuteScalarAsync();
+                }
+
+                Console.WriteLine($"Result of scalar cmd: {result}"); // remove this and make command nonquery
+                return driveId;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Failed to delete app {driveId}:" + ex);
+            }
+        }
     }
 }

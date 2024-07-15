@@ -126,7 +126,19 @@ namespace SystemInfoApi.Utilities
         {
             WriteLineColored($"Creating new app relation '{appName}' (id {appId}) on drive {appDriveId}.", _creationColor);
         }
-        
+        public static void LogAppDeletion(string appName, int appId, int appDriveId)
+        {
+            WriteLineColored($"Deleting app relation '{appName}' (id {appId}) on drive {appDriveId}.", _deletionColor);
+        }
+        public static void LogDriveCreation(string DriveName, int driveId, string serial)
+        {
+            WriteLineColored($"Creating new drive '{DriveName}' (id: {driveId} | Serial: {serial}).", _creationColor);
+        }
+        public static void LogDriveDeletion(string DriveName, int driveId, string serial)
+        {
+            WriteLineColored($"Deleting drive '{DriveName}' (id: {driveId} | Serial: {serial}).", _deletionColor);
+        }
+
         // Update logs
         public static void LogMachineUpdate(MachineModel machine, DateTime startTime)
         {

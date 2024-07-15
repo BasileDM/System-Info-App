@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using System.Data.SqlClient;
+﻿using System.Data.SqlClient;
 using SystemInfoApi.Classes;
 using SystemInfoApi.Models;
 
@@ -333,22 +332,26 @@ namespace SystemInfoApi.Repositories
                 throw new Exception(ex.Message, ex);
             }
         }
-        public async Task<int> DeleteByIdAsync(SqlConnection connection, SqlTransaction transaction, int appId, int driveId)
+        public async Task<int> DeleteRelationAsync(int appId, int driveId, SqlConnection connection, SqlTransaction transaction)
         {
-            // ----------------------------------------- WIP
-            var dtn = db.ApplicationsTableNames;
+            var appsDrivesRTable = db.AppsDrivesRelationTableNames;
             string query = @$"
-                DELETE FROM {dtn.TableName}
-                WHERE {dtn.Id} = @id;";
-
-            using (SqlCommand cmd = new(query, connection, transaction))
-            {
-                cmd.Parameters.AddWithValue("@id", appId);
-            }
-
+                DELETE FROM {appsDrivesRTable.TableName}
+                WHERE {appsDrivesRTable.AppId} = @appId
+                AND {appsDrivesRTable.DriveId} = @driveId;";
 
             try
             {
+                object? result;
+                using (SqlCommand cmd = new(query, connection, transaction))
+                {
+                    cmd.Parameters.AddWithValue("@appId", appId);
+                    cmd.Parameters.AddWithValue("@driveId", driveId);
+
+                    result = await cmd.ExecuteScalarAsync();
+                }
+
+                Console.WriteLine($"Result of scalar cmd: {result}");// remove this and make command nonquery
                 return appId;
             }
             catch (Exception ex)
