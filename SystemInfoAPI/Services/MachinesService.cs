@@ -1,6 +1,4 @@
-﻿using System.Data.Common;
-using System.Data.SqlClient;
-using System.Transactions;
+﻿using System.Data.SqlClient;
 using SystemInfoApi.Classes;
 using SystemInfoApi.Models;
 using SystemInfoApi.Repositories;
