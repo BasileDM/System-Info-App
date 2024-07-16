@@ -74,14 +74,14 @@ namespace SystemInfoApi.Services
                 // Get the current machine from the DB for comparison.
                 MachineModel existingMachine = await machinesRepository.GetByIdAsync(machine.Id, connection, transaction);
 
-                List<DriveModel> updatedDrivesList = await ProcessDrivesAsync(machine, existingMachine, connection, transaction);
+                List<DriveModel> updatedDrivesList = await ProcessDrivesListAsync(machine, existingMachine, connection, transaction);
 
                 machine.Drives = updatedDrivesList;
 
                 return machine;
             });
 
-            async Task<List<DriveModel>> ProcessDrivesAsync(MachineModel machine, MachineModel existingMachine, SqlConnection connection, SqlTransaction transaction)
+            async Task<List<DriveModel>> ProcessDrivesListAsync(MachineModel machine, MachineModel existingMachine, SqlConnection connection, SqlTransaction transaction)
             {
                 List<DriveModel> updatedDrivesList = [];
                 var existingDrivesDict = existingMachine.Drives.ToDictionary(d => d.SerialNumber); // Serial as alt identifier.
@@ -90,7 +90,7 @@ namespace SystemInfoApi.Services
                 {
                     // Process each drive
                     (DriveModel updatedDrive, existingDrivesDict) = 
-                        await ProcessSingleDriveAsync(drive, machine.Id, existingDrivesDict, connection, transaction);
+                        await ProcessDriveAsync(drive, machine.Id, existingDrivesDict, connection, transaction);
 
                     updatedDrivesList.Add(updatedDrive);
 
@@ -113,7 +113,7 @@ namespace SystemInfoApi.Services
                 return updatedDrivesList;
             }
 
-            async Task<(DriveModel, Dictionary<string, DriveModel>)> ProcessSingleDriveAsync(DriveModel drive, int machineId, Dictionary<string, DriveModel> existingDrivesDict, SqlConnection connection, SqlTransaction transaction)
+            async Task<(DriveModel, Dictionary<string, DriveModel>)> ProcessDriveAsync(DriveModel drive, int machineId, Dictionary<string, DriveModel> existingDrivesDict, SqlConnection connection, SqlTransaction transaction)
             {
                 drive.MachineId = machine.Id;
                 DriveModel updatedDrive;
@@ -199,7 +199,7 @@ namespace SystemInfoApi.Services
 
             async Task DeleteRemainingDrivesAsync(Dictionary<string, DriveModel> existingDrivesDict, SqlConnection connection, SqlTransaction transaction)
             {
-                // Delete remaining old drives not in the new list
+                // Delete remaining leftover drives, which are not in the machine any more
                 foreach (var driveToDelete in existingDrivesDict.Values)
                 {
                     ConsoleUtils.LogDriveDeletion(driveToDelete.Name, driveToDelete.Id, driveToDelete.SerialNumber);
