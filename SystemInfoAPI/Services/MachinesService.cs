@@ -48,6 +48,7 @@ namespace SystemInfoApi.Services
 
                     foreach (ApplicationModel app in drive.AppList)
                     {
+                        // Set driveId on app and insert
                         app.DriveId = updatedDrive.Id;
                         await appRepository.InsertAsync(app, connection, transaction);
 
@@ -83,13 +84,12 @@ namespace SystemInfoApi.Services
 
                 foreach (DriveModel drive in machine.Drives)
                 {
-                    // Process each drive
+                    // Process the drive
                     (DriveModel updatedDrive, existingDrivesDict) = 
                         await ProcessDriveAsync(drive, machine.Id, existingDrivesDict, connection, transaction);
 
                     updatedDrivesList.Add(updatedDrive);
 
-                    // Insert new drive history
                     int historyDriveId = await drivesRepository.InsertHistoryAsync(drive, connection, transaction);
 
                     // Process drive's OS

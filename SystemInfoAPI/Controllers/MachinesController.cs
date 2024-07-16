@@ -10,6 +10,7 @@ namespace SystemInfoApi.Controllers
     [ApiController]
     public class MachinesController(MachinesService machinesService) : ControllerBase
     {
+
         // POST: api/<Machines>/Create
         [Authorize]
         [HttpPost]
