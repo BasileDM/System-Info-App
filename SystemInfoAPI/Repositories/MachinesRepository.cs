@@ -90,18 +90,16 @@ namespace SystemInfoApi.Repositories
         /// <returns>
         ///   A <see cref="List{MachineModel}"/> of instantiated <see cref="MachineModel"/>.
         /// </returns>
-        public async Task<List<MachineModel>> GetAllAsync(SqlConnection connection)
+        public async Task<List<MachineModel>> GetAllAsync(SqlConnection connection, SqlTransaction transaction)
         {
             List<MachineModel> machinesList = [];
 
             try
             {
-                await connection.OpenAsync();
-
                 string query =
                     $"SELECT * FROM {_machinesTable.TableName}";
 
-                using (SqlCommand cmd = new(query, connection))
+                using (SqlCommand cmd = new(query, connection, transaction))
                 {
 
                     using SqlDataReader reader = await cmd.ExecuteReaderAsync();
@@ -115,7 +113,6 @@ namespace SystemInfoApi.Repositories
                         });
                     }
                 }
-                await connection.CloseAsync();
             }
             catch (Exception ex)
             {
@@ -166,7 +163,6 @@ namespace SystemInfoApi.Repositories
                                     drive.Os = CreateOsFromReader(reader);
                                 } 
 
-                                // Add drive to the list of drives
                                 drivesList.Add(drive);
                             }
 
@@ -177,7 +173,6 @@ namespace SystemInfoApi.Repositories
                                 drive.AppList.Add(application);
                             }
                         }
-                        // Add the list of drives to the machine
                         machine.Drives = drivesList;
                     }
                 }

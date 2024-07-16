@@ -22,12 +22,12 @@ namespace SystemInfoClient.Services
         {
             ConsoleUtils.LogMachineRequest();
 
-            // Build HTTP Client and add authorization header with token
+            // Build HTTP Client and add authorization header with token.
             HttpClient client = HttpClientFactory.CreateHttpClient();
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
-            // Serialize machine into JSON content, build route string, and send
-            // If the machine ID is 0 it is a new machine
+            // Serialize machine into JSON content, build route string, and send.
+            // If the machine ID is 0 it is a new machine.
             var content = new StringContent(_machine.JsonSerialize(), Encoding.UTF8, "application/json");
 
             string route = _machine.Id == 0 ?

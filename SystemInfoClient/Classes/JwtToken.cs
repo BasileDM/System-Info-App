@@ -10,6 +10,8 @@ namespace SystemInfoClient.Classes
         public JwtPayload? Payload { get; private set; }
         public string? Signature { get; private set; }
 
+        private JwtToken() { }
+
         public static JwtToken? GetInstance(string jwt)
         {
             string[] parts = jwt.Split('.');
