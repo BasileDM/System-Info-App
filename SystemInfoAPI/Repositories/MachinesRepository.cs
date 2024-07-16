@@ -131,7 +131,7 @@ namespace SystemInfoApi.Repositories
         /// <returns>
         ///   A <see cref="MachineModel"/> instantiated from the data from the DB.
         /// </returns>
-        public async Task<MachineModel> GetByIdAsync(int id, SqlConnection connection)
+        public async Task<MachineModel> GetByIdAsync(int id, SqlConnection connection, SqlTransaction transaction)
         {
             try
             {
@@ -139,12 +139,11 @@ namespace SystemInfoApi.Repositories
                 List<DriveModel> drivesList = [];
                 string query = GetQuery();
 
-                await connection.OpenAsync();
-                using (SqlCommand cmd = new(query, connection))
+                using (SqlCommand cmd = new(query, connection, transaction))
                 {
                     cmd.Parameters.AddWithValue("@Id", id);
-
                     using SqlDataReader reader = await cmd.ExecuteReaderAsync();
+
                     while (await reader.ReadAsync())
                     {
                         machine.Id = Convert.ToInt32(reader["Machine_Id"]);
@@ -164,8 +163,7 @@ namespace SystemInfoApi.Repositories
 
                                 if (drive.IsSystemDrive && reader["Os_Id"] != DBNull.Value)
                                 {
-                                    OsModel os = CreateOsFromReader(reader);
-                                    drive.Os = os;
+                                    drive.Os = CreateOsFromReader(reader);
                                 } 
 
                                 // Add drive to the list of drives
@@ -189,10 +187,6 @@ namespace SystemInfoApi.Repositories
             {
                 throw new ApplicationException($"Could not retrieve data from the database: {ex.Message}. FULL EXCEPTION: {ex}", ex);
             }
-            finally
-            {
-                await connection.CloseAsync();
-            }
 
             string GetQuery()
             {
@@ -207,7 +201,8 @@ namespace SystemInfoApi.Repositories
                         Machine.{_machinesTable.Id} AS Machine_Id,
                         Machine.{_machinesTable.MachineName} AS Machine_Name, 
                         Machine.{_machinesTable.MachineCreationDate} AS Machine_Creation_Date,
-                        Drive.{_drivesTable.Id} AS Drive_Id, 
+                        Drive.{_drivesTable.Id} AS Drive_Id,
+                        Drive.{_drivesTable.SerialNumber},
                         Drive.{_drivesTable.DriveName} AS Drive_Name, 
                         {_drivesTable.RootDirectory}, 
                         {_drivesTable.Label}, 
@@ -275,6 +270,7 @@ namespace SystemInfoApi.Repositories
                 return new DriveModel()
                 {
                     Id = Convert.ToInt32(reader["Drive_Id"]),
+                    SerialNumber = (string)reader[$"{_drivesTable.SerialNumber}"],
                     Name = (string)reader["Drive_Name"],
                     RootDirectory = (string)reader[$"{_drivesTable.RootDirectory}"],
                     Label = (string)reader[$"{_drivesTable.Label}"],

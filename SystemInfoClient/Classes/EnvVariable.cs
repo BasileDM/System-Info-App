@@ -1,6 +1,7 @@
 ﻿using System.Runtime.Versioning;
 using System.Text;
 using SystemInfoClient.Services;
+using SystemInfoClient.Utilities;
 
 namespace SystemInfoClient.Classes
 {
@@ -42,16 +43,26 @@ namespace SystemInfoClient.Classes
             _decodedValue = GetDecodedValue();
 
             string[] splitValue = _decodedValue.Split(";");
-            if (splitValue.Length > 1)
-            {
-                Token = JwtToken.GetInstance(splitValue[1]);
-            }
+            //if (splitValue.Length > 1)
+            //{
+            //    Token = JwtToken.GetInstance(splitValue[1]);
+            //}
         }
 
         private void SetDecodedValueAndStoreEncoded(string value)
         {
             _decodedValue = value;
-            Environment.SetEnvironmentVariable(_envName, EncodeString(value), EnvironmentVariableTarget.User);
+            ConsoleUtils.StartLogEnvVariableSetting();
+
+            try
+            {
+                Environment.SetEnvironmentVariable(_envName, EncodeString(value), EnvironmentVariableTarget.User);
+            }
+            catch (Exception)
+            {
+                ConsoleUtils.StopLogEnvVariableSetting(false);
+            }
+            ConsoleUtils.StopLogEnvVariableSetting(true);
         }
         private string GetDecodedValue()
         {
@@ -87,7 +98,6 @@ namespace SystemInfoClient.Classes
             {
                 wasDecoded = true;
                 string unflagged = encodedString.Substring(_flag.Length);
-                Console.WriteLine($"Decoding env variable...");
                 byte[] bytes;
 
                 try
@@ -102,8 +112,7 @@ namespace SystemInfoClient.Classes
                 }
 
                 string decoded = Encoding.UTF8.GetString(bytes);
-                Console.WriteLine($"Flag found, removed, and string decoded:");
-                Console.WriteLine(decoded + "\r\n");
+                ConsoleUtils.LogEnvDecodingProcess(decoded);
 
                 // Checking inner flag for the edge case where the clear password started with the flag
                 if (decoded.StartsWith(_flag))
@@ -121,7 +130,8 @@ namespace SystemInfoClient.Classes
             else
             {
                 wasDecoded = false;
-                Console.WriteLine($"Flag not detected, not decoding.");
+                if (ConsoleUtils._logDecodingProcess) 
+                    Console.WriteLine($"Flag not detected, not decoding.");
                 return encodedString;
             }
         }

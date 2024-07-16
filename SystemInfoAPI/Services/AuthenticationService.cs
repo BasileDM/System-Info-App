@@ -1,7 +1,9 @@
 ﻿using Konscious.Security.Cryptography;
 using Microsoft.IdentityModel.Tokens;
+using System.Diagnostics;
 using System.IdentityModel.Tokens.Jwt;
 using System.Text;
+using SystemInfoApi.Utilities;
 
 namespace SystemInfoApi.Services
 {
@@ -11,11 +13,13 @@ namespace SystemInfoApi.Services
         {
             try
             {
+                Stopwatch stopwatch = new();
+                stopwatch.Start();
+
                 var (Hash, Salt) = DecodeSaltAndHash(providedHash, 16, 64);
                 string providedPass = Hash;
                 byte[] providedSalt = Salt;
-                Console.WriteLine($"Provided pass hash: {providedPass}");
-                Console.WriteLine($"Provided salt: {Convert.ToHexString(providedSalt)}");
+                ConsoleUtils.LogHashSalt(providedPass, providedSalt);
 
                 var argon2 = new Argon2id(Encoding.UTF8.GetBytes(pass))
                 {
@@ -30,12 +34,14 @@ namespace SystemInfoApi.Services
 
                 if (SecureCompare(providedPass, computedPass))
                 {
-                    Console.WriteLine("Password is valid.");
+                    ConsoleUtils.WriteColored("Password is valid.", ConsoleUtils._successColor);
+                    ConsoleUtils.LogPassProcessTime(stopwatch);
                     return true;
                 }
                 else
                 {
-                    Console.WriteLine("Invalid password.");
+                    ConsoleUtils.WriteLineColored("Invalid password.", ConsoleUtils._errorColor);
+                    ConsoleUtils.LogPassProcessTime(stopwatch);
                     return false;
                 }
             }
@@ -85,15 +91,15 @@ namespace SystemInfoApi.Services
                 var secretKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret));
                 var credentials = new SigningCredentials(secretKey, SecurityAlgorithms.HmacSha256);
 
-                var SecurityToken = new JwtSecurityToken(
+                var securityToken = new JwtSecurityToken(
                     issuer: issuer,
                     expires: DateTime.UtcNow.AddMinutes(expirationTime),
                     signingCredentials: credentials);
 
-                Console.WriteLine($"Encoding token content:\r\n{SecurityToken}");
-                string encodedToken = new JwtSecurityTokenHandler().WriteToken(SecurityToken);
-                Console.WriteLine($"Sending encoded token:\r\n{encodedToken}");
+                ConsoleUtils.LogTokenContent(securityToken);
+                string encodedToken = new JwtSecurityTokenHandler().WriteToken(securityToken);
 
+                ConsoleUtils.LogSendingToken(encodedToken);
                 return encodedToken;
             }
             catch (ArgumentNullException ex)

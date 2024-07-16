@@ -36,43 +36,55 @@ namespace SystemInfoClient.Classes.System
 
         public AppClass(KeyValuePair<string, ApplicationSettings> appSettings)
         {
-            Id = appSettings.Value.ParsedId;
-            Name = appSettings.Key;
+            try
+            {
+                Id = appSettings.Value.ParsedId;
+                Name = appSettings.Key;
 
-            if (appSettings.Value.Path != null && File.Exists(appSettings.Value.Path))
-            {
-                FileVersionInfo fileVersionInfo = FileVersionInfo.GetVersionInfo(appSettings.Value.Path);
-                Comments = fileVersionInfo.Comments;
-                CompanyName = fileVersionInfo.CompanyName;
-                FileBuildPart = fileVersionInfo.FileBuildPart;
-                FileDescription = fileVersionInfo.FileDescription;
-                FileMajorPart = fileVersionInfo.FileMajorPart;
-                FileMinorPart = fileVersionInfo.FileMinorPart;
-                FileName = fileVersionInfo.FileName;
-                FilePrivatePart = fileVersionInfo.FilePrivatePart;
-                FileVersion = fileVersionInfo.FileVersion;
-                InternalName = fileVersionInfo.InternalName;
-                IsDebug = fileVersionInfo.IsDebug;
-                IsPatched = fileVersionInfo.IsPatched;
-                IsPreRelease = fileVersionInfo.IsPreRelease;
-                IsPrivateBuild = fileVersionInfo.IsPrivateBuild;
-                IsSpecialBuild = fileVersionInfo.IsSpecialBuild;
-                Language = fileVersionInfo.Language;
-                LegalCopyright = fileVersionInfo.LegalCopyright;
-                LegalTrademarks = fileVersionInfo.LegalTrademarks;
-                OriginalFilename = fileVersionInfo.OriginalFilename;
-                PrivateBuild = fileVersionInfo.PrivateBuild;
-                ProductBuildPart = fileVersionInfo.ProductBuildPart;
-                ProductMajorPart = fileVersionInfo.ProductMajorPart;
-                ProductMinorPart = fileVersionInfo.ProductMinorPart;
-                ProductName = fileVersionInfo.ProductName;
-                ProductPrivatePart = fileVersionInfo.ProductPrivatePart;
-                ProductVersion = fileVersionInfo.ProductVersion;
-                SpecialBuild = fileVersionInfo.SpecialBuild;
+                if (appSettings.Value.Path != null && File.Exists(appSettings.Value.Path))
+                {
+                    FileVersionInfo fileVersionInfo = FileVersionInfo.GetVersionInfo(appSettings.Value.Path);
+                    Comments = fileVersionInfo.Comments;
+                    CompanyName = fileVersionInfo.CompanyName;
+                    FileBuildPart = fileVersionInfo.FileBuildPart;
+                    FileDescription = fileVersionInfo.FileDescription;
+                    FileMajorPart = fileVersionInfo.FileMajorPart;
+                    FileMinorPart = fileVersionInfo.FileMinorPart;
+                    FileName = fileVersionInfo.FileName;
+                    FilePrivatePart = fileVersionInfo.FilePrivatePart;
+                    FileVersion = fileVersionInfo.FileVersion;
+                    InternalName = fileVersionInfo.InternalName;
+                    IsDebug = fileVersionInfo.IsDebug;
+                    IsPatched = fileVersionInfo.IsPatched;
+                    IsPreRelease = fileVersionInfo.IsPreRelease;
+                    IsPrivateBuild = fileVersionInfo.IsPrivateBuild;
+                    IsSpecialBuild = fileVersionInfo.IsSpecialBuild;
+                    Language = fileVersionInfo.Language;
+                    LegalCopyright = fileVersionInfo.LegalCopyright;
+                    LegalTrademarks = fileVersionInfo.LegalTrademarks;
+                    OriginalFilename = fileVersionInfo.OriginalFilename;
+                    PrivateBuild = fileVersionInfo.PrivateBuild;
+                    ProductBuildPart = fileVersionInfo.ProductBuildPart;
+                    ProductMajorPart = fileVersionInfo.ProductMajorPart;
+                    ProductMinorPart = fileVersionInfo.ProductMinorPart;
+                    ProductName = fileVersionInfo.ProductName;
+                    ProductPrivatePart = fileVersionInfo.ProductPrivatePart;
+                    ProductVersion = fileVersionInfo.ProductVersion;
+                    SpecialBuild = fileVersionInfo.SpecialBuild;
+                }
+                else
+                {
+                    throw new FileNotFoundException(
+                        $"WARNING: File not found for {appSettings.Key}, on path: {appSettings.Value.Path}. Skipping app.");
+                }
             }
-            else
+            catch (FileNotFoundException ex)
             {
-                throw new FileNotFoundException($"File not found for application: {appSettings.Value}, with path: {appSettings.Value.Path}");
+                throw new FileNotFoundException(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                throw new ApplicationException("Error instantiating the machine's applications." + ex, ex);
             }
         }
         public void LogInfo()

@@ -2,6 +2,7 @@
 using SystemInfoApi.Classes;
 using SystemInfoApi.Models;
 using SystemInfoApi.Repositories;
+using SystemInfoApi.Utilities;
 
 namespace SystemInfoApi.Services
 {
@@ -68,65 +69,148 @@ namespace SystemInfoApi.Services
             {
                 await machinesRepository.UpdateAsync(machine, connection, transaction);
 
-                int[] driveHistoryIds = new int[machine.Drives.Count];
+                // Get the current machine from the DB for comparison.
+                MachineModel existingMachine = await machinesRepository.GetByIdAsync(machine.Id, connection, transaction);
 
-                // Update machine's drives list
-                List<DriveModel> updatedDrivesList = [];
-                foreach(DriveModel drive in machine.Drives)
-                {
-                    // Update drive with machine Id and drive Id
-                    drive.MachineId = machine.Id;
-                    DriveModel updatedDrive = await drivesRepository.UpdateAsync(drive, connection, transaction);
-                    drive.Id = updatedDrive.Id;
+                List<DriveModel> updatedDrivesList = await ProcessDrivesListAsync(machine, existingMachine, connection, transaction);
 
-                    // Create drive history
-                    int historyDriveId = await drivesRepository.InsertHistoryAsync(drive, connection, transaction);
-
-                    // Update drive's OS with drive ID and OS Id
-                    if (drive.IsSystemDrive && drive.Os != null) 
-                    {
-                        drive.Os.DriveId = drive.Id;
-                        OsModel updatedOs = await osRepository.UpdateAsync(drive.Os, connection, transaction);
-                        drive.Os.Id = updatedOs.Id;
-
-                        // Create OS history
-                        await osRepository.InsertHistoryAsync(drive.Os, connection, transaction, historyDriveId);
-                    }
-
-                    // Update each drive's app with drive Id
-                    if (drive.AppList != null)
-                    {
-                        foreach (ApplicationModel app in drive.AppList)
-                        {
-                            app.DriveId = drive.Id;
-
-                            // Check if the app already has a relation with this drive
-                            // If not, create instead of update
-                            if (!await appRepository.DoesAppDriveRelationExist(app.Id, app.DriveId, connection, transaction))
-                            {
-                                Console.WriteLine($"App {app.Name} with id n°{app.Id} is new on drive {app.DriveId}. Inserting a new relation.");
-                                await appRepository.InsertAsync(app, connection, transaction);
-                            }
-                            else
-                            {
-                                await appRepository.UpdateAsync(app, connection, transaction);
-                            }
-                            // Create app history
-                            await appRepository.InsertHistoryAsync(app, connection, transaction, historyDriveId);
-                        } 
-                    }
-                    updatedDrivesList.Add(drive);
-                }
                 machine.Drives = updatedDrivesList;
-                Console.WriteLine($"Machine {machine.Id} has been updated.");
 
                 return machine;
             });
+
+            async Task<List<DriveModel>> ProcessDrivesListAsync(MachineModel machine, MachineModel existingMachine, SqlConnection connection, SqlTransaction transaction)
+            {
+                List<DriveModel> updatedDrivesList = [];
+                var existingDrivesDict = existingMachine.Drives.ToDictionary(d => d.SerialNumber); // Serial as alt identifier.
+
+                foreach (DriveModel drive in machine.Drives)
+                {
+                    // Process each drive
+                    (DriveModel updatedDrive, existingDrivesDict) = 
+                        await ProcessDriveAsync(drive, machine.Id, existingDrivesDict, connection, transaction);
+
+                    updatedDrivesList.Add(updatedDrive);
+
+                    // Insert new drive history
+                    int historyDriveId = await drivesRepository.InsertHistoryAsync(drive, connection, transaction);
+
+                    // Process drive's OS
+                    await ProcessOsAsync(drive, historyDriveId, connection, transaction);
+
+                    // Process drive's Apps
+                    if (drive.AppList != null)
+                    {
+                        var existingDrive = existingMachine.Drives.FirstOrDefault(ed => ed.SerialNumber == drive.SerialNumber);
+                        await ProcessAppsAsync(drive, existingDrive, historyDriveId, connection, transaction);
+                    }
+                }
+
+                await DeleteRemainingDrivesAsync(existingDrivesDict, connection, transaction);
+
+                return updatedDrivesList;
+            }
+
+            async Task<(DriveModel, Dictionary<string, DriveModel>)> ProcessDriveAsync(DriveModel drive, int machineId, Dictionary<string, DriveModel> existingDrivesDict, SqlConnection connection, SqlTransaction transaction)
+            {
+                drive.MachineId = machine.Id;
+                DriveModel updatedDrive;
+
+                // If one of the drives in the database has this drive's serial number...
+                if (existingDrivesDict.ContainsKey(drive.SerialNumber))
+                {
+                    // ...update it and remove it from the dictionary (so we can tell it has been processed).
+                    updatedDrive = await drivesRepository.UpdateAsync(drive, connection, transaction);
+                    existingDrivesDict.Remove(drive.SerialNumber);
+                }
+                else
+                {
+                    // Otherwise create a new one.
+                    ConsoleUtils.LogDriveCreation(drive.Name, drive.SerialNumber);
+                    updatedDrive = await drivesRepository.InsertAsync(drive, connection, transaction);
+                }
+
+                drive.Id = updatedDrive.Id;
+                return (updatedDrive, existingDrivesDict);
+            }
+
+            async Task ProcessOsAsync(DriveModel drive, int historyDriveId, SqlConnection connection, SqlTransaction transaction)
+            {
+                if (drive.IsSystemDrive && drive.Os != null)
+                {
+                    drive.Os.DriveId = drive.Id;
+                    OsModel updatedOs = await osRepository.UpdateAsync(drive.Os, connection, transaction);
+                    drive.Os.Id = updatedOs.Id;
+
+                    // Create OS history
+                    await osRepository.InsertHistoryAsync(drive.Os, connection, transaction, historyDriveId);
+                }
+            }
+
+            async Task ProcessAppsAsync(DriveModel drive, DriveModel? existingDrive, int historyDriveId, SqlConnection connection, SqlTransaction transaction)
+            {
+                // If the drive already exists we can do comparisons
+                if (existingDrive != null)
+                {
+                    var existingAppsDict = existingDrive?.AppList?.ToDictionary(app => app.Id) ?? new Dictionary<int, ApplicationModel>();
+
+                    foreach (ApplicationModel app in drive.AppList)
+                    {
+                        app.DriveId = drive.Id;
+
+                        // Check if the app already has a relation with this drive
+                        // If not, create instead of update
+                        if (existingAppsDict != null && existingAppsDict.ContainsKey(app.Id))
+                        {
+                            await appRepository.UpdateAsync(app, connection, transaction);
+                            existingAppsDict.Remove(app.Id);
+                        }
+                        else
+                        {
+                            ConsoleUtils.LogAppCreation(app.Name, app.Id, app.DriveId);
+                            await appRepository.InsertAsync(app, connection, transaction);
+                        }
+                        await appRepository.InsertHistoryAsync(app, connection, transaction, historyDriveId);
+                    }
+
+                    // Delete remaining old apps not in the new list
+                    foreach (var appToDelete in existingAppsDict.Values)
+                    {
+                        ConsoleUtils.LogAppDeletion(appToDelete.Name, appToDelete.Id, existingDrive.Id);
+                        await appRepository.DeleteDriveRelationAsync(appToDelete.Id, existingDrive.Id, connection, transaction);
+                    } 
+                }
+                // If the existing drive is null, the current drive is a new one, and we can create all the apps
+                else
+                {
+                    foreach (ApplicationModel app in drive.AppList)
+                    {
+                        app.DriveId = drive.Id;
+                        ConsoleUtils.LogAppCreation(app.Name, app.Id, app.DriveId);
+                        await appRepository.InsertAsync(app, connection, transaction);
+
+                        // Create app history
+                        await appRepository.InsertHistoryAsync(app, connection, transaction, historyDriveId);
+                    }
+                }
+            }
+
+            async Task DeleteRemainingDrivesAsync(Dictionary<string, DriveModel> existingDrivesDict, SqlConnection connection, SqlTransaction transaction)
+            {
+                // Delete remaining leftover drives, which are not in the machine any more
+                foreach (var driveToDelete in existingDrivesDict.Values)
+                {
+                    ConsoleUtils.LogDriveDeletion(driveToDelete.Name, driveToDelete.Id, driveToDelete.SerialNumber);
+                    await drivesRepository.DeleteAsync(driveToDelete.Id, connection, transaction);
+                }
+            }
         }
         public async Task<MachineModel> GetByIdAsync(int machineId)
         {
-            await using SqlConnection connection = CreateConnection();
-            return await machinesRepository.GetByIdAsync(machineId, connection);
+            return await MakeTransactionAsync(async (connection, transaction) =>
+            {
+                return await machinesRepository.GetByIdAsync(machineId, connection, transaction);
+            });
         }
         public async Task<List<MachineModel>> GetAllAsync()
         {

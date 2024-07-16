@@ -1,4 +1,5 @@
 {
+  "MachineId": "13",
   "CustomerId": "1",
   "ApiUrl": "https://localhost:7056/",
   "ApplicationsList": {
@@ -17,6 +18,10 @@
     "WinRAR": {
       "Id": "4",
       "Path": "D:\\Program Files\\WinRAR\\WinRAR.exe"
+    },
+    "aaa": {
+      "Id": "3",
+      "Path": "E:\\Program Files\\WinRAR\\WinRAR.exe"
     }
   }
 }

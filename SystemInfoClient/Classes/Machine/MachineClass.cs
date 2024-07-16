@@ -1,5 +1,6 @@
 ﻿using System.Runtime.Versioning;
 using System.Text.Json;
+using SystemInfoClient.Utilities;
 
 namespace SystemInfoClient.Classes.System
 {
@@ -26,33 +27,22 @@ namespace SystemInfoClient.Classes.System
 
                 foreach (var drive in DriveInfo.GetDrives())
                 {
-                    List<AppClass> driveAppsList = [];
+                    if (!drive.IsReady)
+                    {
+                        ConsoleUtils.WriteLColored($"Drive {drive.Name} was not ready. Skipping drive.", ConsoleUtils._warningColor);
+                        break;
+                    }
 
-                    if (drive.IsReady)
-                    {
-                        if (settings.ApplicationsList != null)
-                        {
-                            foreach (var appSettings in settings.ApplicationsList)
-                            {
-                                if (appSettings.Value.Path != null && appSettings.Value.Path.Contains(drive.RootDirectory.ToString()))
-                                {
-                                    AppClass appClass = new(appSettings);
-                                    driveAppsList.Add(appClass);
-                                }
-                            }
-                        }
-                        bool isSystemDriveBool = drive.Name == systemDrive;
-                        Drives.Add(new DriveClass(drive, isSystemDriveBool, driveAppsList));
-                    }
-                    else
-                    {
-                        throw new DriveNotFoundException("Error with drive ready state.");
-                    }
+                    bool isSystemDriveBool = drive.RootDirectory.ToString() == systemDrive;
+                    Drives.Add
+                    (
+                        new DriveClass(drive, isSystemDriveBool, settings)
+                    );
                 }
             }
             catch (Exception ex)
             {
-                throw new ApplicationException("Error instantiating the machine.", ex);
+                throw new ApplicationException("Error instantiating the machine." + ex , ex);
             }
         }
 
