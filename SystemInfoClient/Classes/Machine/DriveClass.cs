@@ -1,5 +1,6 @@
 ﻿using System.Runtime.Versioning;
 using System.Management;
+using SystemInfoClient.Utilities;
 
 namespace SystemInfoClient.Classes.System
 {
@@ -20,7 +21,7 @@ namespace SystemInfoClient.Classes.System
         public OsClass? Os { get; set; }
         public List<AppClass> AppList { get; set; }
 
-        public DriveClass(DriveInfo drive, bool isSystemDrive, List<AppClass> appList)
+        public DriveClass(DriveInfo drive, bool isSystemDrive, Settings settings)
         {
             try
             {
@@ -36,7 +37,7 @@ namespace SystemInfoClient.Classes.System
                 FreeSpacePercentage = CalculateFreeSpacePercentage(drive.AvailableFreeSpace, drive.TotalSize);
                 IsSystemDrive = isSystemDrive;
                 Os = IsSystemDrive ? new OsClass() : null;
-                AppList = appList;
+                AppList = GetAppList(settings);
             }
             catch (Exception ex)
             {
@@ -44,6 +45,31 @@ namespace SystemInfoClient.Classes.System
             }
         }
 
+        public List<AppClass> GetAppList(Settings settings)
+        {
+            List<AppClass> appList = [];
+
+            if (settings.ApplicationsList != null)
+            {
+                foreach (var appSettings in settings.ApplicationsList)
+                {
+                    if (appSettings.Value.Path != null && appSettings.Value.Path.Contains(RootDirectory.ToString()))
+                    {
+                        try
+                        {
+                            AppClass appClass = new(appSettings);
+                            appList.Add(appClass);
+                        }
+                        catch (FileNotFoundException ex)
+                        {
+                            // Just skip the app if the path was not found.
+                            ConsoleUtils.WriteLColored(ex.Message, ConsoleUtils._warningColor);
+                        }
+                    }
+                }
+            }
+            return appList;
+        }
         public void LogInfo()
         {
             Console.WriteLine($"  Drive Name: {Name}");
@@ -84,12 +110,12 @@ namespace SystemInfoClient.Classes.System
             try
             {
                 string serialNumber = string.Empty;
-                ManagementObjectSearcher searcher = 
+                ManagementObjectSearcher searcher =
                     new($"SELECT * FROM Win32_LogicalDisk WHERE DeviceID='{drive.Name.Replace("\\", "")}'");
 
                 foreach (ManagementObject disk in searcher.Get().Cast<ManagementObject>())
                 {
-                    serialNumber = disk["VolumeSerialNumber"].ToString() ?? 
+                    serialNumber = disk["VolumeSerialNumber"].ToString() ??
                         throw new Exception("Failed to retrieve the drive serial number: ");
                     break;
                 }

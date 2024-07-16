@@ -14,16 +14,18 @@ namespace SystemInfoApi
         {
             try
             {
+                // Timers for performance monitoring
                 var startTime = DateTime.Now;
+                ConsoleUtils.StartWatch();
 
                 // Instanciate required objects and services
-                ConsoleUtils.StartWatch();
-                Settings settings = Settings.GetInstance();
                 EnvVariable env = new("SysInfoApp");
+                Settings settings = Settings.GetInstance();
+
                 MachineClass machine = new(settings);
-                SecurityService security = new(settings.ApiUrl, env);
 
                 MachineService machineService = new(settings.ApiUrl, machine);
+                SecurityService security = new(settings.ApiUrl, env);
 
                 // Fetch JWT token
                 JwtToken token = await security.GetTokenAsync();

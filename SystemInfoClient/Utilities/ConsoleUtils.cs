@@ -21,7 +21,7 @@ namespace SystemInfoClient.Utilities
 
         public readonly static ConsoleColor _requestColor = ConsoleColor.Yellow;
         public readonly static ConsoleColor _creationColor = ConsoleColor.Green;
-        public readonly static ConsoleColor _updateColor = ConsoleColor.DarkYellow;
+        public readonly static ConsoleColor _updateColor = ConsoleColor.Green;
         public readonly static ConsoleColor _deletionColor = ConsoleColor.DarkRed;
 
         public readonly static ConsoleColor _successColor = ConsoleColor.Green;
