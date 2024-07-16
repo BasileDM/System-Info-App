@@ -79,12 +79,12 @@ namespace SystemInfoApi.Repositories
                         {dtn.IsSystemDrive} = @isSystemDrive,
                         {dtn.DriveCreationDate} = @creationDate
                     WHERE {dtn.MachineId} = @machineId
-                    AND {dtn.DriveName} = @driveName
+                    AND {dtn.SerialNumber} = @serial
 
                     SELECT {dtn.Id}
                     FROM {dtn.TableName}
                     WHERE {dtn.MachineId} = @machineId 
-                    AND {dtn.DriveName} = @driveName";
+                    AND {dtn.SerialNumber} = @serial";
 
                 using (SqlCommand cmd = new(query, connection, transaction))
                 {
