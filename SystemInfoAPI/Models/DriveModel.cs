@@ -3,6 +3,7 @@
     public class DriveModel
     {
         public int Id { get; set; }
+        public string SerialNumber { get; set; }
         public string Name { get; set; }
         public string RootDirectory { get; set; }
         public string? Label { get; set; }

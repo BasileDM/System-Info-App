@@ -22,7 +22,8 @@ namespace SystemInfoApi.Controllers
         {
             try
             {
-                ConsoleUtils.LogAuthRequestInfo(request, HttpContext.Connection);
+                var startTime = DateTime.Now.ToLocalTime();
+                ConsoleUtils.LogAuthRequest(request, HttpContext.Connection, startTime);
 
                 string validPass = AuthenticationService.ValidateApiPassSetting(_config["ApiPassword"]);
                 string validSecret = AuthenticationService.ValidateSecretSetting(_config["Jwt:Secret"]);

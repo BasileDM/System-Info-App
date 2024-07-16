@@ -25,6 +25,7 @@ CREATE TABLE Client_Machine_Disque
 (
   id_client_machine_disque   int          NOT NULL IDENTITY(1,1),
   id_client_machine          int          NOT NULL,
+  Numero_Serie_Logique       varchar(32)  NOT NULL,
   Nom_Disque                 varchar(255) NOT NULL,
   Dossier_Racine             varchar(255) NOT NULL,
   Label                      varchar(255),
@@ -56,6 +57,7 @@ CREATE TABLE Client_Machine_Disque_Historique
 (
   id_client_machine_disque_historique int          NOT NULL IDENTITY(1,1),
   id_client_machine                   int          NOT NULL,
+  Numero_Serie_Logique                varchar(32)  NOT NULL,
   Nom_Disque                          varchar(255) NOT NULL,
   Dossier_Racine                      varchar(255) NOT NULL,
   Label                               varchar(255),

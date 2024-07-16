@@ -14,12 +14,18 @@ namespace SystemInfoApi
         {
             try
             {
+                // Timers for performance monitoring
+                var startTime = DateTime.Now;
+                ConsoleUtils.StartWatch();
+
                 // Instanciate required objects and services
-                Settings settings = Settings.GetInstance();
                 EnvVariable env = new("SysInfoApp");
+                Settings settings = Settings.GetInstance();
+
                 MachineClass machine = new(settings);
-                SecurityService security = new(settings.ApiUrl, env);
+
                 MachineService machineService = new(settings.ApiUrl, machine);
+                SecurityService security = new(settings.ApiUrl, env);
 
                 // Fetch JWT token
                 JwtToken token = await security.GetTokenAsync();
@@ -28,7 +34,7 @@ namespace SystemInfoApi
                 HttpResponseMessage response = await machineService.SendMachineInfoAsync(token.GetString());
 
                 // Handle API response
-                await HandleResponseAsync(response, settings, security, machineService);
+                await HandleResponseAsync(response, settings, security, machineService, startTime);
             }
             catch (Exception ex)
             {
@@ -37,7 +43,7 @@ namespace SystemInfoApi
         }
 
         private static async Task HandleResponseAsync(
-            HttpResponseMessage response, Settings settings, SecurityService security, MachineService machineService)
+            HttpResponseMessage response, Settings settings, SecurityService security, MachineService machineService, DateTime startTime)
         {
             try
             {
@@ -79,6 +85,7 @@ namespace SystemInfoApi
                         Console.WriteLine($"{response.ReasonPhrase}: {errorContent}");
                         break;
                 }
+                ConsoleUtils.LogTotalExecutionTime(startTime);
             }
             catch (Exception ex)
             {

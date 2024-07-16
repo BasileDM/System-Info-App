@@ -32,7 +32,6 @@ namespace SystemInfoClient.Classes
                 Payload = payload,
                 Signature = signature
             };
-
             return token;
         }
         private static string Base64UrlDecode(string base64Url)

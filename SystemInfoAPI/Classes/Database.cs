@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Data.SqlClient;
+﻿using System.Data.SqlClient;
 using SystemInfoApi.Utilities;
 
 namespace SystemInfoApi.Classes
@@ -138,42 +137,32 @@ namespace SystemInfoApi.Classes
             await connection.OpenAsync();
             var transaction = connection.BeginTransaction();
             connection.StatisticsEnabled = true;
-            Console.WriteLine("\r\nNew database transaction initiated.");
-
-            var currentColor = Console.ForegroundColor;
+            if (ConsoleUtils._logTransactionNotice) Console.WriteLine("New database transaction initiated...");
 
             try
             {
                 T result = await operation(connection, transaction);
                 await transaction.CommitAsync();
-                ConsoleUtils.WriteColored("Database transaction successful.", ConsoleColor.Green);
+                ConsoleUtils.LogTransactionStats(connection);
                 return result;
             }
             catch (ArgumentException ex)
             {
                 await transaction.RollbackAsync();
-                ConsoleUtils.WriteColored("Rolling back transaction due to an argument error:\r\n" + ex.Message, ConsoleColor.Red);
+                ConsoleUtils.WriteLineColored("Rolling back transaction due to an argument error:\r\n" + ex, ConsoleUtils._errorColor);
                 throw new ArgumentException("Error finalising the transaction with the database.", ex.Message);
             }
             catch (Exception ex)
             {
                 await transaction.RollbackAsync();
 
-                ConsoleUtils.WriteColored("Rolling back transaction due to an argument error:\r\n" + ex.Message, ConsoleColor.Red);
+                ConsoleUtils.WriteLineColored("Rolling back transaction due to an unexpected error:\r\n" + ex, ConsoleUtils._errorColor);
                 throw new ApplicationException("Error finalising the transaction with the database.", ex);
             }
             finally
             {
                 await transaction.DisposeAsync();
                 await connection.CloseAsync();
-
-                // Display connection stats
-                var stats = connection.RetrieveStatistics();
-                foreach (DictionaryEntry stat in stats)
-                {
-                    Console.WriteLine($"{stat.Key} : {stat.Value}");
-                }
-                Console.WriteLine();
             }
         }
     }
@@ -197,6 +186,7 @@ namespace SystemInfoApi.Classes
         public string TableName { get; } = "Client_Machine_Disque";
         public string Id { get; } = "id_client_machine_disque";
         public string MachineId { get; } = "id_client_machine";
+        public string SerialNumber { get; } = "Numero_Serie_Logique";
         public string DriveName { get; } = "Nom_Disque";
         public string RootDirectory { get; } = "Dossier_Racine";
         public string Label { get; } = "Label";
@@ -268,6 +258,7 @@ namespace SystemInfoApi.Classes
         public string TableName { get; } = "Client_Machine_Disque_Historique";
         public string Id { get; } = "id_client_machine_disque_historique";
         public string MachineId { get; } = "id_client_machine";
+        public string SerialNumber { get; } = "Numero_Serie_Logique";
         public string DriveName { get; } = "Nom_Disque";
         public string RootDirectory { get; } = "Dossier_Racine";
         public string Label { get; } = "Label";
