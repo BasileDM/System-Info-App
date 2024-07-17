@@ -83,10 +83,10 @@ namespace SystemInfoClient.Classes
     internal class JwtHeader
     {
         [JsonPropertyName("alg")]
-        public string Alg { get; set; }
+        public string Alg { get; set; } = string.Empty;
 
         [JsonPropertyName("typ")]
-        public string Typ { get; set; }
+        public string Typ { get; set; } = string.Empty;
     }
     internal class JwtPayload
     {
@@ -94,6 +94,6 @@ namespace SystemInfoClient.Classes
         public int Exp { get; set; }
 
         [JsonPropertyName("iss")]
-        public string Iss { get; set; }
+        public string Iss { get; set; } = string.Empty;
     }
 }

@@ -3,7 +3,7 @@
     public class ApplicationModel
     {
         public int Id { get; set; }
-        public string Name { get; set; }
+        public string Name { get; set; } = "App name not provided";
         public string? Comments { get; set; }
         public string? CompanyName { get; set; }
         public int FileBuildPart { get; set; }

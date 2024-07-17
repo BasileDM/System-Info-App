@@ -54,6 +54,6 @@ namespace SystemInfoApi.Controllers
     public class AuthRequest
     {
         [Required]
-        public string Pass { get; set; }
+        public string Pass { get; set; } = string.Empty;
     }
 }
