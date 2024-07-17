@@ -1,5 +1,4 @@
 {
-  "MachineId": "1",
   "CustomerId": "1",
   "ApiUrl": "https://localhost:7056/",
   "ApplicationsList": {
@@ -13,11 +12,23 @@
     },
     "Chrome": {
       "Id": "3",
-      "Path": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"
+      "Path": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.ex"
+    },
+    "Edge": {
+      "Id": "4",
+      "Path": "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.ex"
+    },
+    "SSMS19": {
+      "Id": "5",
+      "Path": "C:\\Program Files (x86)\\Microsoft SQL Server Management Studio 19\\Common7\\IDE\\Ssms.exe"
     },
     "WinRAR": {
-      "Id": "4",
+      "Id": "6",
       "Path": "D:\\Program Files\\WinRAR\\WinRAR.exe"
+    },
+    "SSMSSetup": {
+      "Id": "7",
+      "Path": "E:\\SSMS-Setup-FRA.exe"
     }
   }
-}
+} 
