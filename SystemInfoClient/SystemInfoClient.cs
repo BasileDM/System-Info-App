@@ -27,10 +27,10 @@ namespace SystemInfoApi
                 MachineService machineService = new(settings.ApiUrl, machine);
                 SecurityService security = new(settings.ApiUrl, env);
 
-                // Fetch JWT token
+                // Fetch token
                 JwtToken token = await security.GetTokenAsync();
 
-                // Send machine info to API route
+                // Send machine info to API
                 HttpResponseMessage response = await machineService.SendMachineInfoAsync(token.GetString());
 
                 // Handle API response

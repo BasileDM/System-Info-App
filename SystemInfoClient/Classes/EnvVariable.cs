@@ -41,12 +41,6 @@ namespace SystemInfoClient.Classes
             _envName = envName;
             _flag = "54a7dV4o87.";
             _decodedValue = GetDecodedValue();
-
-            string[] splitValue = _decodedValue.Split(";");
-            //if (splitValue.Length > 1)
-            //{
-            //    Token = JwtToken.GetInstance(splitValue[1]);
-            //}
         }
 
         private void SetDecodedValueAndStoreEncoded(string value)
