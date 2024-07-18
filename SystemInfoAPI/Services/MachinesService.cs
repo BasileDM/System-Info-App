@@ -28,25 +28,25 @@ namespace SystemInfoApi.Services
                 MachineModel updatedMachine = await machinesRepository.InsertAsync(machine, connection, transaction);
                 List<DriveModel> updatedDrivesList = [];
 
-                foreach (DriveModel drive in machine.Drives)
+                foreach (DriveModel drive in updatedMachine.Drives)
                 {
                     // Set new machineId on drive and insert
                     drive.MachineId = updatedMachine.Id;
                     DriveModel updatedDrive = await drivesRepository.InsertAsync(drive, connection, transaction);
 
-                    int historyDriveId = await drivesRepository.InsertHistoryAsync(drive, connection, transaction);
+                    int historyDriveId = await drivesRepository.InsertHistoryAsync(updatedDrive, connection, transaction);
 
-                    if (drive.IsSystemDrive && drive.Os != null)
+                    if (updatedDrive.IsSystemDrive && updatedDrive.Os != null)
                     {
                         // Set new driveId on OS and insert
-                        drive.Os.DriveId = updatedDrive.Id;
-                        OsModel updatedOs = await osRepository.InsertAsync(drive.Os, connection, transaction);
+                        updatedDrive.Os.DriveId = updatedDrive.Id;
+                        OsModel updatedOs = await osRepository.InsertAsync(updatedDrive.Os, connection, transaction);
                         updatedDrive.Os = updatedOs;
 
-                        await osRepository.InsertHistoryAsync(drive.Os, connection, transaction, historyDriveId);
+                        await osRepository.InsertHistoryAsync(updatedDrive.Os, connection, transaction, historyDriveId);
                     }
 
-                    foreach (ApplicationModel app in drive.AppList)
+                    foreach (ApplicationModel app in updatedDrive.AppList)
                     {
                         // Set driveId on app and insert
                         app.DriveId = updatedDrive.Id;
@@ -70,37 +70,33 @@ namespace SystemInfoApi.Services
                 // Get the current machine from the DB for comparison.
                 MachineModel existingMachine = await machinesRepository.GetByIdAsync(machine.Id, connection, transaction);
 
-                List<DriveModel> updatedDrivesList = await ProcessAllDrivesAsync(machine, existingMachine, connection, transaction);
+                List<DriveModel> updatedDrivesList = await ProcessAllDrivesAsync(existingMachine, connection, transaction);
 
                 machine.Drives = updatedDrivesList;
 
                 return machine;
             });
 
-            async Task<List<DriveModel>> ProcessAllDrivesAsync(MachineModel machine, MachineModel existingMachine, SqlConnection connection, SqlTransaction transaction)
+            async Task<List<DriveModel>> ProcessAllDrivesAsync(MachineModel existingMachine, SqlConnection connection, SqlTransaction transaction)
             {
                 List<DriveModel> updatedDrivesList = [];
                 var existingDrivesDict = existingMachine.Drives.ToDictionary(d => d.SerialNumber); // Serial as alt identifier.
 
                 foreach (DriveModel drive in machine.Drives)
                 {
+                    var existingDrive = existingMachine.Drives.FirstOrDefault(ed => ed.SerialNumber == drive.SerialNumber);
+
                     // Process the drive
-                    (DriveModel updatedDrive, existingDrivesDict) = 
-                        await ProcessDriveAsync(drive, machine.Id, existingDrivesDict, connection, transaction);
-
-                    updatedDrivesList.Add(updatedDrive);
-
-                    int historyDriveId = await drivesRepository.InsertHistoryAsync(drive, connection, transaction);
+                    (DriveModel updatedDrive, existingDrivesDict, int historyDriveId) = 
+                        await ProcessDriveAsync(drive, existingDrivesDict, connection, transaction);
 
                     // Process drive's OS
-                    await ProcessOsAsync(drive, historyDriveId, connection, transaction);
+                    updatedDrive.Os = await ProcessOsAsync(updatedDrive, existingDrive, historyDriveId, connection, transaction);
 
                     // Process drive's Apps
-                    if (drive.AppList != null)
-                    {
-                        var existingDrive = existingMachine.Drives.FirstOrDefault(ed => ed.SerialNumber == drive.SerialNumber);
-                        await ProcessAppsAsync(drive, existingDrive, historyDriveId, connection, transaction);
-                    }
+                    await ProcessAppsAsync(updatedDrive, existingDrive, historyDriveId, connection, transaction);
+
+                    updatedDrivesList.Add(updatedDrive);
                 }
 
                 await DeleteRemainingDrivesAsync(existingDrivesDict, connection, transaction);
@@ -108,7 +104,7 @@ namespace SystemInfoApi.Services
                 return updatedDrivesList;
             }
 
-            async Task<(DriveModel, Dictionary<string, DriveModel>)> ProcessDriveAsync(DriveModel drive, int machineId, Dictionary<string, DriveModel> existingDrivesDict, SqlConnection connection, SqlTransaction transaction)
+            async Task<(DriveModel, Dictionary<string, DriveModel>, int)> ProcessDriveAsync(DriveModel drive, Dictionary<string, DriveModel> existingDrivesDict, SqlConnection connection, SqlTransaction transaction)
             {
                 drive.MachineId = machine.Id;
                 DriveModel updatedDrive;
@@ -116,31 +112,46 @@ namespace SystemInfoApi.Services
                 // If one of the drives in the database has this drive's serial number...
                 if (existingDrivesDict.ContainsKey(drive.SerialNumber))
                 {
-                    // ...update it and remove it from the dictionary (so we can tell it has been processed).
+                    // ...update it and remove it from the dictionary (so we can tell it has been processed)...
                     updatedDrive = await drivesRepository.UpdateAsync(drive, connection, transaction);
-                    existingDrivesDict.Remove(drive.SerialNumber);
+                    existingDrivesDict.Remove(updatedDrive.SerialNumber);
                 }
                 else
                 {
-                    // Otherwise create a new one.
-                    ConsoleUtils.LogDriveCreation(drive.Name, drive.SerialNumber);
+                    // ...otherwise create a new one.
                     updatedDrive = await drivesRepository.InsertAsync(drive, connection, transaction);
+                    ConsoleUtils.LogDriveCreation(updatedDrive.Name, updatedDrive.SerialNumber);
                 }
 
-                drive.Id = updatedDrive.Id;
-                return (updatedDrive, existingDrivesDict);
+                int historyDriveId = await drivesRepository.InsertHistoryAsync(updatedDrive, connection, transaction);
+
+                return (updatedDrive, existingDrivesDict, historyDriveId);
             }
 
-            async Task ProcessOsAsync(DriveModel drive, int historyDriveId, SqlConnection connection, SqlTransaction transaction)
+            async Task<OsModel?> ProcessOsAsync(DriveModel drive, DriveModel? existingDrive, int historyDriveId, SqlConnection connection, SqlTransaction transaction)
             {
                 if (drive.IsSystemDrive && drive.Os != null)
                 {
                     drive.Os.DriveId = drive.Id;
-                    OsModel updatedOs = await osRepository.UpdateAsync(drive.Os, connection, transaction);
-                    drive.Os.Id = updatedOs.Id;
+                    OsModel updatedOs;
+
+                    if (existingDrive != null && existingDrive.Os != null && existingDrive.Os.Id != 0)
+                    {
+                        updatedOs = await osRepository.UpdateAsync(drive.Os, connection, transaction);
+                    }
+                    else
+                    {
+                        updatedOs = await osRepository.InsertAsync(drive.Os, connection, transaction);
+                        ConsoleUtils.LogOsCreation(drive.Os.DriveId, machine.Id);
+                    }
 
                     // Create OS history
-                    await osRepository.InsertHistoryAsync(drive.Os, connection, transaction, historyDriveId);
+                    await osRepository.InsertHistoryAsync(updatedOs, connection, transaction, historyDriveId);
+                    return updatedOs;
+                } 
+                else
+                {
+                    return null;
                 }
             }
 

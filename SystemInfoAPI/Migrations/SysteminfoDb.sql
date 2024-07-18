@@ -195,11 +195,13 @@ ALTER TABLE Client_Machine_Disque_Os
   ADD CONSTRAINT FK_Client_Machine_Disque_TO_Client_Machine_Disque_Os
     FOREIGN KEY (id_client_machine_disque)
     REFERENCES Client_Machine_Disque (id_client_machine_disque)
+    ON DELETE CASCADE
 
 ALTER TABLE Relation_Disque_Application
   ADD CONSTRAINT FK_Client_Machine_Disque_TO_Relation_Disque_Application
     FOREIGN KEY (id_client_machine_disque)
     REFERENCES Client_Machine_Disque (id_client_machine_disque)
+    ON DELETE CASCADE
 
 ALTER TABLE Relation_Disque_Application
   ADD CONSTRAINT FK_Client_Machine_Disque_Application_TO_Relation_Disque_Application
