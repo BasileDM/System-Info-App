@@ -50,10 +50,12 @@ namespace SystemInfoApi.Services
                     {
                         // Set driveId on app and insert
                         app.DriveId = updatedDrive.Id;
-                        await appRepository.InsertAsync(app, connection, transaction);
+                        app.CreationDate = DateTime.Now.ToLocalTime();
+                        //await appRepository.InsertAsync(app, connection, transaction);
 
                         await appRepository.InsertHistoryAsync(app, connection, transaction, historyDriveId);
-                    } 
+                    }
+                    await appRepository.InsertListAsync(updatedDrive.AppList, connection, transaction);
 
                     updatedDrivesList.Add(updatedDrive);
                 }
@@ -162,6 +164,10 @@ namespace SystemInfoApi.Services
                 {
                     var existingAppsDict = existingDrive.AppList.ToDictionary(app => app.Id) ?? [];
 
+                    List<ApplicationModel> appsToUpdate = [];
+                    List<ApplicationModel> appsToInsert = [];
+                    List<ApplicationModel> appsToDelete = [];
+
                     foreach (ApplicationModel app in drive.AppList)
                     {
                         app.DriveId = drive.Id;
@@ -170,16 +176,22 @@ namespace SystemInfoApi.Services
                         // If not, create instead of update
                         if (existingAppsDict.ContainsKey(app.Id))
                         {
-                            await appRepository.UpdateAsync(app, connection, transaction);
+                            //await appRepository.UpdateAsync(app, connection, transaction);
+                            appsToUpdate.Add(app);
                             existingAppsDict.Remove(app.Id);
                         }
                         else
                         {
                             ConsoleUtils.LogAppCreation(app.Name, app.Id, app.DriveId);
-                            await appRepository.InsertAsync(app, connection, transaction);
+                            appsToInsert.Add(app);
+                            //await appRepository.InsertAsync(app, connection, transaction);
                         }
-                        await appRepository.InsertHistoryAsync(app, connection, transaction, historyDriveId);
-                    } 
+
+                        //await appRepository.InsertHistoryAsync(app, connection, transaction, historyDriveId);
+                    }
+                    if (appsToInsert.Count > 0) await appRepository.InsertListAsync(appsToInsert, connection, transaction);
+                    if (appsToUpdate.Count > 0) await appRepository.UpdateListAsync(appsToUpdate, connection, transaction);
+                    await appRepository.InsertHistoryListAsync(drive.AppList, connection, transaction, historyDriveId);
 
                     // Delete remaining old apps not in the new list
                     foreach (var appToDelete in existingAppsDict.Values)
