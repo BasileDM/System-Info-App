@@ -50,7 +50,6 @@ namespace SystemInfoApi.Repositories
                 throw new ApplicationException($"An error occured inserting the machine into the database : {ex}", ex);
             }
         }
-
         public async Task<MachineModel> UpdateAsync(MachineModel machine, SqlConnection connection, SqlTransaction transaction)
         {
             try
@@ -85,7 +84,6 @@ namespace SystemInfoApi.Repositories
                 throw new ApplicationException($"An error occured inserting the machine into the database.\r\n {ex}", ex);
             }
         }
-
         /// <summary>Gets all the machines without details (embedded models).</summary>
         /// <returns>
         ///   A <see cref="List{MachineModel}"/> of instantiated <see cref="MachineModel"/>.
@@ -122,7 +120,6 @@ namespace SystemInfoApi.Repositories
 
             return machinesList;
         }
-
         /// <summary>Gets a machine with details (embedded Drives, OS etc.).</summary>
         /// <param name="id">The id of the machine in the database.</param>
         /// <returns>
