@@ -145,6 +145,7 @@ namespace SystemInfoApi.Services
                 else
                 {
                     OsModel updatedOs = await osRepository.InsertAsync(os, connection, transaction);
+                    ConsoleUtils.LogOsCreation(os.DriveId, machine.Id);
                     os.Id = updatedOs.Id;
                 }
 

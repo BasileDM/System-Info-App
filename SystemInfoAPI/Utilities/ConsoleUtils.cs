@@ -138,6 +138,10 @@ namespace SystemInfoApi.Utilities
         {
             WriteLineColored($"Deleting drive '{DriveName}' (id: {driveId} | Serial: {serial}).", _deletionColor);
         }
+        public static void LogOsCreation(int driveId, int machineId)
+        {
+            WriteLineColored($"Creating OS on drive {driveId} for machine {machineId}.", _creationColor);
+        }
 
         // Update logs
         public static void LogMachineUpdate(MachineModel machine, DateTime startTime)
