@@ -99,7 +99,7 @@ namespace SystemInfoApi.Repositories
             }
             catch (Exception ex)
             {
-                throw new ApplicationException($"An error occured inserting the OS into the database: {ex}", ex);
+                throw new ApplicationException($"An error occured updating OS {os.Id} for drive {os.DriveId}: {ex}", ex);
             }
         }
         public async Task<int> InsertHistoryAsync(OsModel os, SqlConnection connection, SqlTransaction transaction, int historyDriveId)
