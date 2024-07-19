@@ -39,7 +39,7 @@ namespace SystemInfoClient.Classes
         public EnvVariable(string envName)
         {
             _envName = envName;
-            _flag = "54a7dV4o87.";
+            _flag = "24tD1dV92o87.";
             _decodedValue = GetDecodedValue();
         }
 

@@ -15,19 +15,18 @@ namespace SystemInfoApi.Repositories
         /// </returns>
         public async Task<DriveModel> InsertAsync(DriveModel drive, SqlConnection connection, SqlTransaction transaction)
         {
+            var dtn = db.DrivesTableNames;
+
+            string query = @$"                    
+                INSERT INTO {dtn.TableName} 
+                    ({dtn.MachineId}, {dtn.SerialNumber}, {dtn.DriveName}, {dtn.RootDirectory}, {dtn.Label}, {dtn.Type}, {dtn.Format}, {dtn.Size}, {dtn.FreeSpace}, {dtn.TotalSpace}, {dtn.FreeSpacePercentage}, {dtn.IsSystemDrive}, {dtn.DriveCreationDate})
+                VALUES 
+                    (@machineId, @serial, @driveName, @rootDir, @label, @type, @format, @size, @freeSpace, @totalSpace, @freeSpacePer, @isSystemDrive, @creationDate);
+
+                SELECT SCOPE_IDENTITY();";
+
             try
             {
-                drive.CreationDate = DateTime.Now.ToLocalTime();
-                var dtn = db.DrivesTableNames;
-
-                string query = @$"                    
-                    INSERT INTO {dtn.TableName} 
-                        ({dtn.MachineId}, {dtn.SerialNumber}, {dtn.DriveName}, {dtn.RootDirectory}, {dtn.Label}, {dtn.Type}, {dtn.Format}, {dtn.Size}, {dtn.FreeSpace}, {dtn.TotalSpace}, {dtn.FreeSpacePercentage}, {dtn.IsSystemDrive}, {dtn.DriveCreationDate})
-                    VALUES 
-                        (@machineId, @serial, @driveName, @rootDir, @label, @type, @format, @size, @freeSpace, @totalSpace, @freeSpacePer, @isSystemDrive, @creationDate);
-
-                    SELECT SCOPE_IDENTITY();";
-
                 using (SqlCommand cmd = new(query, connection, transaction))
                 {
                     cmd.Parameters.AddWithValue("@machineId", drive.MachineId);
@@ -57,35 +56,34 @@ namespace SystemInfoApi.Repositories
         }
         public async Task<DriveModel> UpdateAsync(DriveModel drive, SqlConnection connection, SqlTransaction transaction)
         {
+            var dtn = db.DrivesTableNames;
+
+            string query = @$"
+                UPDATE {dtn.TableName}
+                SET 
+                    {dtn.MachineId} = @machineId, 
+                    {dtn.SerialNumber} = @serial,
+                    {dtn.DriveName} = @driveName, 
+                    {dtn.RootDirectory} = @rootDir, 
+                    {dtn.Label} = @label, 
+                    {dtn.Type} = @type, 
+                    {dtn.Format} = @format, 
+                    {dtn.Size} = @size, 
+                    {dtn.FreeSpace} = @freeSpace, 
+                    {dtn.TotalSpace} = @totalSpace, 
+                    {dtn.FreeSpacePercentage} = @freeSpacePer, 
+                    {dtn.IsSystemDrive} = @isSystemDrive,
+                    {dtn.DriveCreationDate} = @creationDate
+                WHERE {dtn.MachineId} = @machineId
+                AND {dtn.SerialNumber} = @serial
+
+                SELECT {dtn.Id}
+                FROM {dtn.TableName}
+                WHERE {dtn.MachineId} = @machineId 
+                AND {dtn.SerialNumber} = @serial";
+
             try
             {
-                drive.CreationDate = DateTime.Now.ToLocalTime();
-                var dtn = db.DrivesTableNames;
-
-                string query = @$"
-                    UPDATE {dtn.TableName}
-                    SET 
-                        {dtn.MachineId} = @machineId, 
-                        {dtn.SerialNumber} = @serial,
-                        {dtn.DriveName} = @driveName, 
-                        {dtn.RootDirectory} = @rootDir, 
-                        {dtn.Label} = @label, 
-                        {dtn.Type} = @type, 
-                        {dtn.Format} = @format, 
-                        {dtn.Size} = @size, 
-                        {dtn.FreeSpace} = @freeSpace, 
-                        {dtn.TotalSpace} = @totalSpace, 
-                        {dtn.FreeSpacePercentage} = @freeSpacePer, 
-                        {dtn.IsSystemDrive} = @isSystemDrive,
-                        {dtn.DriveCreationDate} = @creationDate
-                    WHERE {dtn.MachineId} = @machineId
-                    AND {dtn.SerialNumber} = @serial
-
-                    SELECT {dtn.Id}
-                    FROM {dtn.TableName}
-                    WHERE {dtn.MachineId} = @machineId 
-                    AND {dtn.SerialNumber} = @serial";
-
                 using (SqlCommand cmd = new(query, connection, transaction))
                 {
                     cmd.Parameters.AddWithValue("@machineId", drive.MachineId);
@@ -102,11 +100,11 @@ namespace SystemInfoApi.Repositories
                     cmd.Parameters.AddWithValue("@isSystemDrive", drive.IsSystemDrive);
                     cmd.Parameters.AddWithValue("@creationDate", drive.CreationDate);
 
-                    var obj = await cmd.ExecuteScalarAsync() ??
-                        throw new ArgumentException("Drive not found.");
+                    var obj = await cmd.ExecuteScalarAsync() ?? throw new ArgumentException("Drive not found.");
 
                     drive.Id = Convert.ToInt32(obj);
                 }
+
                 return drive;
             }
             catch (Exception ex)
@@ -116,18 +114,17 @@ namespace SystemInfoApi.Repositories
         }
         public async Task<int> InsertHistoryAsync(DriveModel drive, SqlConnection connection, SqlTransaction transaction)
         {
+            var dhtn = db.DrivesHistoryTableNames;
+
+            string query = @$"
+            INSERT INTO {dhtn.TableName}
+                ({dhtn.MachineId}, {dhtn.SerialNumber}, {dhtn.DriveName}, {dhtn.RootDirectory}, {dhtn.Label}, {dhtn.Type}, {dhtn.Format}, {dhtn.Size}, {dhtn.FreeSpace}, {dhtn.TotalSpace}, {dhtn.FreeSpacePercentage}, {dhtn.IsSystemDrive}, {dhtn.DriveCreationDate})
+            VALUES
+                (@machineId, @serial, @driveName, @rootDir, @label, @type, @format, @size, @freeSpace, @totalSpace, @freeSpacePer, @isSystemDrive, @creationDate);
+            SELECT SCOPE_IDENTITY();";
+
             try
             {
-                drive.CreationDate = DateTime.Now.ToLocalTime();
-                var dhtn = db.DrivesHistoryTableNames;
-
-                string query = @$"
-                INSERT INTO {dhtn.TableName}
-                    ({dhtn.MachineId}, {dhtn.SerialNumber}, {dhtn.DriveName}, {dhtn.RootDirectory}, {dhtn.Label}, {dhtn.Type}, {dhtn.Format}, {dhtn.Size}, {dhtn.FreeSpace}, {dhtn.TotalSpace}, {dhtn.FreeSpacePercentage}, {dhtn.IsSystemDrive}, {dhtn.DriveCreationDate})
-                VALUES
-                    (@machineId, @serial, @driveName, @rootDir, @label, @type, @format, @size, @freeSpace, @totalSpace, @freeSpacePer, @isSystemDrive, @creationDate);
-                SELECT SCOPE_IDENTITY();";
-
                 int newId;
                 using (SqlCommand cmd = new(query, connection, transaction))
                 {
@@ -148,6 +145,7 @@ namespace SystemInfoApi.Repositories
                     var obj = await cmd.ExecuteScalarAsync();
                     newId = Convert.ToInt32(obj);
                 };
+
                 return newId;
             }
             catch (Exception ex)
@@ -167,7 +165,6 @@ namespace SystemInfoApi.Repositories
                 using (SqlCommand cmd = new(query, connection, transaction))
                 {
                     cmd.Parameters.AddWithValue("@driveId", driveId);
-
                     await cmd.ExecuteNonQueryAsync();
                 }
 

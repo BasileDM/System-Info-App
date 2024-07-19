@@ -21,17 +21,16 @@ namespace SystemInfoApi.Repositories
         /// </returns>
         public async Task<MachineModel> InsertAsync(MachineModel machine, SqlConnection connection, SqlTransaction transaction)
         {
+            string machineSql = @$"
+                INSERT INTO {_machinesTable.TableName} ({_machinesTable.CustomerId}, {_machinesTable.MachineName}, {_machinesTable.MachineCreationDate}) 
+                VALUES (@customerId, @machineName, @creationDate);
+
+                SELECT SCOPE_IDENTITY();";
+
+            using SqlCommand cmd = new(machineSql, connection, transaction);
+
             try
             {
-                machine.CreationDate = DateTime.Now.ToLocalTime();
-
-                string machineSql = @$"
-                    INSERT INTO {_machinesTable.TableName} ({_machinesTable.CustomerId}, {_machinesTable.MachineName}, {_machinesTable.MachineCreationDate}) 
-                    VALUES (@customerId, @machineName, @creationDate);
-
-                    SELECT SCOPE_IDENTITY();";
-
-                using SqlCommand cmd = new(machineSql, connection, transaction);
                 cmd.Parameters.AddWithValue("@customerId", machine.CustomerId);
                 cmd.Parameters.AddWithValue("@machineName", machine.Name);
                 cmd.Parameters.AddWithValue("@creationDate", machine.CreationDate);
@@ -39,6 +38,7 @@ namespace SystemInfoApi.Repositories
                 var newMachineId = await cmd.ExecuteScalarAsync();
 
                 machine.Id = Convert.ToInt32(newMachineId);
+
                 return machine;
             }
             catch (SqlException ex) when (ex.Number == 547) // Foreign key violation error number
@@ -50,19 +50,24 @@ namespace SystemInfoApi.Repositories
                 throw new ApplicationException($"An error occured inserting the machine into the database : {ex}", ex);
             }
         }
-
+        /// <summary>Asynchronously updates a machine entry in the database.</summary>
+        /// <param name="machine">The <see cref="MachineModel"/> to add to the DB.</param>
+        /// <param name="connection">The <see cref="SqlConnection"/> to use.</param>
+        /// <param name="transaction">The <see cref="SqlTransaction"/> to use.</param>
+        /// <returns>
+        ///     The original <see cref="MachineModel"/> sent as an argument.
+        /// </returns>
         public async Task<MachineModel> UpdateAsync(MachineModel machine, SqlConnection connection, SqlTransaction transaction)
         {
+            string query = @$"
+                UPDATE {_machinesTable.TableName} 
+                SET {_machinesTable.CustomerId} = @customerID, {_machinesTable.MachineName} = @machineName, {_machinesTable.MachineCreationDate} = @creationDate
+                WHERE {_machinesTable.Id} = @machineId;";
+
+            using SqlCommand cmd = new(query, connection, transaction);
+
             try
             {
-                machine.CreationDate = DateTime.Now.ToLocalTime();
-
-                string query = @$"
-                    UPDATE {_machinesTable.TableName} 
-                    SET {_machinesTable.CustomerId} = @customerID, {_machinesTable.MachineName} = @machineName, {_machinesTable.MachineCreationDate} = @creationDate
-                    WHERE {_machinesTable.Id} = @machineId;";
-
-                using SqlCommand cmd = new(query, connection, transaction);
                 cmd.Parameters.AddWithValue("@customerId", machine.CustomerId);
                 cmd.Parameters.AddWithValue("@machineName", machine.Name);
                 cmd.Parameters.AddWithValue("@machineId", machine.Id);
@@ -85,7 +90,6 @@ namespace SystemInfoApi.Repositories
                 throw new ApplicationException($"An error occured inserting the machine into the database.\r\n {ex}", ex);
             }
         }
-
         /// <summary>Gets all the machines without details (embedded models).</summary>
         /// <returns>
         ///   A <see cref="List{MachineModel}"/> of instantiated <see cref="MachineModel"/>.
@@ -94,35 +98,32 @@ namespace SystemInfoApi.Repositories
         {
             List<MachineModel> machinesList = [];
 
+            string query =
+                $"SELECT * FROM {_machinesTable.TableName}";
+
+            using SqlCommand cmd = new(query, connection, transaction);
+
             try
             {
-                string query =
-                    $"SELECT * FROM {_machinesTable.TableName}";
+                using SqlDataReader reader = await cmd.ExecuteReaderAsync();
 
-                using (SqlCommand cmd = new(query, connection, transaction))
+                while (await reader.ReadAsync())
                 {
-
-                    using SqlDataReader reader = await cmd.ExecuteReaderAsync();
-                    while (await reader.ReadAsync())
+                    machinesList.Add(new MachineModel
                     {
-                        machinesList.Add(new MachineModel
-                        {
-                            Id = Convert.ToInt32(reader[$"{_machinesTable.Id}"]), // (reader.GetOrdinal("id_client_machine") ?
-                            Name = Convert.ToString((string)reader[$"{_machinesTable.MachineName}"]),
-                            CustomerId = Convert.ToInt32(reader[$"{_machinesTable.CustomerId}"]),
-                        });
-                    }
+                        Id = Convert.ToInt32(reader[$"{_machinesTable.Id}"]),
+                        Name = Convert.ToString((string)reader[$"{_machinesTable.MachineName}"]),
+                        CustomerId = Convert.ToInt32(reader[$"{_machinesTable.CustomerId}"]),
+                    });
                 }
+
+                return machinesList;
             }
             catch (Exception ex)
             {
-                throw new ApplicationException(
-                    "Could not retrieve data from the database.", ex);
+                throw new ApplicationException("Could not retrieve data from the database.", ex);
             }
-
-            return machinesList;
         }
-
         /// <summary>Gets a machine with details (embedded Drives, OS etc.).</summary>
         /// <param name="id">The id of the machine in the database.</param>
         /// <returns>
@@ -176,11 +177,12 @@ namespace SystemInfoApi.Repositories
                         machine.Drives = drivesList;
                     }
                 }
+
                 return machine;
             }
             catch (Exception ex)
             {
-                throw new ApplicationException($"Could not retrieve data from the database: {ex.Message}. FULL EXCEPTION: {ex}", ex);
+                throw new ApplicationException($"Could not retrieve data from the database: {ex}", ex);
             }
 
             string GetQuery()
