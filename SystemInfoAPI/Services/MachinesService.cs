@@ -185,7 +185,6 @@ namespace SystemInfoApi.Services
                             // If the app already has a relation with this drive, update it
                             if (existingAppsDict.ContainsKey(app.Id))
                             {
-                                //----- await appRepository.UpdateAsync(app, connection, transaction);
                                 appsToUpdate.Add(app);
                                 existingAppsDict.Remove(app.Id);
                             }
@@ -194,9 +193,7 @@ namespace SystemInfoApi.Services
                             {
                                 ConsoleUtils.LogAppCreation(app.Name, app.Id, app.DriveId);
                                 appsToInsert.Add(app);
-                                //----- await appRepository.InsertAsync(app, connection, transaction);
                             }
-                            //----- await appRepository.InsertHistoryAsync(app, connection, transaction, historyDriveId);
                         }
                         if (appsToUpdate.Count > 0) await appRepository.UpdateListAsync(appsToUpdate, connection, transaction);
                         if (appsToInsert.Count > 0) await appRepository.InsertListAsync(appsToInsert, connection, transaction);
@@ -208,7 +205,6 @@ namespace SystemInfoApi.Services
                     {
                         ConsoleUtils.LogAppDeletion(appToDelete.Name, appToDelete.Id, existingDrive.Id);
                         appsToDelete.Add(appToDelete);
-                        //----- await appRepository.DeleteDriveRelationAsync(appToDelete.Id, existingDrive.Id, connection, transaction);
                     }
                     await appRepository.DeleteDriveRelationListAsync(appsToDelete, connection, transaction);
                 }
@@ -220,13 +216,10 @@ namespace SystemInfoApi.Services
                         app.DriveId = drive.Id;
                         app.CreationDate = timeNow;
                         ConsoleUtils.LogAppCreation(app.Name, app.Id, app.DriveId);
-                        //----- await appRepository.InsertAsync(app, connection, transaction);
 
-                        // Create app history
-                        //----- await appRepository.InsertHistoryAsync(app, connection, transaction, historyDriveId);
-                        //appsToInsert.Add(app);
                     }
                     await appRepository.InsertListAsync(drive.AppList, connection, transaction);
+                    await appRepository.InsertHistoryListAsync(drive.AppList, connection, transaction, driveHistoryId);
                 }
             }
 
