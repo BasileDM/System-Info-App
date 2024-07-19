@@ -235,9 +235,6 @@ namespace SystemInfoApi.Repositories
                     using SqlCommand cmd = new(queryBuilder.ToString(), connection, transaction);
                     cmd.Parameters.AddRange(parameterValues.ToArray());
 
-                    var paramCount = cmd.Parameters.Count;
-                    Console.WriteLine($"Param count: {paramCount}");
-
                     await cmd.ExecuteNonQueryAsync();
                 }
             }
@@ -431,9 +428,6 @@ namespace SystemInfoApi.Repositories
 
                     using SqlCommand cmd = new(queryBuilder.ToString(), connection, transaction);
                     cmd.Parameters.AddRange(parameterValues.ToArray());
-
-                    var paramCount = cmd.Parameters.Count;
-                    Console.WriteLine($"Param count: {paramCount}");
 
                     await cmd.ExecuteNonQueryAsync();
                 }
