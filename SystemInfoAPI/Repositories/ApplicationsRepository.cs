@@ -11,7 +11,6 @@ namespace SystemInfoApi.Repositories
         {
             try
             {
-                app.CreationDate = DateTime.Now.ToLocalTime();
                 var appsDrivesRTable = db.AppsDrivesRelationTableNames;
 
                 string query = @$"
@@ -227,11 +226,11 @@ namespace SystemInfoApi.Repositories
 
             await cmd.ExecuteNonQueryAsync();
         }
+
         public async Task<ApplicationModel> UpdateAsync(ApplicationModel app, SqlConnection connection, SqlTransaction transaction)
         {
             try
             {
-                app.CreationDate = DateTime.Now.ToLocalTime();
                 var appsDrivesRTable = db.AppsDrivesRelationTableNames;
 
                 string query = @$"
@@ -316,7 +315,6 @@ namespace SystemInfoApi.Repositories
                 throw new Exception(ex.Message, ex);
             }
         }
-
         public async Task UpdateListAsync(List<ApplicationModel> appsList, SqlConnection connection, SqlTransaction transaction)
         {
             var appsDrivesRTable = db.AppsDrivesRelationTableNames;
@@ -327,8 +325,6 @@ namespace SystemInfoApi.Repositories
 
             foreach (var app in appsList)
             {
-                app.CreationDate = DateTime.Now.ToLocalTime();
-
                 queryBuilder.Append($@"
                     UPDATE {appsDrivesRTable.TableName}
                     SET 
@@ -411,7 +407,6 @@ namespace SystemInfoApi.Repositories
         {
             try
             {
-                app.CreationDate = DateTime.Now.ToLocalTime();
                 var appsDrivesRHistoryTable = db.AppsDrivesRelationHistoryTableNames;
 
                 string query = @$"
@@ -526,7 +521,6 @@ namespace SystemInfoApi.Repositories
                 throw new Exception(ex.Message, ex);
             }
         }
-
         public async Task InsertHistoryListAsync(List<ApplicationModel> appsList, SqlConnection connection, SqlTransaction transaction, int driveHistoryId)
         {
             try
@@ -571,8 +565,6 @@ namespace SystemInfoApi.Repositories
 
                 foreach (var app in appsList)
                 {
-                    app.CreationDate = DateTime.Now.ToLocalTime();
-
                     if (parameterIndex > 0)
                     {
                         queryBuilder.Append(", ");
@@ -668,5 +660,45 @@ namespace SystemInfoApi.Repositories
                 throw new Exception($"Failed to delete app {appId} relation to drive {driveId}:" + ex);
             }
         }
+        public async Task DeleteDriveRelationListAsync(List<ApplicationModel> appList, SqlConnection connection, SqlTransaction transaction)
+        {
+            var appsDrivesRTable = db.AppsDrivesRelationTableNames;
+            var queryBuilder = new StringBuilder();
+            var parameterIndex = 0;
+            var parameterValues = new List<SqlParameter>();
+
+            foreach (var app in appList)
+            {
+                if (parameterIndex > 0)
+                {
+                    queryBuilder.Append("; ");
+                }
+
+                queryBuilder.Append($@"
+                    DELETE FROM {appsDrivesRTable.TableName}
+                    WHERE {appsDrivesRTable.AppId} = @AppId{parameterIndex}
+                    AND {appsDrivesRTable.DriveId} = @DriveId{parameterIndex}");
+
+                parameterValues.Add(new SqlParameter($"@AppId{parameterIndex}", app.Id));
+                parameterValues.Add(new SqlParameter($"@DriveId{parameterIndex}", app.DriveId));
+
+                parameterIndex++;
+            }
+
+            queryBuilder.Append(';');
+
+            try
+            {
+                using SqlCommand cmd = new(queryBuilder.ToString(), connection, transaction);
+                cmd.Parameters.AddRange(parameterValues.ToArray());
+
+                await cmd.ExecuteNonQueryAsync();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Failed to delete app relations to drives: " + ex);
+            }
+        }
+
     }
 }

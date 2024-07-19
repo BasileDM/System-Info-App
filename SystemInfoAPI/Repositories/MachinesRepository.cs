@@ -23,8 +23,6 @@ namespace SystemInfoApi.Repositories
         {
             try
             {
-                machine.CreationDate = DateTime.Now.ToLocalTime();
-
                 string machineSql = @$"
                     INSERT INTO {_machinesTable.TableName} ({_machinesTable.CustomerId}, {_machinesTable.MachineName}, {_machinesTable.MachineCreationDate}) 
                     VALUES (@customerId, @machineName, @creationDate);
@@ -54,8 +52,6 @@ namespace SystemInfoApi.Repositories
         {
             try
             {
-                machine.CreationDate = DateTime.Now.ToLocalTime();
-
                 string query = @$"
                     UPDATE {_machinesTable.TableName} 
                     SET {_machinesTable.CustomerId} = @customerID, {_machinesTable.MachineName} = @machineName, {_machinesTable.MachineCreationDate} = @creationDate
