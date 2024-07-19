@@ -96,7 +96,7 @@ namespace SystemInfoApi.Utilities
             string timeStamp = startTime.ToString();
             WriteColored($@" ({timeStamp})", _timeStampColor);
         }
-        
+
         // Sending requests logs
         public static void LogSendingToken(string encodedToken)
         {
@@ -119,7 +119,15 @@ namespace SystemInfoApi.Utilities
             Console.WriteLine($@"  Customer ID: {newMachine.CustomerId}");
             Console.WriteLine($@"  Machine name: {newMachine.Name}");
             Console.WriteLine($@"  Drives amount: {newMachine.Drives.Count}");
-            string? location = Url.Action(nameof(MachinesController.GetById), new { machineId = routeValues["machineId"] });
+            string? location;
+            if (routeValues != null)
+            {
+                location = Url.Action(nameof(MachinesController.GetById), new { machineId = routeValues["machineId"] });
+            }
+            else
+            {
+                location = Url.Action(nameof(MachinesController.GetById));
+            }
             Console.WriteLine($@"  Location: {location}");
         }
         public static void LogAppCreation(string appName, int appId, int appDriveId)

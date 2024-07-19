@@ -23,8 +23,6 @@ namespace SystemInfoApi.Repositories
         {
             try
             {
-                machine.CreationDate = DateTime.Now.ToLocalTime();
-
                 string machineSql = @$"
                     INSERT INTO {_machinesTable.TableName} ({_machinesTable.CustomerId}, {_machinesTable.MachineName}, {_machinesTable.MachineCreationDate}) 
                     VALUES (@customerId, @machineName, @creationDate);
@@ -50,13 +48,10 @@ namespace SystemInfoApi.Repositories
                 throw new ApplicationException($"An error occured inserting the machine into the database : {ex}", ex);
             }
         }
-
         public async Task<MachineModel> UpdateAsync(MachineModel machine, SqlConnection connection, SqlTransaction transaction)
         {
             try
             {
-                machine.CreationDate = DateTime.Now.ToLocalTime();
-
                 string query = @$"
                     UPDATE {_machinesTable.TableName} 
                     SET {_machinesTable.CustomerId} = @customerID, {_machinesTable.MachineName} = @machineName, {_machinesTable.MachineCreationDate} = @creationDate
@@ -85,7 +80,6 @@ namespace SystemInfoApi.Repositories
                 throw new ApplicationException($"An error occured inserting the machine into the database.\r\n {ex}", ex);
             }
         }
-
         /// <summary>Gets all the machines without details (embedded models).</summary>
         /// <returns>
         ///   A <see cref="List{MachineModel}"/> of instantiated <see cref="MachineModel"/>.
@@ -122,7 +116,6 @@ namespace SystemInfoApi.Repositories
 
             return machinesList;
         }
-
         /// <summary>Gets a machine with details (embedded Drives, OS etc.).</summary>
         /// <param name="id">The id of the machine in the database.</param>
         /// <returns>

@@ -17,7 +17,6 @@ namespace SystemInfoApi.Repositories
         {
             try
             {
-                os.CreationDate = DateTime.Now.ToLocalTime();
                 var otn = db.OsTableNames;
 
                 string query = @$"
@@ -55,7 +54,6 @@ namespace SystemInfoApi.Repositories
         {
             try
             {
-                os.CreationDate = DateTime.Now.ToLocalTime();
                 var ohtn = db.OsHistoryTableNames;
                 var otn = db.OsTableNames;
 
@@ -106,7 +104,6 @@ namespace SystemInfoApi.Repositories
         {
             try
             {
-                os.CreationDate = DateTime.Now.ToLocalTime();
                 var ohtn = db.OsHistoryTableNames;
 
                 string query = @$"

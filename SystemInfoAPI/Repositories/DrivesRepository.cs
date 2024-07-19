@@ -17,7 +17,6 @@ namespace SystemInfoApi.Repositories
         {
             try
             {
-                drive.CreationDate = DateTime.Now.ToLocalTime();
                 var dtn = db.DrivesTableNames;
 
                 string query = @$"                    
@@ -59,7 +58,6 @@ namespace SystemInfoApi.Repositories
         {
             try
             {
-                drive.CreationDate = DateTime.Now.ToLocalTime();
                 var dtn = db.DrivesTableNames;
 
                 string query = @$"
@@ -118,7 +116,6 @@ namespace SystemInfoApi.Repositories
         {
             try
             {
-                drive.CreationDate = DateTime.Now.ToLocalTime();
                 var dhtn = db.DrivesHistoryTableNames;
 
                 string query = @$"

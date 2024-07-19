@@ -1,4 +1,5 @@
 ﻿using System.Data.SqlClient;
+using System.Text;
 using SystemInfoApi.Classes;
 using SystemInfoApi.Models;
 
@@ -6,11 +7,12 @@ namespace SystemInfoApi.Repositories
 {
     public class ApplicationsRepository(Database db)
     {
+        const int MaxParameters = 2000;
+
         public async Task<ApplicationModel> InsertAsync(ApplicationModel app, SqlConnection connection, SqlTransaction transaction)
         {
             try
             {
-                app.CreationDate = DateTime.Now.ToLocalTime();
                 var appsDrivesRTable = db.AppsDrivesRelationTableNames;
 
                 string query = @$"
@@ -119,16 +121,121 @@ namespace SystemInfoApi.Repositories
             {
                 throw new ArgumentException($"Error for app {app.Name}. App Id {app.Id} is invalid or does not exist in the database.");
             }
-            catch (Exception ex) 
+            catch (Exception ex)
             {
                 throw new Exception(ex.Message, ex);
             }
         }
+        public async Task InsertListAsync(List<ApplicationModel> appsList, SqlConnection connection, SqlTransaction transaction)
+        {
+            try
+            {
+                const int parametersPerRow = 30;
+                int BatchSize = MaxParameters / parametersPerRow;
+
+                for (int i = 0; i < appsList.Count; i += BatchSize)
+                {
+                    var queryBuilder = new StringBuilder();
+                    var appsDrivesRTable = db.AppsDrivesRelationTableNames;
+
+                    queryBuilder.Append($@"
+                        INSERT INTO {appsDrivesRTable.TableName}
+                        ({appsDrivesRTable.DriveId}, {appsDrivesRTable.AppId}, {appsDrivesRTable.Comments},
+                        {appsDrivesRTable.CompanyName}, {appsDrivesRTable.FileBuildPart}, {appsDrivesRTable.FileDescription},
+                        {appsDrivesRTable.FileMajorPart}, {appsDrivesRTable.FileMinorPart}, {appsDrivesRTable.FileName},
+                        {appsDrivesRTable.FilePrivatePart}, {appsDrivesRTable.FileVersion}, {appsDrivesRTable.InternalName},
+                        {appsDrivesRTable.IsDebug}, {appsDrivesRTable.IsPatched}, {appsDrivesRTable.IsPreRelease},
+                        {appsDrivesRTable.IsPrivateBuild}, {appsDrivesRTable.IsSpecialBuild}, {appsDrivesRTable.Language},
+                        {appsDrivesRTable.Copyright}, {appsDrivesRTable.Trademarks}, {appsDrivesRTable.OriginalFilename},
+                        {appsDrivesRTable.PrivateBuild}, {appsDrivesRTable.ProductBuildPart}, {appsDrivesRTable.ProductMajorPart},
+                        {appsDrivesRTable.ProductMinorPart}, {appsDrivesRTable.ProductName}, {appsDrivesRTable.ProductPrivatePart},
+                        {appsDrivesRTable.ProductVersion}, {appsDrivesRTable.SpecialBuild}, {appsDrivesRTable.AppRelationCreationDate}) VALUES "
+                    );
+
+                    var batchList = appsList.Skip(i).Take(BatchSize).ToList();
+                    var parameterIndex = 0;
+                    var parameterValues = new List<SqlParameter>();
+
+                    foreach (var app in batchList)
+                    {
+                        if (parameterIndex > 0)
+                        {
+                            queryBuilder.Append(", ");
+                        }
+
+                        queryBuilder.Append($@"
+                            (@DriveId{parameterIndex}, @AppId{parameterIndex}, @Comments{parameterIndex}, 
+                            @CompanyName{parameterIndex}, @FileBuildPart{parameterIndex}, @FileDescription{parameterIndex}, 
+                            @FileMajorPart{parameterIndex}, @FileMinorPart{parameterIndex}, @FileName{parameterIndex}, 
+                            @FilePrivatePart{parameterIndex}, @FileVersion{parameterIndex}, @InternalName{parameterIndex}, 
+                            @IsDebug{parameterIndex}, @IsPatched{parameterIndex}, @IsPreRelease{parameterIndex}, 
+                            @IsPrivateBuild{parameterIndex}, @IsSpecialBuild{parameterIndex}, @Language{parameterIndex}, 
+                            @LegalCopyright{parameterIndex}, @LegalTrademarks{parameterIndex}, @OriginalFilename{parameterIndex}, 
+                            @PrivateBuild{parameterIndex}, @ProductBuildPart{parameterIndex}, @ProductMajorPart{parameterIndex}, 
+                            @ProductMinorPart{parameterIndex}, @ProductName{parameterIndex}, @ProductPrivatePart{parameterIndex}, 
+                            @ProductVersion{parameterIndex}, @SpecialBuild{parameterIndex}, @CreationDate{parameterIndex})"
+                        );
+
+
+                        parameterValues.AddRange(
+                        [
+                            new SqlParameter($"@DriveId{parameterIndex}", app.DriveId),
+                            new SqlParameter($"@AppId{parameterIndex}", app.Id),
+                            new SqlParameter($"@Comments{parameterIndex}", app.Comments ?? (object)DBNull.Value),
+                            new SqlParameter($"@CompanyName{parameterIndex}", app.CompanyName ?? (object)DBNull.Value),
+                            new SqlParameter($"@FileBuildPart{parameterIndex}", app.FileBuildPart),
+                            new SqlParameter($"@FileDescription{parameterIndex}", app.FileDescription ?? (object)DBNull.Value),
+                            new SqlParameter($"@FileMajorPart{parameterIndex}", app.FileMajorPart),
+                            new SqlParameter($"@FileMinorPart{parameterIndex}", app.FileMinorPart),
+                            new SqlParameter($"@FileName{parameterIndex}", app.FileName ?? (object)DBNull.Value),
+                            new SqlParameter($"@FilePrivatePart{parameterIndex}", app.FilePrivatePart),
+                            new SqlParameter($"@FileVersion{parameterIndex}", app.FileVersion ?? (object)DBNull.Value),
+                            new SqlParameter($"@InternalName{parameterIndex}", app.InternalName ?? (object)DBNull.Value),
+                            new SqlParameter($"@IsDebug{parameterIndex}", app.IsDebug),
+                            new SqlParameter($"@IsPatched{parameterIndex}", app.IsPatched),
+                            new SqlParameter($"@IsPreRelease{parameterIndex}", app.IsPreRelease),
+                            new SqlParameter($"@IsPrivateBuild{parameterIndex}", app.IsPrivateBuild),
+                            new SqlParameter($"@IsSpecialBuild{parameterIndex}", app.IsSpecialBuild),
+                            new SqlParameter($"@Language{parameterIndex}", app.Language ?? (object)DBNull.Value),
+                            new SqlParameter($"@LegalCopyright{parameterIndex}", app.LegalCopyright ?? (object)DBNull.Value),
+                            new SqlParameter($"@LegalTrademarks{parameterIndex}", app.LegalTrademarks ?? (object)DBNull.Value),
+                            new SqlParameter($"@OriginalFilename{parameterIndex}", app.OriginalFilename ?? (object)DBNull.Value),
+                            new SqlParameter($"@PrivateBuild{parameterIndex}", app.PrivateBuild ?? (object)DBNull.Value),
+                            new SqlParameter($"@ProductBuildPart{parameterIndex}", app.ProductBuildPart),
+                            new SqlParameter($"@ProductMajorPart{parameterIndex}", app.ProductMajorPart),
+                            new SqlParameter($"@ProductMinorPart{parameterIndex}", app.ProductMinorPart),
+                            new SqlParameter($"@ProductName{parameterIndex}", app.ProductName ?? (object)DBNull.Value),
+                            new SqlParameter($"@ProductPrivatePart{parameterIndex}", app.ProductPrivatePart),
+                            new SqlParameter($"@ProductVersion{parameterIndex}", app.ProductVersion ?? (object)DBNull.Value),
+                            new SqlParameter($"@SpecialBuild{parameterIndex}", app.SpecialBuild ?? (object)DBNull.Value),
+                            new SqlParameter($"@CreationDate{parameterIndex}", app.CreationDate)
+                        ]);
+
+                        parameterIndex++;
+                    }
+
+                    queryBuilder.Append(';');
+
+                    using SqlCommand cmd = new(queryBuilder.ToString(), connection, transaction);
+                    cmd.Parameters.AddRange(parameterValues.ToArray());
+
+                    await cmd.ExecuteNonQueryAsync();
+                }
+            }
+            catch (SqlException ex) when (ex.Number == 547) // Foreign key violation error number
+            {
+                throw new ArgumentException($"Error inserting one of the apps. Some App Ids are invalid or do not exist in the database: {ex}");
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message, ex);
+            }
+        }
+
         public async Task<ApplicationModel> UpdateAsync(ApplicationModel app, SqlConnection connection, SqlTransaction transaction)
         {
             try
             {
-                app.CreationDate = DateTime.Now.ToLocalTime();
                 var appsDrivesRTable = db.AppsDrivesRelationTableNames;
 
                 string query = @$"
@@ -213,11 +320,116 @@ namespace SystemInfoApi.Repositories
                 throw new Exception(ex.Message, ex);
             }
         }
+        public async Task UpdateListAsync(List<ApplicationModel> appsList, SqlConnection connection, SqlTransaction transaction)
+        {
+            try
+            {
+                var appsDrivesRTable = db.AppsDrivesRelationTableNames;
+
+                const int parametersPerRow = 30;
+                int BatchSize = MaxParameters / parametersPerRow;
+
+                for (int i = 0; i < appsList.Count; i += BatchSize)
+                {
+                    var batchList = appsList.Skip(i).Take(BatchSize).ToList();
+                    var queryBuilder = new StringBuilder();
+                    var parameterIndex = 0;
+                    var parameterValues = new List<SqlParameter>();
+
+                    foreach (var app in batchList)
+                    {
+                        queryBuilder.Append($@"
+                            UPDATE {appsDrivesRTable.TableName}
+                            SET 
+                                {appsDrivesRTable.Comments} = @Comments{parameterIndex},
+                                {appsDrivesRTable.CompanyName} = @Company_Name{parameterIndex},
+                                {appsDrivesRTable.FileBuildPart} = @File_Build_Part{parameterIndex},
+                                {appsDrivesRTable.FileDescription} = @File_Description{parameterIndex},
+                                {appsDrivesRTable.FileMajorPart} = @File_Major_Part{parameterIndex},
+                                {appsDrivesRTable.FileMinorPart} = @File_Minor_Part{parameterIndex},
+                                {appsDrivesRTable.FileName} = @File_Name{parameterIndex},
+                                {appsDrivesRTable.FilePrivatePart} = @File_Private_Part{parameterIndex},
+                                {appsDrivesRTable.FileVersion} = @File_Version{parameterIndex},
+                                {appsDrivesRTable.InternalName} = @Internal_Name{parameterIndex},
+                                {appsDrivesRTable.IsDebug} = @Is_Debug{parameterIndex},
+                                {appsDrivesRTable.IsPatched} = @Is_Patched{parameterIndex},
+                                {appsDrivesRTable.IsPreRelease} = @Is_Pre_Release{parameterIndex},
+                                {appsDrivesRTable.IsPrivateBuild} = @Is_Private_Build{parameterIndex},
+                                {appsDrivesRTable.IsSpecialBuild} = @Is_Special_Build{parameterIndex},
+                                {appsDrivesRTable.Language} = @Language{parameterIndex},
+                                {appsDrivesRTable.Copyright} = @Legal_Copyright{parameterIndex},
+                                {appsDrivesRTable.Trademarks} = @Legal_Trademarks{parameterIndex},
+                                {appsDrivesRTable.OriginalFilename} = @Original_Filename{parameterIndex},
+                                {appsDrivesRTable.PrivateBuild} = @Private_Build{parameterIndex},
+                                {appsDrivesRTable.ProductBuildPart} = @Product_Build_Part{parameterIndex},
+                                {appsDrivesRTable.ProductMajorPart} = @Product_Major_Part{parameterIndex},
+                                {appsDrivesRTable.ProductMinorPart} = @Product_Minor_Part{parameterIndex},
+                                {appsDrivesRTable.ProductName} = @Product_Name{parameterIndex},
+                                {appsDrivesRTable.ProductPrivatePart} = @Product_Private_Part{parameterIndex},
+                                {appsDrivesRTable.ProductVersion} = @Product_Version{parameterIndex},
+                                {appsDrivesRTable.SpecialBuild} = @Special_Build{parameterIndex},
+                                {appsDrivesRTable.AppRelationCreationDate} = @CreationDate{parameterIndex}
+                            WHERE {appsDrivesRTable.DriveId} = @DriveId{parameterIndex}
+                            AND {appsDrivesRTable.AppId} = @AppId{parameterIndex};
+                        ");
+
+                        parameterValues.AddRange(
+                        [
+                            new SqlParameter($"@DriveId{parameterIndex}", app.DriveId),
+                            new SqlParameter($"@AppId{parameterIndex}", app.Id),
+                            new SqlParameter($"@Comments{parameterIndex}", app.Comments ?? (object)DBNull.Value),
+                            new SqlParameter($"@Company_Name{parameterIndex}", app.CompanyName ?? (object)DBNull.Value),
+                            new SqlParameter($"@File_Build_Part{parameterIndex}", app.FileBuildPart),
+                            new SqlParameter($"@File_Description{parameterIndex}", app.FileDescription ?? (object)DBNull.Value),
+                            new SqlParameter($"@File_Major_Part{parameterIndex}", app.FileMajorPart),
+                            new SqlParameter($"@File_Minor_Part{parameterIndex}", app.FileMinorPart),
+                            new SqlParameter($"@File_Name{parameterIndex}", app.FileName ?? (object)DBNull.Value),
+                            new SqlParameter($"@File_Private_Part{parameterIndex}", app.FilePrivatePart),
+                            new SqlParameter($"@File_Version{parameterIndex}", app.FileVersion ?? (object)DBNull.Value),
+                            new SqlParameter($"@Internal_Name{parameterIndex}", app.InternalName ?? (object)DBNull.Value),
+                            new SqlParameter($"@Is_Debug{parameterIndex}", app.IsDebug),
+                            new SqlParameter($"@Is_Patched{parameterIndex}", app.IsPatched),
+                            new SqlParameter($"@Is_Pre_Release{parameterIndex}", app.IsPreRelease),
+                            new SqlParameter($"@Is_Private_Build{parameterIndex}", app.IsPrivateBuild),
+                            new SqlParameter($"@Is_Special_Build{parameterIndex}", app.IsSpecialBuild),
+                            new SqlParameter($"@Language{parameterIndex}", app.Language ?? (object)DBNull.Value),
+                            new SqlParameter($"@Legal_Copyright{parameterIndex}", app.LegalCopyright ?? (object)DBNull.Value),
+                            new SqlParameter($"@Legal_Trademarks{parameterIndex}", app.LegalTrademarks ?? (object)DBNull.Value),
+                            new SqlParameter($"@Original_Filename{parameterIndex}", app.OriginalFilename ?? (object)DBNull.Value),
+                            new SqlParameter($"@Private_Build{parameterIndex}", app.PrivateBuild ?? (object)DBNull.Value),
+                            new SqlParameter($"@Product_Build_Part{parameterIndex}", app.ProductBuildPart),
+                            new SqlParameter($"@Product_Major_Part{parameterIndex}", app.ProductMajorPart),
+                            new SqlParameter($"@Product_Minor_Part{parameterIndex}", app.ProductMinorPart),
+                            new SqlParameter($"@Product_Name{parameterIndex}", app.ProductName ?? (object)DBNull.Value),
+                            new SqlParameter($"@Product_Private_Part{parameterIndex}", app.ProductPrivatePart),
+                            new SqlParameter($"@Product_Version{parameterIndex}", app.ProductVersion ?? (object)DBNull.Value),
+                            new SqlParameter($"@Special_Build{parameterIndex}", app.SpecialBuild ?? (object)DBNull.Value),
+                            new SqlParameter($"@CreationDate{parameterIndex}", app.CreationDate)
+                        ]);
+
+                        parameterIndex++;
+                    }
+
+                    using SqlCommand cmd = new(queryBuilder.ToString(), connection, transaction);
+                    cmd.Parameters.AddRange(parameterValues.ToArray());
+
+                    await cmd.ExecuteNonQueryAsync();
+                }
+            }
+            catch (SqlException ex) when (ex.Number == 547) // Foreign key violation error number
+            {
+                throw new ArgumentException($"Error updating one of the apps. Some App Ids are invalid or do not exist in the database: {ex}");
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message, ex);
+            }
+        }
+
         public async Task<int> InsertHistoryAsync(ApplicationModel app, SqlConnection connection, SqlTransaction transaction, int driveHistoryId)
         {
             try
             {
-                app.CreationDate = DateTime.Now.ToLocalTime();
                 var appsDrivesRHistoryTable = db.AppsDrivesRelationHistoryTableNames;
 
                 string query = @$"
@@ -332,6 +544,111 @@ namespace SystemInfoApi.Repositories
                 throw new Exception(ex.Message, ex);
             }
         }
+        public async Task InsertHistoryListAsync(List<ApplicationModel> appsList, SqlConnection connection, SqlTransaction transaction, int driveHistoryId)
+        {
+            try
+            {
+                const int parametersPerRow = 30;
+                int BatchSize = MaxParameters / parametersPerRow;
+
+                var appsDrivesRHistoryTable = db.AppsDrivesRelationHistoryTableNames;
+
+                for (int i = 0; i < appsList.Count; i += BatchSize)
+                {
+                    var queryBuilder = new StringBuilder();
+                    queryBuilder.Append($@"
+                        INSERT INTO {appsDrivesRHistoryTable.TableName}
+                        ({appsDrivesRHistoryTable.DriveId}, {appsDrivesRHistoryTable.AppId}, {appsDrivesRHistoryTable.Comments},
+                        {appsDrivesRHistoryTable.CompanyName}, {appsDrivesRHistoryTable.FileBuildPart}, {appsDrivesRHistoryTable.FileDescription},
+                        {appsDrivesRHistoryTable.FileMajorPart}, {appsDrivesRHistoryTable.FileMinorPart}, {appsDrivesRHistoryTable.FileName},
+                        {appsDrivesRHistoryTable.FilePrivatePart}, {appsDrivesRHistoryTable.FileVersion}, {appsDrivesRHistoryTable.InternalName},
+                        {appsDrivesRHistoryTable.IsDebug}, {appsDrivesRHistoryTable.IsPatched}, {appsDrivesRHistoryTable.IsPreRelease},
+                        {appsDrivesRHistoryTable.IsPrivateBuild}, {appsDrivesRHistoryTable.IsSpecialBuild}, {appsDrivesRHistoryTable.Language},
+                        {appsDrivesRHistoryTable.Copyright}, {appsDrivesRHistoryTable.Trademarks}, {appsDrivesRHistoryTable.OriginalFilename},
+                        {appsDrivesRHistoryTable.PrivateBuild}, {appsDrivesRHistoryTable.ProductBuildPart}, {appsDrivesRHistoryTable.ProductMajorPart},
+                        {appsDrivesRHistoryTable.ProductMinorPart}, {appsDrivesRHistoryTable.ProductName}, {appsDrivesRHistoryTable.ProductPrivatePart},
+                        {appsDrivesRHistoryTable.ProductVersion}, {appsDrivesRHistoryTable.SpecialBuild}, {appsDrivesRHistoryTable.AppRelationCreationDate}) VALUES "
+                    );
+
+                    var batchList = appsList.Skip(i).Take(BatchSize).ToList();
+                    var parameterValues = new List<SqlParameter>();
+                    var parameterIndex = 0;
+
+                    foreach (var app in batchList)
+                    {
+                        if (parameterIndex > 0)
+                        {
+                            queryBuilder.Append(", ");
+                        }
+
+                        queryBuilder.Append($@"
+                            (@DriveId{parameterIndex}, @AppId{parameterIndex}, @Comments{parameterIndex}, 
+                            @CompanyName{parameterIndex}, @FileBuildPart{parameterIndex}, @FileDescription{parameterIndex}, 
+                            @FileMajorPart{parameterIndex}, @FileMinorPart{parameterIndex}, @FileName{parameterIndex}, 
+                            @FilePrivatePart{parameterIndex}, @FileVersion{parameterIndex}, @InternalName{parameterIndex}, 
+                            @IsDebug{parameterIndex}, @IsPatched{parameterIndex}, @IsPreRelease{parameterIndex}, 
+                            @IsPrivateBuild{parameterIndex}, @IsSpecialBuild{parameterIndex}, @Language{parameterIndex}, 
+                            @LegalCopyright{parameterIndex}, @LegalTrademarks{parameterIndex}, @OriginalFilename{parameterIndex}, 
+                            @PrivateBuild{parameterIndex}, @ProductBuildPart{parameterIndex}, @ProductMajorPart{parameterIndex}, 
+                            @ProductMinorPart{parameterIndex}, @ProductName{parameterIndex}, @ProductPrivatePart{parameterIndex}, 
+                            @ProductVersion{parameterIndex}, @SpecialBuild{parameterIndex}, @CreationDate{parameterIndex})"
+                        );
+
+                        parameterValues.AddRange(
+                        [
+                            new SqlParameter($"@DriveId{parameterIndex}", driveHistoryId),
+                            new SqlParameter($"@AppId{parameterIndex}", app.Id),
+                            new SqlParameter($"@Comments{parameterIndex}", app.Comments ?? (object)DBNull.Value),
+                            new SqlParameter($"@CompanyName{parameterIndex}", app.CompanyName ?? (object)DBNull.Value),
+                            new SqlParameter($"@FileBuildPart{parameterIndex}", app.FileBuildPart),
+                            new SqlParameter($"@FileDescription{parameterIndex}", app.FileDescription ?? (object)DBNull.Value),
+                            new SqlParameter($"@FileMajorPart{parameterIndex}", app.FileMajorPart),
+                            new SqlParameter($"@FileMinorPart{parameterIndex}", app.FileMinorPart),
+                            new SqlParameter($"@FileName{parameterIndex}", app.FileName ?? (object)DBNull.Value),
+                            new SqlParameter($"@FilePrivatePart{parameterIndex}", app.FilePrivatePart),
+                            new SqlParameter($"@FileVersion{parameterIndex}", app.FileVersion ?? (object)DBNull.Value),
+                            new SqlParameter($"@InternalName{parameterIndex}", app.InternalName ?? (object)DBNull.Value),
+                            new SqlParameter($"@IsDebug{parameterIndex}", app.IsDebug),
+                            new SqlParameter($"@IsPatched{parameterIndex}", app.IsPatched),
+                            new SqlParameter($"@IsPreRelease{parameterIndex}", app.IsPreRelease),
+                            new SqlParameter($"@IsPrivateBuild{parameterIndex}", app.IsPrivateBuild),
+                            new SqlParameter($"@IsSpecialBuild{parameterIndex}", app.IsSpecialBuild),
+                            new SqlParameter($"@Language{parameterIndex}", app.Language ?? (object)DBNull.Value),
+                            new SqlParameter($"@LegalCopyright{parameterIndex}", app.LegalCopyright ?? (object)DBNull.Value),
+                            new SqlParameter($"@LegalTrademarks{parameterIndex}", app.LegalTrademarks ?? (object)DBNull.Value),
+                            new SqlParameter($"@OriginalFilename{parameterIndex}", app.OriginalFilename ?? (object)DBNull.Value),
+                            new SqlParameter($"@PrivateBuild{parameterIndex}", app.PrivateBuild ?? (object)DBNull.Value),
+                            new SqlParameter($"@ProductBuildPart{parameterIndex}", app.ProductBuildPart),
+                            new SqlParameter($"@ProductMajorPart{parameterIndex}", app.ProductMajorPart),
+                            new SqlParameter($"@ProductMinorPart{parameterIndex}", app.ProductMinorPart),
+                            new SqlParameter($"@ProductName{parameterIndex}", app.ProductName ?? (object)DBNull.Value),
+                            new SqlParameter($"@ProductPrivatePart{parameterIndex}", app.ProductPrivatePart),
+                            new SqlParameter($"@ProductVersion{parameterIndex}", app.ProductVersion ?? (object)DBNull.Value),
+                            new SqlParameter($"@SpecialBuild{parameterIndex}", app.SpecialBuild ?? (object)DBNull.Value),
+                            new SqlParameter($"@CreationDate{parameterIndex}", app.CreationDate)
+                        ]);
+
+                        parameterIndex++;
+                    }
+
+                    queryBuilder.Append(';');
+
+                    using SqlCommand cmd = new(queryBuilder.ToString(), connection, transaction);
+                    cmd.Parameters.AddRange(parameterValues.ToArray());
+
+                    await cmd.ExecuteNonQueryAsync();
+                }
+            }
+            catch (SqlException ex) when (ex.Number == 547) // Foreign key violation error number
+            {
+                throw new ArgumentException($"Error creating history for one of the apps. Some App Ids are invalid or do not exist in the database: {ex}");
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message, ex);
+            }
+        }
+
         public async Task<int> DeleteDriveRelationAsync(int appId, int driveId, SqlConnection connection, SqlTransaction transaction)
         {
             var appsDrivesRTable = db.AppsDrivesRelationTableNames;
@@ -355,6 +672,54 @@ namespace SystemInfoApi.Repositories
             catch (Exception ex)
             {
                 throw new Exception($"Failed to delete app {appId} relation to drive {driveId}:" + ex);
+            }
+        }
+        public async Task DeleteDriveRelationListAsync(List<ApplicationModel> appList, SqlConnection connection, SqlTransaction transaction)
+        {
+            const int parametersPerRow = 2;
+            int BatchSize = MaxParameters / parametersPerRow;
+
+            var appsDrivesRTable = db.AppsDrivesRelationTableNames;
+
+            for (int i = 0; i < appList.Count; i += BatchSize)
+            {
+                var batchList = appList.Skip(i).Take(BatchSize).ToList();
+                var parameterValues = new List<SqlParameter>();
+                var parameterIndex = 0;
+                var queryBuilder = new StringBuilder();
+
+                foreach (var app in batchList)
+                {
+                    if (parameterIndex > 0)
+                    {
+                        queryBuilder.Append("; ");
+                    }
+
+                    queryBuilder.Append($@"
+                        DELETE FROM {appsDrivesRTable.TableName}
+                        WHERE {appsDrivesRTable.AppId} = @AppId{parameterIndex}
+                        AND {appsDrivesRTable.DriveId} = @DriveId{parameterIndex}"
+                    );
+
+                    parameterValues.Add(new SqlParameter($"@AppId{parameterIndex}", app.Id));
+                    parameterValues.Add(new SqlParameter($"@DriveId{parameterIndex}", app.DriveId));
+
+                    parameterIndex++;
+                }
+
+                queryBuilder.Append(';');
+
+                try
+                {
+                    using SqlCommand cmd = new(queryBuilder.ToString(), connection, transaction);
+                    cmd.Parameters.AddRange(parameterValues.ToArray());
+
+                    await cmd.ExecuteNonQueryAsync();
+                }
+                catch (Exception ex)
+                {
+                    throw new Exception("Failed to delete app relations to drives: " + ex);
+                }
             }
         }
     }

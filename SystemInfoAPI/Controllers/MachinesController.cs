@@ -16,8 +16,8 @@ namespace SystemInfoApi.Controllers
         [Consumes("application/json")]
         public async Task<ActionResult<MachineModel>> Create([FromBody] MachineModel machine)
         {
-            DateTime startTime = DateTime.Now.ToLocalTime();
-            ConsoleUtils.LogMachineCreationRequest(HttpContext.Connection, startTime);
+            DateTime timeNow = DateTime.Now.ToLocalTime();
+            ConsoleUtils.LogMachineCreationRequest(HttpContext.Connection, timeNow);
             if (!ModelState.IsValid)
             {
                 Console.WriteLine("Failed to validate model: " + ModelState);
@@ -26,10 +26,10 @@ namespace SystemInfoApi.Controllers
 
             try
             {
-                MachineModel newMachine = await machinesService.InsertFullMachineAsync(machine);
+                MachineModel newMachine = await machinesService.InsertFullMachineAsync(machine, timeNow);
                 CreatedAtActionResult response = CreatedAtAction(nameof(GetById), new { machineId = newMachine.Id }, newMachine);
 
-                ConsoleUtils.LogMachineCreation(response.RouteValues, newMachine, Url, startTime);
+                ConsoleUtils.LogMachineCreation(response.RouteValues, newMachine, Url, timeNow);
                 return response;
             }
             catch (ArgumentException)
@@ -49,8 +49,8 @@ namespace SystemInfoApi.Controllers
         [Consumes("application/json")]
         public async Task<ActionResult<MachineModel>> Update(int machineId, [FromBody] MachineModel machine)
         {
-            var startTime = DateTime.Now.ToLocalTime();
-            ConsoleUtils.LogUpdateRequest(machine.Id, HttpContext.Connection, startTime);
+            var timeNow = DateTime.Now.ToLocalTime();
+            ConsoleUtils.LogUpdateRequest(machine.Id, HttpContext.Connection, timeNow);
 
             if (!ModelState.IsValid)
             {
@@ -66,14 +66,14 @@ namespace SystemInfoApi.Controllers
 
             try
             {
-                MachineModel updatedMachine = await machinesService.UpdateFullMachineAsync(machine);
+                MachineModel updatedMachine = await machinesService.UpdateFullMachineAsync(machine, timeNow);
 
                 if (updatedMachine == null)
                 {
                     return NotFound($"Machine with ID {machineId} was not found.");
                 }
 
-                ConsoleUtils.LogMachineUpdate(updatedMachine, startTime);
+                ConsoleUtils.LogMachineUpdate(updatedMachine, timeNow);
                 return Ok(updatedMachine);
             }
             catch (ArgumentException ex)
