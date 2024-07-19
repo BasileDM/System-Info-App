@@ -130,46 +130,27 @@ namespace SystemInfoApi.Repositories
         {
             try
             {
-                const int parametersPerrow = 30;
-                int BatchSize = MaxParameters / parametersPerrow;
+                const int parametersPerRow = 30;
+                int BatchSize = MaxParameters / parametersPerRow;
 
-                var appsDrivesRTable = db.AppsDrivesRelationTableNames;
                 for (int i = 0; i < appsList.Count; i += BatchSize)
                 {
                     var queryBuilder = new StringBuilder();
+                    var appsDrivesRTable = db.AppsDrivesRelationTableNames;
 
                     queryBuilder.Append($@"
                         INSERT INTO {appsDrivesRTable.TableName}
-                            ({appsDrivesRTable.DriveId},
-                             {appsDrivesRTable.AppId},
-                             {appsDrivesRTable.Comments},
-                             {appsDrivesRTable.CompanyName},
-                             {appsDrivesRTable.FileBuildPart},
-                             {appsDrivesRTable.FileDescription},
-                             {appsDrivesRTable.FileMajorPart},
-                             {appsDrivesRTable.FileMinorPart},
-                             {appsDrivesRTable.FileName},
-                             {appsDrivesRTable.FilePrivatePart},
-                             {appsDrivesRTable.FileVersion},
-                             {appsDrivesRTable.InternalName},
-                             {appsDrivesRTable.IsDebug},
-                             {appsDrivesRTable.IsPatched},
-                             {appsDrivesRTable.IsPreRelease},
-                             {appsDrivesRTable.IsPrivateBuild},
-                             {appsDrivesRTable.IsSpecialBuild},
-                             {appsDrivesRTable.Language},
-                             {appsDrivesRTable.Copyright},
-                             {appsDrivesRTable.Trademarks},
-                             {appsDrivesRTable.OriginalFilename},
-                             {appsDrivesRTable.PrivateBuild},
-                             {appsDrivesRTable.ProductBuildPart},
-                             {appsDrivesRTable.ProductMajorPart},
-                             {appsDrivesRTable.ProductMinorPart},
-                             {appsDrivesRTable.ProductName},
-                             {appsDrivesRTable.ProductPrivatePart},
-                             {appsDrivesRTable.ProductVersion},
-                             {appsDrivesRTable.SpecialBuild},
-                             {appsDrivesRTable.AppRelationCreationDate}) VALUES ");
+                        ({appsDrivesRTable.DriveId}, {appsDrivesRTable.AppId}, {appsDrivesRTable.Comments},
+                        {appsDrivesRTable.CompanyName}, {appsDrivesRTable.FileBuildPart}, {appsDrivesRTable.FileDescription},
+                        {appsDrivesRTable.FileMajorPart}, {appsDrivesRTable.FileMinorPart}, {appsDrivesRTable.FileName},
+                        {appsDrivesRTable.FilePrivatePart}, {appsDrivesRTable.FileVersion}, {appsDrivesRTable.InternalName},
+                        {appsDrivesRTable.IsDebug}, {appsDrivesRTable.IsPatched}, {appsDrivesRTable.IsPreRelease},
+                        {appsDrivesRTable.IsPrivateBuild}, {appsDrivesRTable.IsSpecialBuild}, {appsDrivesRTable.Language},
+                        {appsDrivesRTable.Copyright}, {appsDrivesRTable.Trademarks}, {appsDrivesRTable.OriginalFilename},
+                        {appsDrivesRTable.PrivateBuild}, {appsDrivesRTable.ProductBuildPart}, {appsDrivesRTable.ProductMajorPart},
+                        {appsDrivesRTable.ProductMinorPart}, {appsDrivesRTable.ProductName}, {appsDrivesRTable.ProductPrivatePart},
+                        {appsDrivesRTable.ProductVersion}, {appsDrivesRTable.SpecialBuild}, {appsDrivesRTable.AppRelationCreationDate}) VALUES "
+                    );
 
                     var batchList = appsList.Skip(i).Take(BatchSize).ToList();
                     var parameterIndex = 0;
@@ -182,7 +163,8 @@ namespace SystemInfoApi.Repositories
                             queryBuilder.Append(", ");
                         }
 
-                        queryBuilder.Append($@"(@DriveId{parameterIndex}, @AppId{parameterIndex}, @Comments{parameterIndex}, 
+                        queryBuilder.Append($@"
+                            (@DriveId{parameterIndex}, @AppId{parameterIndex}, @Comments{parameterIndex}, 
                             @CompanyName{parameterIndex}, @FileBuildPart{parameterIndex}, @FileDescription{parameterIndex}, 
                             @FileMajorPart{parameterIndex}, @FileMinorPart{parameterIndex}, @FileName{parameterIndex}, 
                             @FilePrivatePart{parameterIndex}, @FileVersion{parameterIndex}, @InternalName{parameterIndex}, 
@@ -191,10 +173,12 @@ namespace SystemInfoApi.Repositories
                             @LegalCopyright{parameterIndex}, @LegalTrademarks{parameterIndex}, @OriginalFilename{parameterIndex}, 
                             @PrivateBuild{parameterIndex}, @ProductBuildPart{parameterIndex}, @ProductMajorPart{parameterIndex}, 
                             @ProductMinorPart{parameterIndex}, @ProductName{parameterIndex}, @ProductPrivatePart{parameterIndex}, 
-                            @ProductVersion{parameterIndex}, @SpecialBuild{parameterIndex}, @CreationDate{parameterIndex})");
+                            @ProductVersion{parameterIndex}, @SpecialBuild{parameterIndex}, @CreationDate{parameterIndex})"
+                        );
 
-                        parameterValues.AddRange(new[]
-                        {
+
+                        parameterValues.AddRange(
+                        [
                             new SqlParameter($"@DriveId{parameterIndex}", app.DriveId),
                             new SqlParameter($"@AppId{parameterIndex}", app.Id),
                             new SqlParameter($"@Comments{parameterIndex}", app.Comments ?? (object)DBNull.Value),
@@ -225,7 +209,7 @@ namespace SystemInfoApi.Repositories
                             new SqlParameter($"@ProductVersion{parameterIndex}", app.ProductVersion ?? (object)DBNull.Value),
                             new SqlParameter($"@SpecialBuild{parameterIndex}", app.SpecialBuild ?? (object)DBNull.Value),
                             new SqlParameter($"@CreationDate{parameterIndex}", app.CreationDate)
-                        });
+                        ]);
 
                         parameterIndex++;
                     }
@@ -342,8 +326,8 @@ namespace SystemInfoApi.Repositories
             {
                 var appsDrivesRTable = db.AppsDrivesRelationTableNames;
 
-                const int parametersPerrow = 30;
-                int BatchSize = MaxParameters / parametersPerrow;
+                const int parametersPerRow = 30;
+                int BatchSize = MaxParameters / parametersPerRow;
 
                 for (int i = 0; i < appsList.Count; i += BatchSize)
                 {
@@ -389,8 +373,8 @@ namespace SystemInfoApi.Repositories
                             AND {appsDrivesRTable.AppId} = @AppId{parameterIndex};
                         ");
 
-                        parameterValues.AddRange(new[]
-                        {
+                        parameterValues.AddRange(
+                        [
                             new SqlParameter($"@DriveId{parameterIndex}", app.DriveId),
                             new SqlParameter($"@AppId{parameterIndex}", app.Id),
                             new SqlParameter($"@Comments{parameterIndex}", app.Comments ?? (object)DBNull.Value),
@@ -421,7 +405,7 @@ namespace SystemInfoApi.Repositories
                             new SqlParameter($"@Product_Version{parameterIndex}", app.ProductVersion ?? (object)DBNull.Value),
                             new SqlParameter($"@Special_Build{parameterIndex}", app.SpecialBuild ?? (object)DBNull.Value),
                             new SqlParameter($"@CreationDate{parameterIndex}", app.CreationDate)
-                        });
+                        ]);
 
                         parameterIndex++;
                     }
@@ -564,8 +548,8 @@ namespace SystemInfoApi.Repositories
         {
             try
             {
-                const int parametersPerrow = 30;
-                int BatchSize = MaxParameters / parametersPerrow;
+                const int parametersPerRow = 30;
+                int BatchSize = MaxParameters / parametersPerRow;
 
                 var appsDrivesRHistoryTable = db.AppsDrivesRelationHistoryTableNames;
 
@@ -574,36 +558,17 @@ namespace SystemInfoApi.Repositories
                     var queryBuilder = new StringBuilder();
                     queryBuilder.Append($@"
                         INSERT INTO {appsDrivesRHistoryTable.TableName}
-                            ({appsDrivesRHistoryTable.DriveId},
-                             {appsDrivesRHistoryTable.AppId},
-                             {appsDrivesRHistoryTable.Comments},
-                             {appsDrivesRHistoryTable.CompanyName},
-                             {appsDrivesRHistoryTable.FileBuildPart},
-                             {appsDrivesRHistoryTable.FileDescription},
-                             {appsDrivesRHistoryTable.FileMajorPart},
-                             {appsDrivesRHistoryTable.FileMinorPart},
-                             {appsDrivesRHistoryTable.FileName},
-                             {appsDrivesRHistoryTable.FilePrivatePart},
-                             {appsDrivesRHistoryTable.FileVersion},
-                             {appsDrivesRHistoryTable.InternalName},
-                             {appsDrivesRHistoryTable.IsDebug},
-                             {appsDrivesRHistoryTable.IsPatched},
-                             {appsDrivesRHistoryTable.IsPreRelease},
-                             {appsDrivesRHistoryTable.IsPrivateBuild},
-                             {appsDrivesRHistoryTable.IsSpecialBuild},
-                             {appsDrivesRHistoryTable.Language},
-                             {appsDrivesRHistoryTable.Copyright},
-                             {appsDrivesRHistoryTable.Trademarks},
-                             {appsDrivesRHistoryTable.OriginalFilename},
-                             {appsDrivesRHistoryTable.PrivateBuild},
-                             {appsDrivesRHistoryTable.ProductBuildPart},
-                             {appsDrivesRHistoryTable.ProductMajorPart},
-                             {appsDrivesRHistoryTable.ProductMinorPart},
-                             {appsDrivesRHistoryTable.ProductName},
-                             {appsDrivesRHistoryTable.ProductPrivatePart},
-                             {appsDrivesRHistoryTable.ProductVersion},
-                             {appsDrivesRHistoryTable.SpecialBuild},
-                             {appsDrivesRHistoryTable.AppRelationCreationDate}) VALUES ");
+                        ({appsDrivesRHistoryTable.DriveId}, {appsDrivesRHistoryTable.AppId}, {appsDrivesRHistoryTable.Comments},
+                        {appsDrivesRHistoryTable.CompanyName}, {appsDrivesRHistoryTable.FileBuildPart}, {appsDrivesRHistoryTable.FileDescription},
+                        {appsDrivesRHistoryTable.FileMajorPart}, {appsDrivesRHistoryTable.FileMinorPart}, {appsDrivesRHistoryTable.FileName},
+                        {appsDrivesRHistoryTable.FilePrivatePart}, {appsDrivesRHistoryTable.FileVersion}, {appsDrivesRHistoryTable.InternalName},
+                        {appsDrivesRHistoryTable.IsDebug}, {appsDrivesRHistoryTable.IsPatched}, {appsDrivesRHistoryTable.IsPreRelease},
+                        {appsDrivesRHistoryTable.IsPrivateBuild}, {appsDrivesRHistoryTable.IsSpecialBuild}, {appsDrivesRHistoryTable.Language},
+                        {appsDrivesRHistoryTable.Copyright}, {appsDrivesRHistoryTable.Trademarks}, {appsDrivesRHistoryTable.OriginalFilename},
+                        {appsDrivesRHistoryTable.PrivateBuild}, {appsDrivesRHistoryTable.ProductBuildPart}, {appsDrivesRHistoryTable.ProductMajorPart},
+                        {appsDrivesRHistoryTable.ProductMinorPart}, {appsDrivesRHistoryTable.ProductName}, {appsDrivesRHistoryTable.ProductPrivatePart},
+                        {appsDrivesRHistoryTable.ProductVersion}, {appsDrivesRHistoryTable.SpecialBuild}, {appsDrivesRHistoryTable.AppRelationCreationDate}) VALUES "
+                    );
 
                     var batchList = appsList.Skip(i).Take(BatchSize).ToList();
                     var parameterValues = new List<SqlParameter>();
@@ -616,7 +581,8 @@ namespace SystemInfoApi.Repositories
                             queryBuilder.Append(", ");
                         }
 
-                        queryBuilder.Append($@"(@DriveId{parameterIndex}, @AppId{parameterIndex}, @Comments{parameterIndex}, 
+                        queryBuilder.Append($@"
+                            (@DriveId{parameterIndex}, @AppId{parameterIndex}, @Comments{parameterIndex}, 
                             @CompanyName{parameterIndex}, @FileBuildPart{parameterIndex}, @FileDescription{parameterIndex}, 
                             @FileMajorPart{parameterIndex}, @FileMinorPart{parameterIndex}, @FileName{parameterIndex}, 
                             @FilePrivatePart{parameterIndex}, @FileVersion{parameterIndex}, @InternalName{parameterIndex}, 
@@ -625,10 +591,11 @@ namespace SystemInfoApi.Repositories
                             @LegalCopyright{parameterIndex}, @LegalTrademarks{parameterIndex}, @OriginalFilename{parameterIndex}, 
                             @PrivateBuild{parameterIndex}, @ProductBuildPart{parameterIndex}, @ProductMajorPart{parameterIndex}, 
                             @ProductMinorPart{parameterIndex}, @ProductName{parameterIndex}, @ProductPrivatePart{parameterIndex}, 
-                            @ProductVersion{parameterIndex}, @SpecialBuild{parameterIndex}, @CreationDate{parameterIndex})");
+                            @ProductVersion{parameterIndex}, @SpecialBuild{parameterIndex}, @CreationDate{parameterIndex})"
+                        );
 
-                        parameterValues.AddRange(new[]
-                        {
+                        parameterValues.AddRange(
+                        [
                             new SqlParameter($"@DriveId{parameterIndex}", driveHistoryId),
                             new SqlParameter($"@AppId{parameterIndex}", app.Id),
                             new SqlParameter($"@Comments{parameterIndex}", app.Comments ?? (object)DBNull.Value),
@@ -659,7 +626,7 @@ namespace SystemInfoApi.Repositories
                             new SqlParameter($"@ProductVersion{parameterIndex}", app.ProductVersion ?? (object)DBNull.Value),
                             new SqlParameter($"@SpecialBuild{parameterIndex}", app.SpecialBuild ?? (object)DBNull.Value),
                             new SqlParameter($"@CreationDate{parameterIndex}", app.CreationDate)
-                        });
+                        ]);
 
                         parameterIndex++;
                     }
@@ -709,8 +676,8 @@ namespace SystemInfoApi.Repositories
         }
         public async Task DeleteDriveRelationListAsync(List<ApplicationModel> appList, SqlConnection connection, SqlTransaction transaction)
         {
-            const int parametersPerrow = 2;
-            int BatchSize = MaxParameters / parametersPerrow;
+            const int parametersPerRow = 2;
+            int BatchSize = MaxParameters / parametersPerRow;
 
             var appsDrivesRTable = db.AppsDrivesRelationTableNames;
 
@@ -731,7 +698,8 @@ namespace SystemInfoApi.Repositories
                     queryBuilder.Append($@"
                         DELETE FROM {appsDrivesRTable.TableName}
                         WHERE {appsDrivesRTable.AppId} = @AppId{parameterIndex}
-                        AND {appsDrivesRTable.DriveId} = @DriveId{parameterIndex}");
+                        AND {appsDrivesRTable.DriveId} = @DriveId{parameterIndex}"
+                    );
 
                     parameterValues.Add(new SqlParameter($"@AppId{parameterIndex}", app.Id));
                     parameterValues.Add(new SqlParameter($"@DriveId{parameterIndex}", app.DriveId));
