@@ -11,74 +11,74 @@ namespace SystemInfoApi.Repositories
 
         public async Task<ApplicationModel> InsertAsync(ApplicationModel app, SqlConnection connection, SqlTransaction transaction)
         {
+            var appsDrivesRTable = db.AppsDrivesRelationTableNames;
+
+            string query = @$"
+                INSERT INTO {appsDrivesRTable.TableName}
+                    ({appsDrivesRTable.DriveId},
+                        {appsDrivesRTable.AppId},
+                        {appsDrivesRTable.Comments},
+                        {appsDrivesRTable.CompanyName},
+                        {appsDrivesRTable.FileBuildPart},
+                        {appsDrivesRTable.FileDescription},
+                        {appsDrivesRTable.FileMajorPart},
+                        {appsDrivesRTable.FileMinorPart},
+                        {appsDrivesRTable.FileName},
+                        {appsDrivesRTable.FilePrivatePart},
+                        {appsDrivesRTable.FileVersion},
+                        {appsDrivesRTable.InternalName},
+                        {appsDrivesRTable.IsDebug},
+                        {appsDrivesRTable.IsPatched},
+                        {appsDrivesRTable.IsPreRelease},
+                        {appsDrivesRTable.IsPrivateBuild},
+                        {appsDrivesRTable.IsSpecialBuild},
+                        {appsDrivesRTable.Language},
+                        {appsDrivesRTable.Copyright},
+                        {appsDrivesRTable.Trademarks},
+                        {appsDrivesRTable.OriginalFilename},
+                        {appsDrivesRTable.PrivateBuild},
+                        {appsDrivesRTable.ProductBuildPart},
+                        {appsDrivesRTable.ProductMajorPart},
+                        {appsDrivesRTable.ProductMinorPart},
+                        {appsDrivesRTable.ProductName},
+                        {appsDrivesRTable.ProductPrivatePart},
+                        {appsDrivesRTable.ProductVersion},
+                        {appsDrivesRTable.SpecialBuild},
+                        {appsDrivesRTable.AppRelationCreationDate})
+                VALUES 
+                    (@id_client_machine_disque,
+                        @id_client_machine_disque_app,
+                        @Comments,
+                        @Company_Name,
+                        @File_Build_Part,
+                        @File_Description,
+                        @File_Major_Part,
+                        @File_Minor_Part,
+                        @File_Name,
+                        @File_Private_Part,
+                        @File_Version,
+                        @Internal_Name,
+                        @Is_Debug,
+                        @Is_Patched,
+                        @Is_Pre_Release,
+                        @Is_Private_Build,
+                        @Is_Special_Build,
+                        @Language,
+                        @Legal_Copyright,
+                        @Legal_Trademarks,
+                        @Original_Filename,
+                        @Private_Build,
+                        @Product_Build_Part,
+                        @Product_Major_Part,
+                        @Product_Minor_Part,
+                        @Product_Name,
+                        @Product_Private_Part,
+                        @Product_Version,
+                        @Special_Build,
+                        @creationDate);";
+
             try
             {
-                var appsDrivesRTable = db.AppsDrivesRelationTableNames;
-
-                string query = @$"
-                    INSERT INTO {appsDrivesRTable.TableName}
-                        ({appsDrivesRTable.DriveId},
-                         {appsDrivesRTable.AppId},
-                         {appsDrivesRTable.Comments},
-                         {appsDrivesRTable.CompanyName},
-                         {appsDrivesRTable.FileBuildPart},
-                         {appsDrivesRTable.FileDescription},
-                         {appsDrivesRTable.FileMajorPart},
-                         {appsDrivesRTable.FileMinorPart},
-                         {appsDrivesRTable.FileName},
-                         {appsDrivesRTable.FilePrivatePart},
-                         {appsDrivesRTable.FileVersion},
-                         {appsDrivesRTable.InternalName},
-                         {appsDrivesRTable.IsDebug},
-                         {appsDrivesRTable.IsPatched},
-                         {appsDrivesRTable.IsPreRelease},
-                         {appsDrivesRTable.IsPrivateBuild},
-                         {appsDrivesRTable.IsSpecialBuild},
-                         {appsDrivesRTable.Language},
-                         {appsDrivesRTable.Copyright},
-                         {appsDrivesRTable.Trademarks},
-                         {appsDrivesRTable.OriginalFilename},
-                         {appsDrivesRTable.PrivateBuild},
-                         {appsDrivesRTable.ProductBuildPart},
-                         {appsDrivesRTable.ProductMajorPart},
-                         {appsDrivesRTable.ProductMinorPart},
-                         {appsDrivesRTable.ProductName},
-                         {appsDrivesRTable.ProductPrivatePart},
-                         {appsDrivesRTable.ProductVersion},
-                         {appsDrivesRTable.SpecialBuild},
-                         {appsDrivesRTable.AppRelationCreationDate})
-                    VALUES 
-                        (@id_client_machine_disque,
-                         @id_client_machine_disque_app,
-                         @Comments,
-                         @Company_Name,
-                         @File_Build_Part,
-                         @File_Description,
-                         @File_Major_Part,
-                         @File_Minor_Part,
-                         @File_Name,
-                         @File_Private_Part,
-                         @File_Version,
-                         @Internal_Name,
-                         @Is_Debug,
-                         @Is_Patched,
-                         @Is_Pre_Release,
-                         @Is_Private_Build,
-                         @Is_Special_Build,
-                         @Language,
-                         @Legal_Copyright,
-                         @Legal_Trademarks,
-                         @Original_Filename,
-                         @Private_Build,
-                         @Product_Build_Part,
-                         @Product_Major_Part,
-                         @Product_Minor_Part,
-                         @Product_Name,
-                         @Product_Private_Part,
-                         @Product_Version,
-                         @Special_Build,
-                         @creationDate);";
-
                 using (SqlCommand cmd = new(query, connection, transaction))
                 {
                     cmd.Parameters.AddWithValue("@id_client_machine_disque", app.DriveId);
@@ -234,44 +234,44 @@ namespace SystemInfoApi.Repositories
 
         public async Task<ApplicationModel> UpdateAsync(ApplicationModel app, SqlConnection connection, SqlTransaction transaction)
         {
+            var appsDrivesRTable = db.AppsDrivesRelationTableNames;
+
+            string query = @$"
+                UPDATE {appsDrivesRTable.TableName}
+                SET 
+                    {appsDrivesRTable.Comments} = @Comments,
+                    {appsDrivesRTable.CompanyName} = @Company_Name,
+                    {appsDrivesRTable.FileBuildPart} = @File_Build_Part,
+                    {appsDrivesRTable.FileDescription} = @File_Description,
+                    {appsDrivesRTable.FileMajorPart} = @File_Major_Part,
+                    {appsDrivesRTable.FileMinorPart} = @File_Minor_Part,
+                    {appsDrivesRTable.FileName} = @File_Name,
+                    {appsDrivesRTable.FilePrivatePart} = @File_Private_Part,
+                    {appsDrivesRTable.FileVersion} = @File_Version,
+                    {appsDrivesRTable.InternalName} = @Internal_Name,
+                    {appsDrivesRTable.IsDebug} = @Is_Debug,
+                    {appsDrivesRTable.IsPatched} = @Is_Patched,
+                    {appsDrivesRTable.IsPreRelease} = @Is_Pre_Release,
+                    {appsDrivesRTable.IsPrivateBuild} = @Is_Private_Build,
+                    {appsDrivesRTable.IsSpecialBuild} = @Is_Special_Build,
+                    {appsDrivesRTable.Language} = @Language,
+                    {appsDrivesRTable.Copyright} = @Legal_Copyright,
+                    {appsDrivesRTable.Trademarks} = @Legal_Trademarks,
+                    {appsDrivesRTable.OriginalFilename} = @Original_Filename,
+                    {appsDrivesRTable.PrivateBuild} = @Private_Build,
+                    {appsDrivesRTable.ProductBuildPart} = @Product_Build_Part,
+                    {appsDrivesRTable.ProductMajorPart} = @Product_Major_Part,
+                    {appsDrivesRTable.ProductMinorPart} = @Product_Minor_Part,
+                    {appsDrivesRTable.ProductName} = @Product_Name,
+                    {appsDrivesRTable.ProductPrivatePart} = @Product_Private_Part,
+                    {appsDrivesRTable.ProductVersion} = @Product_Version,
+                    {appsDrivesRTable.SpecialBuild} = @Special_Build,
+                    {appsDrivesRTable.AppRelationCreationDate} = @creationDate
+                WHERE {appsDrivesRTable.DriveId} = @id_client_machine_disque 
+                AND {appsDrivesRTable.AppId} = @id_client_machine_disque_app;";
+
             try
             {
-                var appsDrivesRTable = db.AppsDrivesRelationTableNames;
-
-                string query = @$"
-                    UPDATE {appsDrivesRTable.TableName}
-                    SET 
-                        {appsDrivesRTable.Comments} = @Comments,
-                        {appsDrivesRTable.CompanyName} = @Company_Name,
-                        {appsDrivesRTable.FileBuildPart} = @File_Build_Part,
-                        {appsDrivesRTable.FileDescription} = @File_Description,
-                        {appsDrivesRTable.FileMajorPart} = @File_Major_Part,
-                        {appsDrivesRTable.FileMinorPart} = @File_Minor_Part,
-                        {appsDrivesRTable.FileName} = @File_Name,
-                        {appsDrivesRTable.FilePrivatePart} = @File_Private_Part,
-                        {appsDrivesRTable.FileVersion} = @File_Version,
-                        {appsDrivesRTable.InternalName} = @Internal_Name,
-                        {appsDrivesRTable.IsDebug} = @Is_Debug,
-                        {appsDrivesRTable.IsPatched} = @Is_Patched,
-                        {appsDrivesRTable.IsPreRelease} = @Is_Pre_Release,
-                        {appsDrivesRTable.IsPrivateBuild} = @Is_Private_Build,
-                        {appsDrivesRTable.IsSpecialBuild} = @Is_Special_Build,
-                        {appsDrivesRTable.Language} = @Language,
-                        {appsDrivesRTable.Copyright} = @Legal_Copyright,
-                        {appsDrivesRTable.Trademarks} = @Legal_Trademarks,
-                        {appsDrivesRTable.OriginalFilename} = @Original_Filename,
-                        {appsDrivesRTable.PrivateBuild} = @Private_Build,
-                        {appsDrivesRTable.ProductBuildPart} = @Product_Build_Part,
-                        {appsDrivesRTable.ProductMajorPart} = @Product_Major_Part,
-                        {appsDrivesRTable.ProductMinorPart} = @Product_Minor_Part,
-                        {appsDrivesRTable.ProductName} = @Product_Name,
-                        {appsDrivesRTable.ProductPrivatePart} = @Product_Private_Part,
-                        {appsDrivesRTable.ProductVersion} = @Product_Version,
-                        {appsDrivesRTable.SpecialBuild} = @Special_Build,
-                        {appsDrivesRTable.AppRelationCreationDate} = @creationDate
-                    WHERE {appsDrivesRTable.DriveId} = @id_client_machine_disque 
-                    AND {appsDrivesRTable.AppId} = @id_client_machine_disque_app;";
-
                 using (SqlCommand cmd = new(query, connection, transaction))
                 {
                     cmd.Parameters.AddWithValue("@id_client_machine_disque", app.DriveId);
@@ -322,13 +322,13 @@ namespace SystemInfoApi.Repositories
         }
         public async Task UpdateListAsync(List<ApplicationModel> appsList, SqlConnection connection, SqlTransaction transaction)
         {
+            var appsDrivesRTable = db.AppsDrivesRelationTableNames;
+
+            const int parametersPerRow = 30;
+            int BatchSize = MaxParameters / parametersPerRow;
+
             try
             {
-                var appsDrivesRTable = db.AppsDrivesRelationTableNames;
-
-                const int parametersPerRow = 30;
-                int BatchSize = MaxParameters / parametersPerRow;
-
                 for (int i = 0; i < appsList.Count; i += BatchSize)
                 {
                     var batchList = appsList.Skip(i).Take(BatchSize).ToList();
@@ -428,74 +428,74 @@ namespace SystemInfoApi.Repositories
 
         public async Task<int> InsertHistoryAsync(ApplicationModel app, SqlConnection connection, SqlTransaction transaction, int driveHistoryId)
         {
+            var appsDrivesRHistoryTable = db.AppsDrivesRelationHistoryTableNames;
+
+            string query = @$"
+                INSERT INTO {appsDrivesRHistoryTable.TableName}
+                    ({appsDrivesRHistoryTable.DriveId},
+                        {appsDrivesRHistoryTable.AppId},
+                        {appsDrivesRHistoryTable.Comments},
+                        {appsDrivesRHistoryTable.CompanyName},
+                        {appsDrivesRHistoryTable.FileBuildPart},
+                        {appsDrivesRHistoryTable.FileDescription},
+                        {appsDrivesRHistoryTable.FileMajorPart},
+                        {appsDrivesRHistoryTable.FileMinorPart},
+                        {appsDrivesRHistoryTable.FileName},
+                        {appsDrivesRHistoryTable.FilePrivatePart},
+                        {appsDrivesRHistoryTable.FileVersion},
+                        {appsDrivesRHistoryTable.InternalName},
+                        {appsDrivesRHistoryTable.IsDebug},
+                        {appsDrivesRHistoryTable.IsPatched},
+                        {appsDrivesRHistoryTable.IsPreRelease},
+                        {appsDrivesRHistoryTable.IsPrivateBuild},
+                        {appsDrivesRHistoryTable.IsSpecialBuild},
+                        {appsDrivesRHistoryTable.Language},
+                        {appsDrivesRHistoryTable.Copyright},
+                        {appsDrivesRHistoryTable.Trademarks},
+                        {appsDrivesRHistoryTable.OriginalFilename},
+                        {appsDrivesRHistoryTable.PrivateBuild},
+                        {appsDrivesRHistoryTable.ProductBuildPart},
+                        {appsDrivesRHistoryTable.ProductMajorPart},
+                        {appsDrivesRHistoryTable.ProductMinorPart},
+                        {appsDrivesRHistoryTable.ProductName},
+                        {appsDrivesRHistoryTable.ProductPrivatePart},
+                        {appsDrivesRHistoryTable.ProductVersion},
+                        {appsDrivesRHistoryTable.SpecialBuild},
+                        {appsDrivesRHistoryTable.AppRelationCreationDate})
+                VALUES 
+                    (@id_client_machine_disque,
+                        @id_client_machine_disque_app,
+                        @Comments,
+                        @Company_Name,
+                        @File_Build_Part,
+                        @File_Description,
+                        @File_Major_Part,
+                        @File_Minor_Part,
+                        @File_Name,
+                        @File_Private_Part,
+                        @File_Version,
+                        @Internal_Name,
+                        @Is_Debug,
+                        @Is_Patched,
+                        @Is_Pre_Release,
+                        @Is_Private_Build,
+                        @Is_Special_Build,
+                        @Language,
+                        @Legal_Copyright,
+                        @Legal_Trademarks,
+                        @Original_Filename,
+                        @Private_Build,
+                        @Product_Build_Part,
+                        @Product_Major_Part,
+                        @Product_Minor_Part,
+                        @Product_Name,
+                        @Product_Private_Part,
+                        @Product_Version,
+                        @Special_Build,
+                        @creationDate);";
+
             try
             {
-                var appsDrivesRHistoryTable = db.AppsDrivesRelationHistoryTableNames;
-
-                string query = @$"
-                    INSERT INTO {appsDrivesRHistoryTable.TableName}
-                        ({appsDrivesRHistoryTable.DriveId},
-                         {appsDrivesRHistoryTable.AppId},
-                         {appsDrivesRHistoryTable.Comments},
-                         {appsDrivesRHistoryTable.CompanyName},
-                         {appsDrivesRHistoryTable.FileBuildPart},
-                         {appsDrivesRHistoryTable.FileDescription},
-                         {appsDrivesRHistoryTable.FileMajorPart},
-                         {appsDrivesRHistoryTable.FileMinorPart},
-                         {appsDrivesRHistoryTable.FileName},
-                         {appsDrivesRHistoryTable.FilePrivatePart},
-                         {appsDrivesRHistoryTable.FileVersion},
-                         {appsDrivesRHistoryTable.InternalName},
-                         {appsDrivesRHistoryTable.IsDebug},
-                         {appsDrivesRHistoryTable.IsPatched},
-                         {appsDrivesRHistoryTable.IsPreRelease},
-                         {appsDrivesRHistoryTable.IsPrivateBuild},
-                         {appsDrivesRHistoryTable.IsSpecialBuild},
-                         {appsDrivesRHistoryTable.Language},
-                         {appsDrivesRHistoryTable.Copyright},
-                         {appsDrivesRHistoryTable.Trademarks},
-                         {appsDrivesRHistoryTable.OriginalFilename},
-                         {appsDrivesRHistoryTable.PrivateBuild},
-                         {appsDrivesRHistoryTable.ProductBuildPart},
-                         {appsDrivesRHistoryTable.ProductMajorPart},
-                         {appsDrivesRHistoryTable.ProductMinorPart},
-                         {appsDrivesRHistoryTable.ProductName},
-                         {appsDrivesRHistoryTable.ProductPrivatePart},
-                         {appsDrivesRHistoryTable.ProductVersion},
-                         {appsDrivesRHistoryTable.SpecialBuild},
-                         {appsDrivesRHistoryTable.AppRelationCreationDate})
-                    VALUES 
-                        (@id_client_machine_disque,
-                         @id_client_machine_disque_app,
-                         @Comments,
-                         @Company_Name,
-                         @File_Build_Part,
-                         @File_Description,
-                         @File_Major_Part,
-                         @File_Minor_Part,
-                         @File_Name,
-                         @File_Private_Part,
-                         @File_Version,
-                         @Internal_Name,
-                         @Is_Debug,
-                         @Is_Patched,
-                         @Is_Pre_Release,
-                         @Is_Private_Build,
-                         @Is_Special_Build,
-                         @Language,
-                         @Legal_Copyright,
-                         @Legal_Trademarks,
-                         @Original_Filename,
-                         @Private_Build,
-                         @Product_Build_Part,
-                         @Product_Major_Part,
-                         @Product_Minor_Part,
-                         @Product_Name,
-                         @Product_Private_Part,
-                         @Product_Version,
-                         @Special_Build,
-                         @creationDate);";
-
                 int historyAppId;
                 using (SqlCommand cmd = new(query, connection, transaction))
                 {
@@ -533,6 +533,7 @@ namespace SystemInfoApi.Repositories
                     var obj = await cmd.ExecuteScalarAsync();
                     historyAppId = Convert.ToInt32(obj);
                 };
+
                 return historyAppId;
             }
             catch (SqlException ex) when (ex.Number == 547) // Foreign key violation error number
@@ -546,13 +547,13 @@ namespace SystemInfoApi.Repositories
         }
         public async Task InsertHistoryListAsync(List<ApplicationModel> appsList, SqlConnection connection, SqlTransaction transaction, int driveHistoryId)
         {
+            const int parametersPerRow = 30;
+            int BatchSize = MaxParameters / parametersPerRow;
+
+            var appsDrivesRHistoryTable = db.AppsDrivesRelationHistoryTableNames;
+
             try
             {
-                const int parametersPerRow = 30;
-                int BatchSize = MaxParameters / parametersPerRow;
-
-                var appsDrivesRHistoryTable = db.AppsDrivesRelationHistoryTableNames;
-
                 for (int i = 0; i < appsList.Count; i += BatchSize)
                 {
                     var queryBuilder = new StringBuilder();

@@ -15,18 +15,18 @@ namespace SystemInfoApi.Repositories
         /// </returns>
         public async Task<OsModel> InsertAsync(OsModel os, SqlConnection connection, SqlTransaction transaction)
         {
+            var otn = db.OsTableNames;
+
+            string query = @$"
+                INSERT INTO {otn.TableName}
+                    ({otn.DriveId}, {otn.Directory}, {otn.Architecture}, {otn.Version}, {otn.ProductName}, {otn.ReleaseId}, {otn.CurrentBuild}, {otn.Ubr}, {otn.OsCreationDate})
+                VALUES 
+                    (@driveId, @directory, @architecture, @version, @productName, @releaseId, @currentBuild, @ubr, @creationDate);
+
+                SELECT SCOPE_IDENTITY();";
+
             try
             {
-                var otn = db.OsTableNames;
-
-                string query = @$"
-                    INSERT INTO {otn.TableName}
-                        ({otn.DriveId}, {otn.Directory}, {otn.Architecture}, {otn.Version}, {otn.ProductName}, {otn.ReleaseId}, {otn.CurrentBuild}, {otn.Ubr}, {otn.OsCreationDate})
-                    VALUES 
-                        (@driveId, @directory, @architecture, @version, @productName, @releaseId, @currentBuild, @ubr, @creationDate);
-
-                    SELECT SCOPE_IDENTITY();";
-
                 using (SqlCommand cmd = new(query, connection, transaction))
                 {
                     cmd.Parameters.AddWithValue("@driveId", os.DriveId);
@@ -42,8 +42,8 @@ namespace SystemInfoApi.Repositories
                     var newOsId = await cmd.ExecuteScalarAsync();
                     os.Id = Convert.ToInt32(newOsId);
                 }
-                return os;
 
+                return os;
             }
             catch (Exception ex)
             {
@@ -52,29 +52,28 @@ namespace SystemInfoApi.Repositories
         }
         public async Task<OsModel> UpdateAsync(OsModel os, SqlConnection connection, SqlTransaction transaction)
         {
+            var otn = db.OsTableNames;
+
+            string query = @$"
+                UPDATE {otn.TableName}
+                SET
+                    {otn.DriveId} = @driveId, 
+                    {otn.Directory} = @directory, 
+                    {otn.Architecture} = @architecture, 
+                    {otn.Version} = @version, 
+                    {otn.ProductName} = @productName, 
+                    {otn.ReleaseId} = @releaseId, 
+                    {otn.CurrentBuild} = @currentBuild, 
+                    {otn.Ubr} = @ubr,
+                    {otn.OsCreationDate} = @creationDate
+                WHERE {otn.DriveId} = @driveId
+
+                SELECT {otn.Id} 
+                FROM {otn.TableName}
+                WHERE {otn.DriveId} = @driveId";
+
             try
             {
-                var ohtn = db.OsHistoryTableNames;
-                var otn = db.OsTableNames;
-
-                string query = @$"
-                    UPDATE {otn.TableName}
-                    SET
-                        {otn.DriveId} = @driveId, 
-                        {otn.Directory} = @directory, 
-                        {otn.Architecture} = @architecture, 
-                        {otn.Version} = @version, 
-                        {otn.ProductName} = @productName, 
-                        {otn.ReleaseId} = @releaseId, 
-                        {otn.CurrentBuild} = @currentBuild, 
-                        {otn.Ubr} = @ubr,
-                        {otn.OsCreationDate} = @creationDate
-                    WHERE {otn.DriveId} = @driveId
-
-                    SELECT {otn.Id} 
-                    FROM {otn.TableName}
-                    WHERE {otn.DriveId} = @driveId";
-
                 using (SqlCommand cmd = new(query, connection, transaction))
                 {
                     cmd.Parameters.AddWithValue("@driveId", os.DriveId);
@@ -102,18 +101,18 @@ namespace SystemInfoApi.Repositories
         }
         public async Task<int> InsertHistoryAsync(OsModel os, SqlConnection connection, SqlTransaction transaction, int historyDriveId)
         {
+            var ohtn = db.OsHistoryTableNames;
+
+            string query = @$"
+                INSERT INTO {ohtn.TableName}
+                    ({ohtn.DriveId}, {ohtn.Directory}, {ohtn.Architecture}, {ohtn.Version}, {ohtn.ProductName}, {ohtn.ReleaseId}, {ohtn.CurrentBuild}, {ohtn.Ubr}, {ohtn.OsCreationDate})
+                VALUES 
+                    (@driveId, @directory, @architecture, @version, @productName, @releaseId, @currentBuild, @ubr, @creationDate);
+
+                SELECT SCOPE_IDENTITY();";
+
             try
             {
-                var ohtn = db.OsHistoryTableNames;
-
-                string query = @$"
-                    INSERT INTO {ohtn.TableName}
-                        ({ohtn.DriveId}, {ohtn.Directory}, {ohtn.Architecture}, {ohtn.Version}, {ohtn.ProductName}, {ohtn.ReleaseId}, {ohtn.CurrentBuild}, {ohtn.Ubr}, {ohtn.OsCreationDate})
-                    VALUES 
-                        (@driveId, @directory, @architecture, @version, @productName, @releaseId, @currentBuild, @ubr, @creationDate);
-
-                    SELECT SCOPE_IDENTITY();";
-
                 int historyOsId;
                 using (SqlCommand cmd = new(query, connection, transaction))
                 {
@@ -130,8 +129,8 @@ namespace SystemInfoApi.Repositories
                     var obj = await cmd.ExecuteScalarAsync();
                     historyOsId = Convert.ToInt32(obj);
                 }
-                return historyOsId;
 
+                return historyOsId;
             }
             catch (Exception ex)
             {

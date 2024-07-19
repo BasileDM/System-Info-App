@@ -16,8 +16,8 @@ namespace SystemInfoApi.Controllers
         [Consumes("application/json")]
         public async Task<ActionResult<MachineModel>> Create([FromBody] MachineModel machine)
         {
-            DateTime timeNow = DateTime.Now.ToLocalTime();
-            ConsoleUtils.LogMachineCreationRequest(HttpContext.Connection, timeNow);
+            DateTime requestDate = DateTime.Now.ToLocalTime();
+            ConsoleUtils.LogMachineCreationRequest(HttpContext.Connection, requestDate);
             if (!ModelState.IsValid)
             {
                 Console.WriteLine("Failed to validate model: " + ModelState);
@@ -26,10 +26,10 @@ namespace SystemInfoApi.Controllers
 
             try
             {
-                MachineModel newMachine = await machinesService.InsertFullMachineAsync(machine, timeNow);
+                MachineModel newMachine = await machinesService.InsertFullMachineAsync(machine, requestDate);
                 CreatedAtActionResult response = CreatedAtAction(nameof(GetById), new { machineId = newMachine.Id }, newMachine);
 
-                ConsoleUtils.LogMachineCreation(response.RouteValues, newMachine, Url, timeNow);
+                ConsoleUtils.LogMachineCreation(response.RouteValues, newMachine, Url, requestDate);
                 return response;
             }
             catch (ArgumentException)
