@@ -63,7 +63,7 @@ namespace SystemInfoClient.Classes
             }
             catch (InvalidDataException ex)
             {
-                throw new JsonException($"Settings.json file error: {ex.Message}");
+                throw new InvalidDataException($"Settings.json file error: {ex.Message}");
             }
             catch (Exception ex)
             {

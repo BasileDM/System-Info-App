@@ -14,11 +14,8 @@ namespace SystemInfoApi
         {
             try
             {
-                // Timers for performance monitoring
-                var startTime = DateTime.Now;
-                ConsoleUtils.StartWatch();
-
                 // Instanciate required objects and services
+                ConsoleUtils.StartTimer();
                 EnvVariable env = new("SysInfoApp");
                 Settings settings = Settings.GetInstance();
 
@@ -30,11 +27,9 @@ namespace SystemInfoApi
                 // Fetch token
                 JwtToken token = await security.GetTokenAsync();
 
-                // Send machine info to API
+                // Send machine info to API and handle response
                 HttpResponseMessage response = await machineService.SendMachineInfoAsync(token.GetString());
-
-                // Handle API response
-                await HandleResponseAsync(response, settings, security, machineService, startTime);
+                await HandleResponseAsync(response, settings, security, machineService);
             }
             catch (Exception ex)
             {
@@ -43,7 +38,7 @@ namespace SystemInfoApi
         }
 
         private static async Task HandleResponseAsync(
-            HttpResponseMessage response, Settings settings, SecurityService security, MachineService machineService, DateTime startTime)
+            HttpResponseMessage response, Settings settings, SecurityService security, MachineService machineService)
         {
             try
             {
@@ -78,14 +73,13 @@ namespace SystemInfoApi
                         settings.RewriteFileWithId(newMachineId);
                         break;
 
-                    // Generic
                     default:
                         var errorContent = await response.Content.ReadAsStringAsync();
                         Console.WriteLine();
                         Console.WriteLine($"{response.ReasonPhrase}: {errorContent}");
                         break;
                 }
-                ConsoleUtils.LogTotalExecutionTime(startTime);
+                ConsoleUtils.LogTotalExecutionTime();
             }
             catch (Exception ex)
             {
