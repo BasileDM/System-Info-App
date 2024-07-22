@@ -61,7 +61,7 @@ namespace SystemInfoClient.Utilities
                 _stopwatch.Restart();
             }
         }
-        public static void StartWatch()
+        public static void StartTimer()
         {
             _stopwatch.Start();
         }

@@ -109,22 +109,27 @@ namespace SystemInfoClient.Classes.System
         {
             try
             {
-                string serialNumber = string.Empty;
-                ManagementObjectSearcher searcher =
-                    new($"SELECT * FROM Win32_LogicalDisk WHERE DeviceID='{drive.Name.Replace("\\", "")}'");
+                string driveLetter = drive.Name.TrimEnd('\\');
+                string query = $"SELECT VolumeSerialNumber FROM Win32_LogicalDisk WHERE DeviceID='{driveLetter}'";
 
-                foreach (ManagementObject disk in searcher.Get().Cast<ManagementObject>())
+                ManagementObjectSearcher searcher = new(query);
+                ManagementObject? disk = searcher.Get().Cast<ManagementObject>().FirstOrDefault() 
+                    ?? throw new Exception("Drive not found.");
+                
+                string? serialNumber = disk["VolumeSerialNumber"]?.ToString();
+
+                if (string.IsNullOrEmpty(serialNumber))
                 {
-                    serialNumber = disk["VolumeSerialNumber"].ToString() ??
-                        throw new Exception("Failed to retrieve the drive serial number: ");
-                    break;
+                    throw new Exception("Empty serial number.");
                 }
-
-                return serialNumber;
+                else
+                {
+                    return serialNumber;
+                }
             }
             catch (Exception ex)
             {
-                throw new Exception("Error: " + ex.Message);
+                throw new Exception($"Error retrieving drive {drive.Name} serial number: " + ex.Message);
             }
         }
     }

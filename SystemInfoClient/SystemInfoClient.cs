@@ -14,10 +14,8 @@ namespace SystemInfoApi
         {
             try
             {
-                // Timers for performance monitoring
-                ConsoleUtils.StartWatch();
-
                 // Instanciate required objects and services
+                ConsoleUtils.StartTimer();
                 EnvVariable env = new("SysInfoApp");
                 Settings settings = Settings.GetInstance();
 
@@ -29,10 +27,8 @@ namespace SystemInfoApi
                 // Fetch token
                 JwtToken token = await security.GetTokenAsync();
 
-                // Send machine info to API
+                // Send machine info to API and handle response
                 HttpResponseMessage response = await machineService.SendMachineInfoAsync(token.GetString());
-
-                // Handle API response
                 await HandleResponseAsync(response, settings, security, machineService);
             }
             catch (Exception ex)
@@ -77,7 +73,6 @@ namespace SystemInfoApi
                         settings.RewriteFileWithId(newMachineId);
                         break;
 
-                    // Generic
                     default:
                         var errorContent = await response.Content.ReadAsStringAsync();
                         Console.WriteLine();
