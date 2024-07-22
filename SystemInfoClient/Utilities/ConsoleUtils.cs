@@ -46,25 +46,20 @@ namespace SystemInfoClient.Utilities
             Console.Write(message);
             Console.ResetColor();
         }
-        private static string GetExecutionTimeString(DateTime startTime)
-        {
-            var elapsed = (DateTime.Now - startTime).TotalMilliseconds;
-            if (elapsed < 100)
-            {
-                return $"{(int)elapsed}ms";
-            }
-            else
-            {
-                var elapsedSeconds = elapsed / 1000;
-                return $"{Math.Truncate(elapsedSeconds * 1000) / 1000} second(s)";
-            }
-        }
-        private static void LogElapsedTime()
+        private static void LogElapsedTime(bool final = false)
         {
             _totalTime += _stopwatch.ElapsedMilliseconds;
             string elapsed = _stopwatch.ElapsedMilliseconds.ToString();
-            WriteLColored($@" ({elapsed}ms | {_totalTime}ms)", ConsoleColor.DarkGray);
-            _stopwatch.Restart();
+            if (final)
+            {
+                WriteLColored($@"Total execution time: {_totalTime}ms.", ConsoleColor.DarkGray);
+                _stopwatch.Stop();
+            }
+            else
+            {
+                WriteLColored($@" ({elapsed}ms | {_totalTime}ms)", ConsoleColor.DarkGray);
+                _stopwatch.Restart();
+            }
         }
         public static void StartWatch()
         {
@@ -205,11 +200,10 @@ namespace SystemInfoClient.Utilities
             Console.Write($"Concat salt and hash: {concat}");
             LogElapsedTime();
         }
-        public static void LogTotalExecutionTime(DateTime startTime)
+        public static void LogTotalExecutionTime()
         {
             Console.WriteLine();
-            Console.Write($"Total execution time: {GetExecutionTimeString(startTime)}");
-            LogElapsedTime();
+            LogElapsedTime(true);
         }
     }
 }

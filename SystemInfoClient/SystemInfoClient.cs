@@ -15,7 +15,6 @@ namespace SystemInfoApi
             try
             {
                 // Timers for performance monitoring
-                var startTime = DateTime.Now;
                 ConsoleUtils.StartWatch();
 
                 // Instanciate required objects and services
@@ -34,7 +33,7 @@ namespace SystemInfoApi
                 HttpResponseMessage response = await machineService.SendMachineInfoAsync(token.GetString());
 
                 // Handle API response
-                await HandleResponseAsync(response, settings, security, machineService, startTime);
+                await HandleResponseAsync(response, settings, security, machineService);
             }
             catch (Exception ex)
             {
@@ -43,7 +42,7 @@ namespace SystemInfoApi
         }
 
         private static async Task HandleResponseAsync(
-            HttpResponseMessage response, Settings settings, SecurityService security, MachineService machineService, DateTime startTime)
+            HttpResponseMessage response, Settings settings, SecurityService security, MachineService machineService)
         {
             try
             {
@@ -85,7 +84,7 @@ namespace SystemInfoApi
                         Console.WriteLine($"{response.ReasonPhrase}: {errorContent}");
                         break;
                 }
-                ConsoleUtils.LogTotalExecutionTime(startTime);
+                ConsoleUtils.LogTotalExecutionTime();
             }
             catch (Exception ex)
             {
