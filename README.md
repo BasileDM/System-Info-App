@@ -1,7 +1,7 @@
 # System Info Solution Overview
 
 This project is a *Windows only* C# client/server solution designed to gather information about systems where the client app is run on. 
-The server app's centralizes the data sent by the clients through the API for storage in a database. 
+The server app centralizes the data sent by the clients through the API for storage in a database. 
 It is designed for companies that need to keep track of their customers' systems.
 
 ## Features
